@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.palangwi'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // 🔧 Spring Boot 기본 스타터
+    implementation 'org.springframework.boot:spring-boot-starter-web'             // 웹 애플리케이션 (MVC 포함)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'      // Bean Validation
+    implementation 'org.springframework.boot:spring-boot-starter-security'        // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'   // OAuth2 클라이언트
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'        // JPA (Hibernate)
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'    // MongoDB 연동
+    implementation 'org.springframework.boot:spring-boot-starter-batch'           // Spring Batch
+
+    // 🔐 JWT 토큰 처리
+    implementation 'com.auth0:java-jwt:4.4.0'
+
+    // 🧪 테스트 관련
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'        // 통합 테스트
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'      // Testcontainers 연동
+    testImplementation 'org.springframework.batch:spring-batch-test'              // Spring Batch 전용 테스트
+    testImplementation 'org.springframework.security:spring-security-test'        // Security 테스트
+    testImplementation 'org.testcontainers:junit-jupiter'                         // JUnit5 기반 테스트컨테이너
+    testImplementation 'org.testcontainers:mongodb'                               // MongoDB 테스트 컨테이너
+    testImplementation 'org.testcontainers:mysql'                                 // MySQL 테스트 컨테이너
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                  // JUnit 플랫폼 런처
+
+    // 🧱 DB 드라이버
+    runtimeOnly 'com.h2database:h2'                                               // 인메모리 DB (개발/테스트용)
+    runtimeOnly 'com.mysql:mysql-connector-j'                                     // MySQL JDBC 드라이버
+
+    // 🛠 롬복 (컴파일 타임 전용)
+    compileOnly 'org.projectlombok:lombok'                                        // 롬복 - 컴파일 타임 전용
+    annotationProcessor 'org.projectlombok:lombok'                                // 롬복 어노테이션 프로세서
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
