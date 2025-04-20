@@ -1,6 +1,6 @@
 package com.palangwi.soup.security;
 
-import com.palangwi.soup.dto.UserInfo;
+import com.palangwi.soup.dto.user.UserInfo;
 import com.palangwi.soup.domain.User;
 import com.palangwi.soup.security.Jwt.Claims;
 import com.palangwi.soup.service.UserService;

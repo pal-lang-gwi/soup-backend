@@ -43,6 +43,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'        // Security 테스트
     testImplementation 'org.testcontainers:junit-jupiter'                         // JUnit5 기반 테스트컨테이너
     testImplementation 'org.testcontainers:mongodb'                               // MongoDB 테스트 컨테이너
+    testImplementation "org.mockito:mockito-core:5.2.0"
+    testImplementation "org.mockito:mockito-inline:5.2.0"
     testImplementation 'org.testcontainers:mysql'                                 // MySQL 테스트 컨테이너
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                  // JUnit 플랫폼 런처
 
@@ -58,4 +60,16 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+
+    doFirst {
+        def mockitoAgentJar = classpath.find {
+            it.name.contains("mockito-inline") && it.name.endsWith(".jar")
+        }
+
+        if (mockitoAgentJar != null) {
+            jvmArgs "-javaagent:${mockitoAgentJar.absolutePath}"
+        } else {
+            logger.warn("Mockito Inline JAR not found in test classpath.")
+        }
+    }
 }

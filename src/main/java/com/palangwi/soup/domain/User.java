@@ -25,7 +25,7 @@ public class User extends BaseEntity {
 
     private String email;
 
-    private String name;
+    private String username;
 
     private String nickname;
 
@@ -39,28 +39,31 @@ public class User extends BaseEntity {
 
     private String profileImageUrl;
 
-    public static User createFirstLoginUser(String email, String name, String nickname, Role role, Gender gender, LocalDate birthDate, String providerId, String profileImageUrl) {
+    public static User createFirstLoginUser(String username, String nickname, String providerId) {
         return User.builder()
-                .email(email)
-                .name(name)
+                .username(username)
                 .nickname(nickname)
-                .role(role)
-                .gender(gender)
-                .birthDate(birthDate)
                 .providerId(providerId)
                 .profileImageUrl("https://sample.png")
                 .build();
     }
 
     @Builder
-    private User(String email, String name, String nickname, Role role, Gender gender, LocalDate birthDate, String providerId, String profileImageUrl) {
+    private User(String email, String username, String nickname, Role role, Gender gender, LocalDate birthDate, String providerId, String profileImageUrl) {
         this.email = email;
-        this.name = name;
+        this.username = username;
         this.nickname = nickname;
         this.role = role;
         this.gender = gender;
         this.birthDate = birthDate;
         this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public void initializeAdditionalInfo(String email, Role role, Gender gender, LocalDate birthDate) {
+        this.email = email;
+        this.role = role;
+        this.gender = gender;
+        this.birthDate = birthDate;
     }
 }
