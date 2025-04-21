@@ -1,15 +1,23 @@
 package com.palangwi.soup.controller.user;
 
-import com.palangwi.soup.dto.user.*;
+import static com.palangwi.soup.utils.ApiUtils.success;
+
+import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
+import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
+import com.palangwi.soup.dto.user.UserResponseDto;
+import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.security.JwtAuthentication;
 import com.palangwi.soup.service.UserService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import static com.palangwi.soup.utils.ApiUtils.success;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +34,7 @@ public class UserController {
 
     @PatchMapping("/api/v1/users")
     public ApiResult<UserResponseDto> updateUser(@AuthenticationPrincipal JwtAuthentication userInfo,
-                                      @Valid @RequestBody UserUpdateRequestDto request) {
+                                                 @Valid @RequestBody UserUpdateRequestDto request) {
 
         return success(userService.updateUserInfo(userInfo.id(), request));
     }
@@ -42,7 +50,7 @@ public class UserController {
     }
 
     @PostMapping("/api/v1/users/withdraw")
-    public ApiResult<UserWithdrawResponseDto> withdraw(@AuthenticationPrincipal JwtAuthentication userInfo) {
+    public ApiResult<Void> withdraw(@AuthenticationPrincipal JwtAuthentication userInfo) {
         userService.withdrawUser(userInfo.id());
         return success(null);
     }
