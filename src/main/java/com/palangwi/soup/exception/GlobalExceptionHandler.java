@@ -1,7 +1,10 @@
 package com.palangwi.soup.exception;
 
+import static com.palangwi.soup.utils.ApiUtils.error;
+
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.ConstraintViolationException;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -19,10 +22,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
-
-import java.util.Locale;
-
-import static com.palangwi.soup.utils.ApiUtils.error;
 
 @Slf4j
 @ControllerAdvice
@@ -102,6 +101,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleException(Exception e) {
         log.error("Unexpected exception occurred: {}", e.getMessage(), e);
         return newResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(BaseCustomException.class)
+    public ResponseEntity<?> handleBaseCustomException(BaseCustomException e) {
+        return newResponse(e.getMessage(), e.getStatus());
     }
 
 }
