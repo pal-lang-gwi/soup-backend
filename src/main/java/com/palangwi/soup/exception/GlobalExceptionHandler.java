@@ -104,4 +104,9 @@ public class GlobalExceptionHandler {
         return newResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(BaseCustomException.class)
+    public ResponseEntity<?> handleBaseCustomException(BaseCustomException e) {
+        return newResponse(e.getMessage(), e.getStatus());
+    }
+
 }
