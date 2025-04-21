@@ -7,13 +7,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -55,7 +54,8 @@ public class User extends BaseEntity {
     }
 
     @Builder
-    private User(String email, String username, String nickname, Role role, Gender gender, LocalDate birthDate, String providerId, String profileImageUrl, boolean isDeleted, LocalDateTime deletedAt) {
+    private User(String email, String username, String nickname, Role role, Gender gender, LocalDate birthDate,
+                 String providerId, String profileImageUrl, boolean isDeleted, LocalDateTime deletedAt) {
         this.email = email;
         this.username = username;
         this.nickname = nickname;
@@ -85,7 +85,7 @@ public class User extends BaseEntity {
         }
     }
 
-    public void withdraw() {
+    public void softDelete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }

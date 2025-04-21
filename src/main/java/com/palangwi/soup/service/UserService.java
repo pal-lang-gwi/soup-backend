@@ -3,8 +3,11 @@ package com.palangwi.soup.service;
 import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 
 import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.dto.UserInfo;
 import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
 import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
+import com.palangwi.soup.dto.user.UserResponseDto;
+import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.UserRepository;
@@ -20,12 +23,12 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User loginOAuth(UserInfo userInfo) {
-        if (userRepository.existsByUsername(userInfo.name())) {
-            return getUser(userInfo.name());
+        if (userRepository.existsByUsername(userInfo.username())) {
+            return getUser(userInfo.username());
         }
 
         User firstLoginUser = createFirstLoginUser(
-                userInfo.name(),
+                userInfo.username(),
                 userInfo.nickname(),
                 userInfo.providerId()
         );
@@ -45,13 +48,17 @@ public class UserService {
     public UserResponseDto updateUserInfo(Long userId, UserUpdateRequestDto request) {
         User user = getUser(userId);
 
-        if (isNicknameDuplicate(request.nickname()) && !user.getNickname().equals(request.nickname())) {
-            throw new DuplicateNicknameException();
-        }
+        validateDuplicateNickname(request, user);
 
         user.updateUserInfo(request.nickname(), request.profileImageUrl());
 
         return UserResponseDto.of(user);
+    }
+
+    private void validateDuplicateNickname(UserUpdateRequestDto request, User user) {
+        if (isNicknameDuplicate(request.nickname()) && !user.getNickname().equals(request.nickname())) {
+            throw new DuplicateNicknameException();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +68,7 @@ public class UserService {
 
     public void withdrawUser(Long userId) {
         User user = getUser(userId);
-        user.withdraw();
+        user.softDelete();
     }
 
     @Transactional(readOnly = true)
