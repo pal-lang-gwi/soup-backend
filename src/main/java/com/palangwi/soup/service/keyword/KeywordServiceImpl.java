@@ -6,10 +6,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class KeywordServiceImpl implements KeywordService {
 
-    public KeywordResponseDto getKeywords() {
-        return null;
-    }
-
     public KeywordResponseDto getKeywordByName(String name) {
         return null;
     }

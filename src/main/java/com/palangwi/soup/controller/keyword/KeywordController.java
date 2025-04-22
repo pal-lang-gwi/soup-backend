@@ -17,6 +17,6 @@ public class KeywordController {
 
     @GetMapping("/api/v1/keywords")
     public ApiResult<KeywordResponseDto> getKeywords() {
-        return success(keywordService.getKeywords());
+        return success(null);
     }
 }
