@@ -1,5 +1,8 @@
 package com.palangwi.soup.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.user.UserResponseDto;
@@ -7,14 +10,11 @@ import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.repository.UserRepository;
 import com.palangwi.soup.security.Role;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import java.time.LocalDate;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
 class UserServiceTest {
@@ -27,7 +27,7 @@ class UserServiceTest {
 
     @DisplayName("유저의 정보를 반환한다.")
     @Test
-     void getUserInfo() {
+    void getUserInfo() {
         //given
         User user = userRepository.save(createUser("테스트닉네임"));
 
@@ -93,7 +93,7 @@ class UserServiceTest {
         User user = userRepository.save(createUser("테스트닉네임"));
 
         // when
-        userService.withdrawUser(user.getId());
+        userService.deleteAccount(user.getId());
 
         // then
         User withdrawnUser = userRepository.findById(user.getId()).orElseThrow();
