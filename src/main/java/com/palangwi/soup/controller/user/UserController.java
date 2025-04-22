@@ -45,13 +45,13 @@ public class UserController {
     }
 
     @GetMapping("/api/v1/users/check-nickname")
-    public ApiResult<Boolean> checkNickname(@RequestParam String nickname) {
-        return success(userService.isNicknameDuplicate(nickname));
+    public ApiResult<Boolean> validateNickname(@RequestParam String nickname) {
+        return success(userService.isAvailableNickname(nickname)); // 길이, 형식만 체크
     }
 
-    @PostMapping("/api/v1/users/withdraw")
-    public ApiResult<Void> withdraw(@AuthenticationPrincipal JwtAuthentication userInfo) {
-        userService.withdrawUser(userInfo.id());
+    @PostMapping("/api/v1/users/delete")
+    public ApiResult<Void> deleteAccount(@AuthenticationPrincipal JwtAuthentication userInfo) {
+        userService.deleteAccount(userInfo.id());
         return success(null);
     }
 }
