@@ -40,7 +40,7 @@ public class User extends BaseEntity {
 
     private String profileImageUrl;
 
-    private boolean isDeleted = false;
+    private boolean isDeleted;
 
     private LocalDateTime deletedAt;
 
@@ -73,6 +73,7 @@ public class User extends BaseEntity {
         this.role = role;
         this.gender = gender;
         this.birthDate = birthDate;
+        this.isDeleted = false;
     }
 
     public void updateUserInfo(String nickname, String profileImageUrl) {
