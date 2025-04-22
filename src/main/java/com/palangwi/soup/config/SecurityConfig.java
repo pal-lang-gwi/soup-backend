@@ -1,6 +1,12 @@
 package com.palangwi.soup.config;
 
-import com.palangwi.soup.security.*;
+import com.palangwi.soup.security.CustomOAuth2UserService;
+import com.palangwi.soup.security.EntryPointUnauthorizedHandler;
+import com.palangwi.soup.security.JwtAccessDeniedHandler;
+import com.palangwi.soup.security.JwtAuthenticationTokenFilter;
+import com.palangwi.soup.security.OAuth2AuthenticationFailureHandler;
+import com.palangwi.soup.security.OAuth2AuthenticationSuccessHandler;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
