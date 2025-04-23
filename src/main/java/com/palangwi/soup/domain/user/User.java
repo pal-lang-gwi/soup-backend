@@ -68,9 +68,9 @@ public class User extends BaseEntity {
         this.deletedAt = deletedAt;
     }
 
-    public void initializeAdditionalInfo(String email, Role role, Gender gender, LocalDate birthDate) {
+    public void initializeAdditionalInfo(String email, Gender gender, LocalDate birthDate) {
         this.email = email;
-        this.role = role;
+        this.role = Role.USER;
         this.gender = gender;
         this.birthDate = birthDate;
     }

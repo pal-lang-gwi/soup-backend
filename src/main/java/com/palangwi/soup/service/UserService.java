@@ -40,7 +40,7 @@ public class UserService {
 
     public UserInitSettingResponseDto initAdditionalUserInfo(Long userId, UserAdditionalInfoRequestDto request) {
         User user = getUser(userId);
-        user.initializeAdditionalInfo(request.email(), request.role(), request.gender(), request.birthDate());
+        user.initializeAdditionalInfo(request.email(), request.gender(), request.birthDate());
 
         return UserInitSettingResponseDto.of(user);
     }
