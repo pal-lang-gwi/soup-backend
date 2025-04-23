@@ -13,9 +13,6 @@ public record UserAdditionalInfoRequestDto(
         @NotNull(message = "이메일은 필수입니다.")
         String email,
 
-        @NotNull(message = "역할(Role)은 필수입니다.")
-        Role role,
-
         @NotNull(message = "성별(Gender)은 필수입니다.")
         Gender gender,
 
