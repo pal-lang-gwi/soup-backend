@@ -9,6 +9,7 @@ import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
+import com.palangwi.soup.exception.user.InvalidFormatNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +63,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isNicknameDuplicate(String nickname) {
-        return userRepository.existsByNickname(nickname);
+    public boolean isAvailableNickname(String nickname) {
+        validateNicknameFormat(nickname);
+        return !isNicknameDuplicate(nickname);
     }
 
-    public void withdrawUser(Long userId) {
+    public void deleteAccount(Long userId) {
         User user = getUser(userId);
         user.softDelete();
     }
@@ -86,5 +88,20 @@ public class UserService {
     private User getUser(String username) {
         return userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    private void validateNicknameFormat(String nickname) {
+        boolean isInvalid = nickname == null
+                || nickname.length() < 2
+                || nickname.length() > 10
+                || !nickname.matches("^[가-힣a-zA-Z0-9]+$");
+
+        if (isInvalid) {
+            throw new InvalidFormatNicknameException();
+        }
+    }
+
+    private boolean isNicknameDuplicate(String nickname) {
+        return userRepository.existsByNickname(nickname);
     }
 }
