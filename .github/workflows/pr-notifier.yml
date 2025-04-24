@@ -1,0 +1,21 @@
+name: PR Notification to Mattermost
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  notify-mattermost:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notification to Mattermost
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: 'POST'
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":bell: New PR *${{ github.event.pull_request.title }}* by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
+            }
