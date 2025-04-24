@@ -86,7 +86,7 @@ class UserServiceTest {
                 .hasMessage("이미 사용 중인 닉네임입니다.");
     }
 
-    @DisplayName("유저가 탈퇴하면 isDeleted가 true가 된다.")
+    @DisplayName("유저가 탈퇴하면 deleted가 true가 된다.")
     @Test
     void withdrawUser() {
         // given
@@ -97,7 +97,7 @@ class UserServiceTest {
 
         // then
         User withdrawnUser = userRepository.findById(user.getId()).orElseThrow();
-        assertThat(withdrawnUser.isDeleted()).isTrue();
+        assertThat(withdrawnUser.deleted()).isTrue();
         assertThat(withdrawnUser.getDeletedAt()).isNotNull();
     }
 
