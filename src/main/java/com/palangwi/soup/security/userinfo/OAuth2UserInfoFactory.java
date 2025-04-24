@@ -7,7 +7,7 @@ public class OAuth2UserInfoFactory {
 
     public static OAuth2UserInfo createUserInfo(String registrationId, Map<String, Object> attributes) {
         try {
-            Class<?> clazz = Class.forName("com.palangwi.soup.security.userinfo." +
+            Class<?> clazz = Class.forName("com.ssafy.ssafyro.security.userinfo." +
                     capitalizeFirstLetter(registrationId) +
                     "OAuth2UserInfo");
 
