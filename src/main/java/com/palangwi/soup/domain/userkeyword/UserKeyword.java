@@ -1,5 +1,6 @@
 package com.palangwi.soup.domain.userkeyword;
 
+import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.user.User;
 import jakarta.persistence.Entity;
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserKeyword {
+public class UserKeyword extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
