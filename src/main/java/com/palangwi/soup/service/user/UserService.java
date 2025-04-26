@@ -1,4 +1,4 @@
-package com.palangwi.soup.service;
+package com.palangwi.soup.service.user;
 
 import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 

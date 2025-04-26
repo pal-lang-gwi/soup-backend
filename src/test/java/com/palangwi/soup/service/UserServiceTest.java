@@ -10,6 +10,7 @@ import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.repository.UserRepository;
 import com.palangwi.soup.security.Role;
+import com.palangwi.soup.service.user.UserService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
