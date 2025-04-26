@@ -7,7 +7,7 @@ import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.security.JwtAuthentication;
-import com.palangwi.soup.service.UserService;
+import com.palangwi.soup.service.user.UserService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
