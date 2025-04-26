@@ -45,7 +45,7 @@ public class User extends BaseEntity {
 
     private String profileImageUrl;
 
-    private boolean isDeleted = false;
+    private boolean deleted;
 
     private LocalDateTime deletedAt;
 
@@ -63,7 +63,7 @@ public class User extends BaseEntity {
 
     @Builder
     private User(String email, String username, String nickname, Role role, Gender gender, LocalDate birthDate,
-                 String providerId, String profileImageUrl, boolean isDeleted, LocalDateTime deletedAt) {
+                 String providerId, String profileImageUrl, boolean deleted, LocalDateTime deletedAt) {
         this.email = email;
         this.username = username;
         this.nickname = nickname;
@@ -72,7 +72,7 @@ public class User extends BaseEntity {
         this.birthDate = birthDate;
         this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
-        this.isDeleted = isDeleted;
+        this.deleted = deleted;
         this.deletedAt = deletedAt;
     }
 
@@ -81,6 +81,7 @@ public class User extends BaseEntity {
         this.role = role;
         this.gender = gender;
         this.birthDate = birthDate;
+        this.deleted = false;
     }
 
     public void updateUserInfo(String nickname, String profileImageUrl) {
@@ -94,7 +95,7 @@ public class User extends BaseEntity {
     }
 
     public void softDelete() {
-        this.isDeleted = true;
+        this.deleted = true;
         this.deletedAt = LocalDateTime.now();
     }
 }
