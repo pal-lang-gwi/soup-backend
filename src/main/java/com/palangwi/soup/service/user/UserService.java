@@ -1,4 +1,4 @@
-package com.palangwi.soup.service;
+package com.palangwi.soup.service.user;
 
 import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 
@@ -9,6 +9,7 @@ import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
+import com.palangwi.soup.exception.user.InvalidFormatNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +63,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isNicknameDuplicate(String nickname) {
-        return userRepository.existsByNickname(nickname);
+    public boolean isAvailableNickname(String nickname) {
+        validateNicknameFormat(nickname);
+        return !isNicknameDuplicate(nickname);
     }
 
-    public void withdrawUser(Long userId) {
+    public void deleteAccount(Long userId) {
         User user = getUser(userId);
         user.softDelete();
     }
@@ -86,5 +88,28 @@ public class UserService {
     private User getUser(String username) {
         return userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    private void validateNicknameFormat(String nickname) {
+        if (isNullOrEmpty(nickname) || isInvalidLength(nickname) || isInvalidPattern(nickname)) {
+            throw new InvalidFormatNicknameException();
+        }
+    }
+
+    private boolean isNullOrEmpty(String nickname) {
+        return nickname == null;
+    }
+
+    private boolean isInvalidLength(String nickname) {
+        int length = nickname.length();
+        return length < 2 || length > 10;
+    }
+
+    private boolean isInvalidPattern(String nickname) {
+        return !nickname.matches("^[가-힣a-zA-Z0-9]+$");
+    }
+
+    private boolean isNicknameDuplicate(String nickname) {
+        return userRepository.existsByNickname(nickname);
     }
 }
