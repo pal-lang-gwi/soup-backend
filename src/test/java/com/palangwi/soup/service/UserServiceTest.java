@@ -1,5 +1,8 @@
 package com.palangwi.soup.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.user.UserResponseDto;
@@ -7,14 +10,12 @@ import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.repository.UserRepository;
 import com.palangwi.soup.security.Role;
+import com.palangwi.soup.service.user.UserService;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import java.time.LocalDate;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
 class UserServiceTest {
@@ -27,7 +28,7 @@ class UserServiceTest {
 
     @DisplayName("유저의 정보를 반환한다.")
     @Test
-     void getUserInfo() {
+    void getUserInfo() {
         //given
         User user = userRepository.save(createUser("테스트닉네임"));
 
@@ -86,18 +87,18 @@ class UserServiceTest {
                 .hasMessage("이미 사용 중인 닉네임입니다.");
     }
 
-    @DisplayName("유저가 탈퇴하면 isDeleted가 true가 된다.")
+    @DisplayName("유저가 탈퇴하면 deleted가 true가 된다.")
     @Test
     void withdrawUser() {
         // given
         User user = userRepository.save(createUser("테스트닉네임"));
 
         // when
-        userService.withdrawUser(user.getId());
+        userService.deleteAccount(user.getId());
 
         // then
         User withdrawnUser = userRepository.findById(user.getId()).orElseThrow();
-        assertThat(withdrawnUser.isDeleted()).isTrue();
+        assertThat(withdrawnUser.deleted()).isTrue();
         assertThat(withdrawnUser.getDeletedAt()).isNotNull();
     }
 

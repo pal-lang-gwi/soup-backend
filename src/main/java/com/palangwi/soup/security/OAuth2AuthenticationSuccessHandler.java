@@ -3,7 +3,7 @@ package com.palangwi.soup.security;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.UserInfo;
 import com.palangwi.soup.security.Jwt.Claims;
-import com.palangwi.soup.service.UserService;
+import com.palangwi.soup.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
