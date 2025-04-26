@@ -36,6 +36,9 @@ dependencies {
     // 🔐 JWT 토큰 처리
     implementation 'com.auth0:java-jwt:4.4.0'
 
+    // 📨 Java Mail-Sender
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // 🧪 테스트 관련
     testImplementation 'org.springframework.boot:spring-boot-starter-test'        // 통합 테스트
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'      // Testcontainers 연동
