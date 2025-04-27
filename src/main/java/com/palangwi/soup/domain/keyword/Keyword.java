@@ -57,4 +57,27 @@ public class Keyword extends BaseEntity {
         this.visible = visible;
         this.deleted = deleted;
     }
+
+    public int getSubscribedCount() {
+        return (int) userKeywords.stream()
+                .filter(UserKeyword::isSubscribed)
+                .count();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Keyword keyword = (Keyword) o;
+        return id != null && id.equals(keyword.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
