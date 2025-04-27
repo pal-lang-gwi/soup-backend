@@ -1,19 +1,16 @@
 package com.palangwi.soup.domain.user;
 
 import com.palangwi.soup.domain.BaseEntity;
-import com.palangwi.soup.domain.userkeyword.UserKeyword;
+import com.palangwi.soup.domain.userkeyword.UserKeywords;
 import com.palangwi.soup.security.Role;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,8 +46,9 @@ public class User extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserKeyword> userKeywords = new ArrayList<>();
+    @Embedded
+    private UserKeywords userKeywords = new UserKeywords();
+
 
     public static User createFirstLoginUser(String username, String nickname, String providerId) {
         return User.builder()

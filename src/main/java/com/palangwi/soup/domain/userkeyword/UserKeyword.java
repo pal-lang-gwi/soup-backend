@@ -32,4 +32,20 @@ public class UserKeyword extends BaseEntity {
     private Keyword keyword;
 
     private boolean subscribed;
+
+    public void subscribe() {
+        this.subscribed = true;
+    }
+
+    public void unsubscribe() {
+        this.subscribed = false;
+    }
+
+    public static UserKeyword create(User user, Keyword keyword) {
+        UserKeyword userKeyword = new UserKeyword();
+        userKeyword.user = user;
+        userKeyword.keyword = keyword;
+        userKeyword.subscribed = true;
+        return userKeyword;
+    }
 }
