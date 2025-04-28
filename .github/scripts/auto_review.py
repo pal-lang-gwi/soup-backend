@@ -108,5 +108,16 @@ def main():
                 print(f"[ERROR] 코멘트 등록 실패: {e}")
                 print(f"  [ERROR 상세] 파일: {filename}, 라인: {line_number}, 코드: {code}, 코멘트: {comment}")
 
+def test():
+    print("test")
+    print(OPENAI_API_KEY)
+    print(GITHUB_TOKEN)
+    print(REPO)
+    print(PR_NUMBER)
+    code_line = "print('Hello, World!')"
+    comment = generate_comment_by_gpt(code_line)
+    print(comment)
+
 if __name__ == "__main__":
     main()
+    test()
