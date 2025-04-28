@@ -1,11 +1,19 @@
 import os
+import re
 import requests
 import openai
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 REPO = os.getenv("GITHUB_REPOSITORY")
-PR_NUMBER = os.getenv("GITHUB_REF").split('/')[-1]
+
+# PR 번호 추출 (이렇게 수정!)
+ref = os.getenv("GITHUB_REF", "")
+match = re.search(r'refs/pull/(\d+)/', ref)
+if match:
+    PR_NUMBER = match.group(1)
+else:
+    raise Exception(f"PR 번호를 GITHUB_REF에서 추출할 수 없습니다: {ref}")
 
 def get_pr_files(repo, pr_number, github_token):
     url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/files"
