@@ -1,4 +1,4 @@
-package com.palangwi.soup.service;
+package com.palangwi.soup.service.user;
 
 import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 
@@ -91,14 +91,22 @@ public class UserService {
     }
 
     private void validateNicknameFormat(String nickname) {
-        boolean isInvalid = nickname == null
-                || nickname.length() < 2
-                || nickname.length() > 10
-                || !nickname.matches("^[가-힣a-zA-Z0-9]+$");
-
-        if (isInvalid) {
+        if (isNullOrEmpty(nickname) || isInvalidLength(nickname) || isInvalidPattern(nickname)) {
             throw new InvalidFormatNicknameException();
         }
+    }
+
+    private boolean isNullOrEmpty(String nickname) {
+        return nickname == null;
+    }
+
+    private boolean isInvalidLength(String nickname) {
+        int length = nickname.length();
+        return length < 2 || length > 10;
+    }
+
+    private boolean isInvalidPattern(String nickname) {
+        return !nickname.matches("^[가-힣a-zA-Z0-9]+$");
     }
 
     private boolean isNicknameDuplicate(String nickname) {
