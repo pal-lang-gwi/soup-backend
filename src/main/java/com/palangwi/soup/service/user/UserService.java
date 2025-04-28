@@ -13,6 +13,7 @@ import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.exception.user.InvalidFormatNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.UserRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,14 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User loginOAuth(UserInfo userInfo) {
-        if (userRepository.existsByUsername(userInfo.username())) {
-            return getUser(userInfo.username());
+        Optional<User> userOpt = userRepository.findByUsername(userInfo.username());
+
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.isDeleted()) {
+                user.recover();
+            }
+            return user;
         }
 
         User firstLoginUser = createFirstLoginUser(
