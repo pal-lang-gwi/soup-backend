@@ -1,7 +1,9 @@
 package com.palangwi.soup.domain.user;
 
 import com.palangwi.soup.domain.BaseEntity;
+import com.palangwi.soup.domain.userkeyword.UserKeywords;
 import com.palangwi.soup.security.Role;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,6 +45,9 @@ public class User extends BaseEntity {
     private boolean deleted;
 
     private LocalDateTime deletedAt;
+
+    @Embedded
+    private UserKeywords userKeywords = new UserKeywords();
 
     public static User createFirstLoginUser(String username, String nickname, String providerId) {
         return User.builder()
