@@ -30,11 +30,6 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
-
-    @Value("${jwt.header}")
-    private String headerKey;
-
     private final Jwt jwt;
 
     @Override
