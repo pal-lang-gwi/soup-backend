@@ -3,6 +3,7 @@ package com.palangwi.soup.service.user;
 import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 
 import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.dto.UserInfo;
 import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
 import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
@@ -41,7 +42,9 @@ public class UserService {
 
     public UserInitSettingResponseDto initAdditionalUserInfo(Long userId, UserAdditionalInfoRequestDto request) {
         User user = getUser(userId);
-        user.initializeAdditionalInfo(request.email(), request.gender(), request.birthDate());
+        Gender gender = Gender.valueOf(request.gender().toUpperCase());
+
+        user.initializeAdditionalInfo(request.email(), gender, request.birthDate());
 
         return UserInitSettingResponseDto.of(user);
     }
