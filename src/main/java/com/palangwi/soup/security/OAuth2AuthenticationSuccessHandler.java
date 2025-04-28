@@ -4,12 +4,16 @@ import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.UserInfo;
 import com.palangwi.soup.security.Jwt.Claims;
 import com.palangwi.soup.service.user.UserService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.time.Duration;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -53,12 +57,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private void sendToken(HttpServletResponse response, String token, User user) throws IOException {
+        ResponseCookie cookie = ResponseCookie.from("access_token", token)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofHours(1))
+                .build();
+
+        response.setHeader("Set-Cookie", cookie.toString());
+
         String encodedNickname = URLEncoder.encode(user.getNickname(), "UTF-8");
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("content-type", "application/json");
-        response.sendRedirect(FRONT_SERVER_DOMAIN + "/signup?token=" + token +
-                "&nickname=" + encodedNickname +
-                "&userId=" + user.getId());
+        response.sendRedirect(FRONT_SERVER_DOMAIN + "/signup?nickname=" + encodedNickname + "&userId=" + user.getId());
     }
 }
