@@ -49,7 +49,6 @@ public class User extends BaseEntity {
     @Embedded
     private UserKeywords userKeywords = new UserKeywords();
 
-
     public static User createFirstLoginUser(String username, String nickname, String providerId) {
         return User.builder()
                 .username(username)
