@@ -1,16 +1,20 @@
 package com.palangwi.soup.domain.keyword;
 
 import com.palangwi.soup.domain.BaseEntity;
+import com.palangwi.soup.domain.userkeyword.UserKeyword;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
 
 @Getter
 @Entity
@@ -25,6 +29,9 @@ public class Keyword extends BaseEntity {
     private String name;
 
     private String normalizedName;
+
+    @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserKeyword> userKeywords = new ArrayList<>();
 
     private Source source;
 
@@ -49,5 +56,29 @@ public class Keyword extends BaseEntity {
         this.source = source;
         this.visible = visible;
         this.deleted = deleted;
+    }
+
+    // 추후 Keyword 도메인을 분리하게 된다면, 구독중인 사용자의 수를 어떻게 관리할 지 논의가 필요할 것 같습니다.
+    public int getSubscribedCount() {
+        return (int) userKeywords.stream()
+                .filter(UserKeyword::isSubscribed)
+                .count();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Keyword keyword = (Keyword) o;
+        return id != null && id.equals(keyword.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

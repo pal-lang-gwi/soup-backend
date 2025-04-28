@@ -98,7 +98,7 @@ class UserServiceTest {
 
         // then
         User withdrawnUser = userRepository.findById(user.getId()).orElseThrow();
-        assertThat(withdrawnUser.deleted()).isTrue();
+        assertThat(withdrawnUser.isDeleted()).isTrue();
         assertThat(withdrawnUser.getDeletedAt()).isNotNull();
     }
 

@@ -86,7 +86,7 @@ public class UserService {
     }
 
     private User getUser(String username) {
-        return userRepository.findByUsernameAndIsDeletedFalse(username)
+        return userRepository.findByUsernameAndDeletedFalse(username)
                 .orElseThrow(UserNotFoundException::new);
     }
 
