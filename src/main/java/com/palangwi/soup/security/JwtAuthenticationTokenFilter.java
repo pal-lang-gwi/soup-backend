@@ -30,11 +30,6 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
-
-    @Value("${jwt.header}")
-    private String headerKey;
-
     private final Jwt jwt;
 
     @Override
@@ -76,24 +71,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     }
 
     private String obtainAuthorizationToken(HttpServletRequest request) {
-        String token = request.getHeader(headerKey);
-        if (token != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Jwt authorization api detected: {}", token);
-            }
-            try {
-                token = URLDecoder.decode(token, "UTF-8");
-                String[] parts = token.split(" ");
-                if (parts.length == 2) {
-                    String scheme = parts[0];
-                    String credentials = parts[1];
-                    return BEARER.matcher(scheme).matches() ? credentials : null;
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
                 }
-            } catch (UnsupportedEncodingException e) {
-                log.error(e.getMessage(), e);
             }
         }
-
         return null;
     }
 

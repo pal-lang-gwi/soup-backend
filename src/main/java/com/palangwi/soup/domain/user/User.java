@@ -3,12 +3,8 @@ package com.palangwi.soup.domain.user;
 import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.userkeyword.UserKeywords;
 import com.palangwi.soup.security.Role;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -32,8 +28,10 @@ public class User extends BaseEntity {
 
     private String nickname;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     private LocalDate birthDate;
@@ -73,9 +71,9 @@ public class User extends BaseEntity {
         this.deletedAt = deletedAt;
     }
 
-    public void initializeAdditionalInfo(String email, Role role, Gender gender, LocalDate birthDate) {
+    public void initializeAdditionalInfo(String email, Gender gender, LocalDate birthDate) {
         this.email = email;
-        this.role = role;
+        this.role = Role.USER;
         this.gender = gender;
         this.birthDate = birthDate;
         this.deleted = false;
