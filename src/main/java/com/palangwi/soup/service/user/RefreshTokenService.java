@@ -1,5 +1,6 @@
 package com.palangwi.soup.service.user;
 
+import com.palangwi.soup.exception.user.InvalidRefreshTokenException;
 import com.palangwi.soup.repository.RefreshTokenRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,7 @@ public class RefreshTokenService {
     public Long validateRefreshToken(String refreshToken) {
         String userIdStr = refreshTokenRedisRepository.findUserIdByRefreshToken(refreshToken);
         if (userIdStr == null) {
-            throw new RuntimeException("Invalid or expired Refresh Token");
+            throw new InvalidRefreshTokenException();
         }
         return Long.valueOf(userIdStr);
     }
