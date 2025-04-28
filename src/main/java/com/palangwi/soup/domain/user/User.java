@@ -93,4 +93,9 @@ public class User extends BaseEntity {
         this.deleted = true;
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void recover() {
+        this.deleted = false;
+        this.deletedAt = null;
+    }
 }
