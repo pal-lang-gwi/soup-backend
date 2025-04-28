@@ -2,13 +2,8 @@ package com.palangwi.soup.domain.keyword;
 
 import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -33,6 +28,7 @@ public class Keyword extends BaseEntity {
     @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserKeyword> userKeywords = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
     private Source source;
 
     private boolean visible;

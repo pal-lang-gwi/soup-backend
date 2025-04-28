@@ -7,7 +7,6 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 REPO = os.getenv("GITHUB_REPOSITORY")
 
-# PR 번호 추출 (이렇게 수정!)
 ref = os.getenv("GITHUB_REF", "")
 match = re.search(r'refs/pull/(\d+)/', ref)
 if match:

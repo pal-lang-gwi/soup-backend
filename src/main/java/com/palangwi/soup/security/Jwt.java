@@ -23,20 +23,16 @@ public final class Jwt {
 
     private final String clientSecret;
 
-    private final int expirySeconds;
-
     private final Algorithm algorithm;
 
     private final JWTVerifier jwtVerifier;
 
     public Jwt(
             @Value("${jwt.issuer}") String issuer,
-            @Value("${jwt.client-secret}") String clientSecret,
-            @Value("${jwt.expiry-seconds}") int expirySeconds
+            @Value("${jwt.client-secret}") String clientSecret
     ) {
         this.issuer = issuer;
         this.clientSecret = clientSecret;
-        this.expirySeconds = expirySeconds;
         this.algorithm = HMAC512(clientSecret);
         this.jwtVerifier = JWT.require(algorithm)
                 .withIssuer(issuer)
@@ -45,14 +41,11 @@ public final class Jwt {
 
     public String create(Claims claims) {
         Date now = new Date();
-        JWTCreator.Builder builder = com.auth0.jwt.JWT.create();
-        builder.withIssuer(issuer);
-        builder.withIssuedAt(now);
-        if (expirySeconds > 0) {
-            builder.withExpiresAt(new Date(now.getTime() + expirySeconds * 1_000L));
-        }
-        builder.withClaim("userKey", claims.userKey);
-        builder.withArrayClaim("roles", claims.roles);
+        JWTCreator.Builder builder = JWT.create()
+                .withIssuer(issuer)
+                .withIssuedAt(now)
+                .withClaim("userKey", claims.userKey)
+                .withArrayClaim("roles", claims.roles);
         return builder.sign(algorithm);
     }
 
