@@ -46,15 +46,15 @@ def extract_added_lines(patch):
     return added_lines
 
 def generate_comment_by_gpt(code_line):
-    openai.api_key = OPENAI_API_KEY
     prompt = f"다음 코드 한 줄에 대해 리뷰어처럼 개선할 점이나 칭찬할 점을 짧게 작성해줘.\n\n코드:\n{code_line}"
     print(f"[INFO] GPT에 코드 리뷰 요청: {code_line[:30]}...")
     try:
-        response = openai.ChatCompletion.create(
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
         )
-        return response['choices'][0]['message']['content']
+        return response.choices[0].message.content
     except Exception as e:
         print(f"[ERROR] GPT 호출 실패: {e}")
         return "GPT 호출 실패: " + str(e)
