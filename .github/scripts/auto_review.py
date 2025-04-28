@@ -86,12 +86,28 @@ def main():
         filename = file.get("filename")
         patch = file.get("patch")
         print(f"[INFO] 파일 처리 시작: {filename}")
+        print(f"[DEBUG] patch 일부: {patch[:300]}")  # patch 앞부분 300자만 출력
 
         added_lines = extract_added_lines(patch)
 
         for line_number, code in added_lines:
+            print(f"[DEBUG] 코멘트 등록 시도 정보")
+            print(f"  파일: {filename}")
+            print(f"  patch 내 라인: {line_number}")
+            print(f"  코드: {code}")
             comment = generate_comment_by_gpt(code)
-            post_inline_comment(REPO, PR_NUMBER, comment, filename, line_number, GITHUB_TOKEN)
+            print(f"  생성된 코멘트: {comment}")
+
+            # GPT 호출 실패 시 코멘트 등록 건너뜀
+            if comment.startswith("GPT 호출 실패"):
+                print(f"[WARN] GPT 호출 실패로 코멘트 등록 건너뜀: {comment}")
+                continue
+
+            try:
+                post_inline_comment(REPO, PR_NUMBER, comment, filename, line_number, GITHUB_TOKEN)
+            except Exception as e:
+                print(f"[ERROR] 코멘트 등록 실패: {e}")
+                print(f"  [ERROR 상세] 파일: {filename}, 라인: {line_number}, 코드: {code}, 코멘트: {comment}")
 
 if __name__ == "__main__":
     main()
