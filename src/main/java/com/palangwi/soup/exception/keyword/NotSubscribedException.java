@@ -6,10 +6,10 @@ import org.springframework.http.HttpStatus;
 public class NotSubscribedException extends BaseCustomException {
     @Override
     public String getMessage() {
-        return KeywordExceptionMessage.NOT_SUBSCRIBED_EXCEPTION.getMessage();
+        return KeywordExceptionMessage.NOT_SUBSCRIBED_KEYWORD.getMessage();
     }
 
     public HttpStatus getStatus() {
-        return KeywordExceptionMessage.NOT_SUBSCRIBED_EXCEPTION.getStatus();
+        return KeywordExceptionMessage.NOT_SUBSCRIBED_KEYWORD.getStatus();
     }
 }
