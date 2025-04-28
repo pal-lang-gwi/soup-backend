@@ -58,6 +58,7 @@ public class Keyword extends BaseEntity {
         this.deleted = deleted;
     }
 
+    // 추후 Keyword 도메인을 분리하게 된다면, 구독중인 사용자의 수를 어떻게 관리할 지 논의가 필요할 것 같습니다.
     public int getSubscribedCount() {
         return (int) userKeywords.stream()
                 .filter(UserKeyword::isSubscribed)
