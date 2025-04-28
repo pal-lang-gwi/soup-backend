@@ -49,7 +49,7 @@ class UserRepositoryTest {
         // given은 beforeEach에서 처리
 
         // when
-        boolean exists = userRepository.existsByUsername("홍길동");
+        boolean exists = userRepository.existsByUsername("NOT_EXIST_USERNAME");
 
         // then
         assertThat(exists).isFalse();
@@ -73,7 +73,7 @@ class UserRepositoryTest {
         // given은 beforeEach에서 처리
 
         // when
-        boolean exists = userRepository.existsByNickname("없는 닉네임");
+        boolean exists = userRepository.existsByNickname("NOT_EXIST_NICKNAME");
 
         // then
         assertThat(exists).isFalse();
@@ -115,7 +115,7 @@ class UserRepositoryTest {
         // given은 beforeEach에서 처리
 
         //when
-        Optional<User> result = userRepository.findByUsernameAndDeletedFalse("노현경");
+        Optional<User> result = userRepository.findByUsernameAndDeletedFalse("NOT_EXIST_USERNAME");
 
         //then
         assertThat(result).isEmpty();

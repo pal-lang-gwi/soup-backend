@@ -9,6 +9,10 @@ public class ApiUtils {
         return new ApiResult<>(true, data, null);
     }
 
+    public static <T> ApiResult<Void> success() {
+        return new ApiResult<>(true, null, null);
+    }
+
     public static ApiResult<?> error(Throwable throwable, HttpStatus status) {
         return new ApiResult<>(false, null, new ApiError(throwable, status));
     }
