@@ -52,6 +52,6 @@ public class UserController {
     @PostMapping("/api/v1/users/delete")
     public ApiResult<Void> deleteAccount(@AuthenticationPrincipal JwtAuthentication userInfo) {
         userService.deleteAccount(userInfo.id());
-        return success(null);
+        return success();
     }
 }

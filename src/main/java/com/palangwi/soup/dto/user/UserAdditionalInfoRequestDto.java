@@ -2,6 +2,7 @@ package com.palangwi.soup.dto.user;
 
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.security.Role;
+import com.palangwi.soup.validation.EnumValue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -13,11 +14,9 @@ public record UserAdditionalInfoRequestDto(
         @NotNull(message = "이메일은 필수입니다.")
         String email,
 
-        @NotNull(message = "역할(Role)은 필수입니다.")
-        Role role,
-
-        @NotNull(message = "성별(Gender)은 필수입니다.")
-        Gender gender,
+        @NotNull(message = "성별은 필수입니다.")
+        @EnumValue(enumClass = Gender.class, message = "유효하지 않은 성별입니다.")
+        String gender,
 
         @Past(message = "생년월일은 과거 날짜여야 합니다.")
         @NotNull(message = "생년월일은 필수입니다.")
