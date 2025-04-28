@@ -18,7 +18,7 @@ public class RefreshTokenRedisRepository {
 
     public void save(String refreshToken, Long userId, long ttlSeconds) {
         redisTemplate.opsForValue()
-                .set(PREFIX + refreshToken, userId.toString(), ttlSeconds, TimeUnit.SECONDS);
+                .set(getKey(refreshToken), userId.toString(), ttlSeconds, TimeUnit.SECONDS);
     }
 
     public String findUserIdByRefreshToken(String refreshToken) {
@@ -27,5 +27,9 @@ public class RefreshTokenRedisRepository {
 
     public void delete(String refreshToken) {
         redisTemplate.delete(PREFIX + refreshToken);
+    }
+
+    private String getKey(String refreshToken) {
+        return PREFIX + refreshToken;
     }
 }
