@@ -1,7 +1,7 @@
 import os
 import re
 import requests
-import openai
+from openai import OpenAI
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -49,7 +49,7 @@ def generate_comment_by_gpt(code_line):
     prompt = f"다음 코드 한 줄에 대해 리뷰어처럼 개선할 점이나 칭찬할 점을 짧게 작성해줘.\n\n코드:\n{code_line}"
     print(f"[INFO] GPT에 코드 리뷰 요청: {code_line[:30]}...")
     try:
-        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        client = OpenAI(api_key=OPENAI_API_KEY)
         response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
