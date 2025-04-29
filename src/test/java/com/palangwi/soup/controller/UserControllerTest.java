@@ -23,9 +23,9 @@ public class UserControllerTest extends ControllerTestSupport{
     private UserService userService;
 
     @Test
-    @DisplayName("신규 가입 시 추가 정보를 입력한다.")
+    @DisplayName("신규 가입 시 요구사항에 맞게 추가 정보를 입력한다.")
     @WithMockJwtAuthentication
-    public void init() throws Exception {
+    public void additionalInfo_success() throws Exception {
         // given
         UserAdditionalInfoRequestDto request = UserAdditionalInfoRequestDto.builder()
                 .email("init@test.com")
@@ -43,9 +43,31 @@ public class UserControllerTest extends ControllerTestSupport{
     }
 
     @Test
+    @DisplayName("신규 가입 시 적절하지 않은 추가 정보를 입력하면 에러를 반환한다.")
+    @WithMockJwtAuthentication
+    public void additionalInfo_fail() throws Exception {
+        // given
+        UserAdditionalInfoRequestDto request = UserAdditionalInfoRequestDto.builder()
+                .email("init@test.com")
+                .gender("WRONG_GENDER")
+                .birthDate(LocalDate.of(1996, 12, 2))
+                .build();
+
+        // when // then
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/init")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 성별입니다."));
+    }
+
+    @Test
     @DisplayName("회원 정보를 수정한다.")
     @WithMockJwtAuthentication
-    public void updateUserInfo() throws Exception {
+    public void updateUserInfo_success() throws Exception {
         // given
         UserUpdateRequestDto request = UserUpdateRequestDto.builder()
                 .nickname("UpdatedNickname")
@@ -59,6 +81,31 @@ public class UserControllerTest extends ControllerTestSupport{
                 )
                 .andDo(print())
                 .andExpect(status().isOk());
+
+        verify(userService).updateUserInfo(1L, request);
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정 요청이 적절하지 않을 시 에러를 반환한다.")
+    @WithMockJwtAuthentication
+    public void updateUserInfo_fail() throws Exception {
+        // given
+        UserUpdateRequestDto request = UserUpdateRequestDto.builder()
+                .nickname("띄어쓰기가 포함된 부적절한 닉네임")
+                .profileImageUrl("Updated Profile Image URL")
+                .build();
+
+        // when // then
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.message").value("닉네임은 특수문자를 제외한 문자여야 합니다."));
+
+        verify(userService).updateUserInfo(1L, request);
     }
 
     @Test
