@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @GetMapping("/api/v1/users/check-nickname")
-    public ApiResult<Boolean> validateNickname(@RequestParam String nickname) {
+    public ApiResult<Boolean> validateNickname(@RequestParam(name = "nickname") String nickname) {
         return success(userService.isAvailableNickname(nickname)); // 길이, 형식만 체크
     }
 
