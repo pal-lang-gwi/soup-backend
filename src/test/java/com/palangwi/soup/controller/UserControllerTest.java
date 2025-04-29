@@ -104,8 +104,6 @@ public class UserControllerTest extends ControllerTestSupport{
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.message").value("닉네임은 특수문자를 제외한 문자여야 합니다."));
-
-        verify(userService).updateUserInfo(1L, request);
     }
 
     @Test
