@@ -31,27 +31,24 @@ public class Keyword extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Source source;
 
-    private boolean visible;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-    private boolean deleted;
-
-    public static Keyword generateKeyword(String name, String normalizedName, Source source) {
+    public static Keyword of(String name, String normalizedName, Source source) {
         return Keyword.builder()
                 .name(name)
                 .normalizedName(normalizedName)
                 .source(source)
-                .visible(true)
-                .deleted(false)
+                .status(Status.ACTIVE)
                 .build();
     }
 
     @Builder
-    private Keyword(String name, String normalizedName, Source source, boolean visible, boolean deleted) {
+    private Keyword(String name, String normalizedName, Source source, Status status) {
         this.name = name;
         this.normalizedName = normalizedName;
         this.source = source;
-        this.visible = visible;
-        this.deleted = deleted;
+        this.status = status;
     }
 
     // 추후 Keyword 도메인을 분리하게 된다면, 구독중인 사용자의 수를 어떻게 관리할 지 논의가 필요할 것 같습니다.
