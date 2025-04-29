@@ -6,9 +6,11 @@ import com.palangwi.soup.validation.EnumValue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
+@Builder
 public record UserAdditionalInfoRequestDto(
         @Email(message = "이메일 형식이 올바르지 않습니다.")
         @NotNull(message = "이메일은 필수입니다.")

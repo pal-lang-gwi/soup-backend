@@ -1,4 +1,11 @@
 package com.palangwi.soup.security;
 
-public record JwtAuthentication(Long id) {
+import java.security.Principal;
+
+public record JwtAuthentication(Long id) implements Principal {
+
+    @Override
+    public String getName() {
+        return id.toString(); // 또는 적절한 String 반환
+    }
 }
