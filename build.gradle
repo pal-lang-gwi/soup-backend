@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'   // OAuth2 클라이언트
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'        // JPA (Hibernate)
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'    // MongoDB 연동
-    implementation 'org.springframework.boot:spring-boot-starter-batch'           // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'      // Redis
 
     // 🔐 JWT 토큰 처리
     implementation 'com.auth0:java-jwt:4.4.0'

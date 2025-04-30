@@ -3,9 +3,11 @@ package com.palangwi.soup.dto.user;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.security.Role;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
+@Builder
 public record UserInitSettingResponseDto(
         Long userId,
         String email,

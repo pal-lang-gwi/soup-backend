@@ -1,14 +1,20 @@
 name: PR Notification to Mattermost
-
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, closed]
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
 
 jobs:
   notify-mattermost:
     runs-on: ubuntu-latest
     steps:
-      - name: Send notification to Mattermost
+      - name: Send PR opened/reopened notification
+        if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
@@ -18,4 +24,56 @@ jobs:
           data: |
             {
               "text": ":bell: New PR *${{ github.event.pull_request.title }}* by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
+            }
+            
+      - name: Send PR review notification
+        if: github.event_name == 'pull_request_review' && github.event.review.state != 'commented'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: 'POST'
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":eyes: PR *${{ github.event.pull_request.title }}* was ${{ github.event.review.state }} by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
+            }
+            
+      - name: Send PR merged notification
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: 'POST'
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":white_check_mark: PR *${{ github.event.pull_request.title }}* was merged by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
+            }
+            
+      - name: Send PR comment notification (issue comment)
+        if: github.event_name == 'issue_comment' && github.event.issue.pull_request != null
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: 'POST'
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":speech_balloon: New comment on PR *${{ github.event.issue.title }}* by `${{ github.actor }}`\n<${{ github.event.comment.html_url }}|View Comment>"
+            }
+            
+      - name: Send PR comment notification (review comment)
+        if: github.event_name == 'pull_request_review_comment'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: 'POST'
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":speech_balloon: New review comment on PR *${{ github.event.pull_request.title }}* by `${{ github.actor }}`\n<${{ github.event.comment.html_url }}|View Comment>"
             }

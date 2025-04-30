@@ -2,6 +2,7 @@ package com.palangwi.soup.config;
 
 import com.palangwi.soup.security.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +19,9 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Value("${front.domain}")
+    private String allowedOrigin;
 
     private final JwtAccessDeniedHandler accessDeniedHandler;
     private final EntryPointUnauthorizedHandler UnauthorizedHandler;
@@ -44,10 +48,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/ssafyro-chat").permitAll()
                         .requestMatchers("/docs/**").permitAll()
+                        .requestMatchers("/api/v1/users/check-nickname").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        .requestMatchers("/llamachat").permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(configurer -> configurer
@@ -59,15 +62,15 @@ public class SecurityConfig {
     }
 
     private CorsConfigurationSource apiConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setMaxAge(86400L);
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of(allowedOrigin));
+        config.setAllowCredentials(true);
+        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setMaxAge(86400L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }

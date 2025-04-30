@@ -2,12 +2,13 @@ package com.palangwi.soup.controller.user;
 
 import static com.palangwi.soup.utils.ApiUtils.success;
 
+import com.palangwi.soup.dto.user.UserDeleteRequestDto;
 import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
 import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.security.JwtAuthentication;
-import com.palangwi.soup.service.UserService;
+import com.palangwi.soup.service.user.UserService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,13 +46,13 @@ public class UserController {
     }
 
     @GetMapping("/api/v1/users/check-nickname")
-    public ApiResult<Boolean> checkNickname(@RequestParam String nickname) {
-        return success(userService.isNicknameDuplicate(nickname));
+    public ApiResult<Boolean> validateNickname(@RequestParam(name = "nickname") String nickname) {
+        return success(userService.isAvailableNickname(nickname)); // 길이, 형식만 체크
     }
 
-    @PostMapping("/api/v1/users/withdraw")
-    public ApiResult<Void> withdraw(@AuthenticationPrincipal JwtAuthentication userInfo) {
-        userService.withdrawUser(userInfo.id());
-        return success(null);
+    @PostMapping("/api/v1/users/delete")
+    public ApiResult<Void> deleteAccount(@AuthenticationPrincipal JwtAuthentication userInfo, @RequestBody UserDeleteRequestDto request) {
+        userService.deleteAccount(userInfo.id(), request);
+        return success();
     }
 }
