@@ -40,10 +40,6 @@ public class User extends BaseEntity {
 
     private String profileImageUrl;
 
-    private boolean deleted;
-
-    private LocalDateTime deletedAt;
-
     @Embedded
     private UserKeywords userKeywords = new UserKeywords();
 
@@ -58,7 +54,7 @@ public class User extends BaseEntity {
 
     @Builder
     private User(String email, String username, String nickname, Role role, Gender gender, LocalDate birthDate,
-                 String providerId, String profileImageUrl, boolean deleted, LocalDateTime deletedAt) {
+                 String providerId, String profileImageUrl) {
         this.email = email;
         this.username = username;
         this.nickname = nickname;
@@ -67,8 +63,6 @@ public class User extends BaseEntity {
         this.birthDate = birthDate;
         this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
-        this.deleted = deleted;
-        this.deletedAt = deletedAt;
     }
 
     public void initializeAdditionalInfo(String email, Gender gender, LocalDate birthDate) {
@@ -76,7 +70,6 @@ public class User extends BaseEntity {
         this.role = Role.USER;
         this.gender = gender;
         this.birthDate = birthDate;
-        this.deleted = false;
     }
 
     public void updateUserInfo(String nickname, String profileImageUrl) {
@@ -87,15 +80,5 @@ public class User extends BaseEntity {
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;
         }
-    }
-
-    public void softDelete() {
-        this.deleted = true;
-        this.deletedAt = LocalDateTime.now();
-    }
-
-    public void recover() {
-        this.deleted = false;
-        this.deletedAt = null;
     }
 }

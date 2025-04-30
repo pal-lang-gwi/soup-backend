@@ -25,8 +25,8 @@ class UserRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        User user1 = createUser("123@gmail.com", "김여준", "테스트닉네임1", false);
-        User user2 = createUser("321@gmail.com", "유재광", "테스트닉네임2", true);
+        User user1 = createUser("123@gmail.com", "김여준", "테스트닉네임1");
+        User user2 = createUser("321@gmail.com", "유재광", "테스트닉네임2");
 
         userRepository.saveAll(List.of(user1, user2));
     }
@@ -79,13 +79,13 @@ class UserRepositoryTest {
         assertThat(exists).isFalse();
     }
 
-    @DisplayName("사용자의 실명으로 deleted되지 않은 사용자를 조회한다.")
+    @DisplayName("사용자의 실명으로 사용자를 조회한다.")
     @Test
-    void findByUsernameAndDeletedFalse1() {
+    void findByUsername1() {
         // given은 beforeEach에서 처리
 
         // when
-        Optional<User> result = userRepository.findByUsernameAndDeletedFalse("김여준");
+        Optional<User> result = userRepository.findByUsername("김여준");
 
         // then
         assertThat(result).isPresent()
@@ -97,31 +97,19 @@ class UserRepositoryTest {
                 });
     }
 
-    @DisplayName("사용자의 실명으로 deleted된 사용자를 조회하면 빈 값을 반환한다.")
-    @Test
-    void findByUsernameAndDeletedFalse2() {
-        // given은 beforeEach에서 처리
-
-        // when
-        Optional<User> result = userRepository.findByUsernameAndDeletedFalse("유재광");
-
-        // then
-        assertThat(result).isEmpty();
-    }
-
     @DisplayName("사용자의 정보가 없을 시 빈 값을 반환한다.")
     @Test
     void findByUsernameException() {
         // given은 beforeEach에서 처리
 
         //when
-        Optional<User> result = userRepository.findByUsernameAndDeletedFalse("NOT_EXIST_USERNAME");
+        Optional<User> result = userRepository.findByUsername("NOT_EXIST_USERNAME");
 
         //then
         assertThat(result).isEmpty();
     }
 
-    private static User createUser(String email, String username, String nickname, boolean deleted) {
+    private static User createUser(String email, String username, String nickname) {
         return User.builder()
                 .email(email)
                 .username(username)
@@ -130,7 +118,6 @@ class UserRepositoryTest {
                 .gender(Gender.MALE)
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .profileImageUrl("https://sample.png")
-                .deleted(deleted)
                 .build();
     }
 }
