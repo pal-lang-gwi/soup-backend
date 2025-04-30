@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.palangwi.soup.domain.userlog.ChangeType.*;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
@@ -25,10 +26,10 @@ public class UserHistoryRepositoryTest {
 
     @BeforeEach
     public void setUp() {
-        UserHistory userHistory1 = createUserHistory("email1@email.com", ChangeType.DELETE);
-        UserHistory userHistory2 = createUserHistory("email2@email.com", ChangeType.CREATE);
-        UserHistory userHistory3 = createUserHistory("email2@email.com", ChangeType.DELETE);
-        UserHistory userHistory4 = createUserHistory("email3@email.com", ChangeType.CREATE);
+        UserHistory userHistory1 = createUserHistory("email1@email.com", DELETE);
+        UserHistory userHistory2 = createUserHistory("email2@email.com", CREATE);
+        UserHistory userHistory3 = createUserHistory("email2@email.com", DELETE);
+        UserHistory userHistory4 = createUserHistory("email3@email.com", CREATE);
 
         userHistoryRepository.saveAll(List.of(userHistory1, userHistory2, userHistory3, userHistory4));
     }
@@ -40,10 +41,10 @@ public class UserHistoryRepositoryTest {
 
 
         // when
-        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", ChangeType.DELETE);
+        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", DELETE);
 
         // then
-        assertThat(userHistory.get().getChangeType()).isEqualTo(ChangeType.DELETE);
+        assertThat(userHistory.get().getChangeType()).isEqualTo(DELETE);
         assertThat(userHistory.get().getEmail()).isEqualTo("email2@email.com");
     }
 
@@ -54,10 +55,10 @@ public class UserHistoryRepositoryTest {
 
 
         // when
-        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", ChangeType.CREATE);
+        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", CREATE);
 
         // then
-        assertThat(userHistory.get().getChangeType()).isEqualTo(ChangeType.CREATE);
+        assertThat(userHistory.get().getChangeType()).isEqualTo(CREATE);
         assertThat(userHistory.get().getEmail()).isEqualTo("email2@email.com");
     }
 
