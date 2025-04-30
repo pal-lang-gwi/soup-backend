@@ -2,10 +2,7 @@ package com.palangwi.soup.controller.user;
 
 import static com.palangwi.soup.utils.ApiUtils.success;
 
-import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
-import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
-import com.palangwi.soup.dto.user.UserResponseDto;
-import com.palangwi.soup.dto.user.UserUpdateRequestDto;
+import com.palangwi.soup.dto.user.*;
 import com.palangwi.soup.security.JwtAuthentication;
 import com.palangwi.soup.service.user.UserService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
@@ -50,8 +47,8 @@ public class UserController {
     }
 
     @PostMapping("/api/v1/users/delete")
-    public ApiResult<Void> deleteAccount(@AuthenticationPrincipal JwtAuthentication userInfo) {
-        userService.deleteAccount(userInfo.id());
+    public ApiResult<Void> deleteAccount(@AuthenticationPrincipal JwtAuthentication userInfo, @RequestBody UserDeleteRequestDto request) {
+        userService.deleteAccount(userInfo.id(), request);
         return success();
     }
 }
