@@ -61,9 +61,33 @@ def extract_added_lines(patch):
         print(f"[ERROR] patch 내용: {patch[:200]}...")  # 처음 200자만 출력
         raise
 
-def generate_comment_by_gpt(code_line):
-    prompt = f"다음 코드 한 줄에 대해 리뷰어처럼 개선할 점이나 칭찬할 점을 짧게 작성해줘.\n\n코드:\n{code_line}"
-    print(f"[INFO] GPT에 코드 리뷰 요청: {code_line[:30]}...")
+def generate_comment_by_gpt(code_changes):
+    prompt = f"""다음은 PR에서 변경된 코드입니다. 파일 전체의 맥락을 고려하여 리뷰를 작성해주세요.
+
+코드 변경사항:
+{code_changes}
+
+리뷰 작성 시 다음 사항을 고려해주세요:
+1. 코드의 전반적인 구조와 설계
+2. 각 변경사항의 목적과 영향
+3. 개선이 필요한 부분
+4. 잘 작성된 부분
+5. 보안, 성능, 유지보수성 관점에서의 검토
+
+리뷰는 다음 형식으로 작성해주세요:
+## 전반적인 평가
+[전체적인 평가 내용]
+
+## 주요 변경사항 분석
+[각 변경사항에 대한 분석]
+
+## 개선 제안
+[구체적인 개선 제안]
+
+## 칭찬할 점
+[잘 작성된 부분]"""
+    
+    print(f"[INFO] GPT에 코드 리뷰 요청")
     try:
         if not OPENAI_API_KEY:
             raise ValueError("OPENAI_API_KEY가 설정되지 않았습니다.")
@@ -81,19 +105,16 @@ def generate_comment_by_gpt(code_line):
         return f"GPT 호출 실패: {str(e)}"
 
 def post_inline_comment(repo, pr_number, body, path, line, github_token):
-    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/comments"
+    url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
     headers = {"Authorization": f"token {github_token}"}
     payload = {
-        "body": body,
-        "path": path,
-        "side": "RIGHT",
-        "line": line
+        "body": body
     }
-    print(f"[INFO] PR 인라인 코멘트 등록 시도: {path}:{line}")
+    print(f"[INFO] PR 코멘트 등록 시도")
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        print(f"[INFO] 코멘트 등록 성공: {path}:{line}")
+        print(f"[INFO] 코멘트 등록 성공")
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] 코멘트 등록 실패: {str(e)}")
         print(f"[ERROR] 상태 코드: {e.response.status_code if hasattr(e, 'response') else 'N/A'}")
@@ -130,27 +151,29 @@ def main():
             print(f"[ERROR] {filename} 파일의 patch 처리 실패: {str(e)}")
             continue
 
-        for line_number, code in added_lines:
-            print(f"[DEBUG] 코멘트 등록 시도 정보")
-            print(f"  파일: {filename}")
-            print(f"  patch 내 라인: {line_number}")
-            print(f"  코드: {code}")
-            
-            try:
-                comment = generate_comment_by_gpt(code)
-                print(f"  생성된 코멘트: {comment}")
+        if not added_lines:
+            print(f"[INFO] {filename} 파일에 추가된 라인이 없습니다.")
+            continue
 
-                if comment.startswith("GPT 호출 실패"):
-                    print(f"[WARN] GPT 호출 실패로 코멘트 등록 건너뜀: {comment}")
-                    continue
+        # 파일의 모든 변경사항을 하나의 문자열로 합치기
+        code_changes = "\n".join([f"Line {line_number}: {code}" for line_number, code in added_lines])
+        
+        try:
+            # 파일 전체에 대한 리뷰 생성
+            comment = generate_comment_by_gpt(code_changes)
+            print(f"  생성된 코멘트: {comment}")
 
-                post_inline_comment(REPO, PR_NUMBER, comment, filename, line_number, GITHUB_TOKEN)
-            except Exception as e:
-                print(f"[ERROR] 코멘트 처리 실패: {str(e)}")
-                print(f"  [ERROR 상세] 파일: {filename}")
-                print(f"  [ERROR 상세] 라인: {line_number}")
-                print(f"  [ERROR 상세] 코드: {code}")
-                print(f"  [ERROR 상세] 시도한 코멘트: {comment if 'comment' in locals() else 'N/A'}")
+            if comment.startswith("GPT 호출 실패"):
+                print(f"[WARN] GPT 호출 실패로 코멘트 등록 건너뜀: {comment}")
+                continue
+
+            # 파일 이름을 포함한 코멘트 생성
+            full_comment = f"## 파일: {filename}\n\n{comment}"
+            post_inline_comment(REPO, PR_NUMBER, full_comment, filename, 0, GITHUB_TOKEN)
+        except Exception as e:
+            print(f"[ERROR] 코멘트 처리 실패: {str(e)}")
+            print(f"  [ERROR 상세] 파일: {filename}")
+            print(f"  [ERROR 상세] 시도한 코멘트: {comment if 'comment' in locals() else 'N/A'}")
 
 def test():
     print("[INFO] 테스트 함수 시작")
