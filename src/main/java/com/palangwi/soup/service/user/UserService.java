@@ -4,14 +4,13 @@ import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.user.Gender;
+import com.palangwi.soup.domain.userlog.UserHistory;
 import com.palangwi.soup.dto.UserInfo;
-import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
-import com.palangwi.soup.dto.user.UserInitSettingResponseDto;
-import com.palangwi.soup.dto.user.UserResponseDto;
-import com.palangwi.soup.dto.user.UserUpdateRequestDto;
+import com.palangwi.soup.dto.user.*;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.exception.user.InvalidFormatNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
+import com.palangwi.soup.repository.UserHistoryRepository;
 import com.palangwi.soup.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -24,20 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserHistoryService userHistoryService;
 
     public User loginOAuth(UserInfo userInfo) {
-        Optional<User> userOpt = userRepository.findByUsername(userInfo.username());
+        Optional<User> userOpt = userRepository.findByEmail(userInfo.email());
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (user.isDeleted()) {
-                user.recover();
-            }
+
             return user;
         }
 
         User firstLoginUser = createFirstLoginUser(
-                userInfo.username(),
+                userInfo.email(),
                 userInfo.nickname(),
                 userInfo.providerId()
         );
@@ -52,6 +50,8 @@ public class UserService {
         Gender gender = Gender.valueOf(request.gender().toUpperCase());
 
         user.initializeAdditionalInfo(request.email(), gender, request.birthDate());
+
+        userHistoryService.saveCreateHistory(user);
 
         return UserInitSettingResponseDto.of(user);
     }
@@ -78,9 +78,11 @@ public class UserService {
         return !isNicknameDuplicate(nickname);
     }
 
-    public void deleteAccount(Long userId) {
+    public void deleteAccount(Long userId, UserDeleteRequestDto request) {
         User user = getUser(userId);
-        user.softDelete();
+
+        userHistoryService.saveDeleteHistory(user, request);
+        userRepository.delete(user);
     }
 
     @Transactional(readOnly = true)
@@ -96,7 +98,7 @@ public class UserService {
     }
 
     private User getUser(String username) {
-        return userRepository.findByUsernameAndDeletedFalse(username)
+        return userRepository.findByUsername(username)
                 .orElseThrow(UserNotFoundException::new);
     }
 
