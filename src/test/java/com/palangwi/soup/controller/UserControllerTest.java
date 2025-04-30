@@ -1,6 +1,7 @@
 package com.palangwi.soup.controller;
 
 import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
+import com.palangwi.soup.dto.user.UserDeleteRequestDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.security.WithMockJwtAuthentication;
 import com.palangwi.soup.service.user.UserService;
@@ -156,11 +157,18 @@ public class UserControllerTest extends ControllerTestSupport{
     @DisplayName("회원을 탈퇴 처리한다.")
     @WithMockJwtAuthentication(id = 1L)
     public void userDelete() throws Exception {
+        // given
+        UserDeleteRequestDto request = UserDeleteRequestDto.builder()
+                .reason("탈퇴 사유입니다")
+                .build();
+
         // when // then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/delete"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/delete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(userService).deleteAccount(1L);
+        verify(userService).deleteAccount(1L, request);
     }
 }
