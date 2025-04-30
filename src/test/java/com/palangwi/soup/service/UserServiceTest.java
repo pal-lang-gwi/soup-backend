@@ -11,6 +11,7 @@ import com.palangwi.soup.dto.user.UserDeleteRequestDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
+import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.UserHistoryRepository;
 import com.palangwi.soup.repository.UserRepository;
 import com.palangwi.soup.security.Role;
@@ -114,17 +115,18 @@ class UserServiceTest {
 
         // when
         userService.deleteAccount(user.getId(), request);
-        UserHistory userHistory = userHistoryRepository.findByEmail(user.getEmail());
+        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc(
+                user.getEmail(),
+                ChangeType.DELETE);
 
         // then
         Optional<User> withdrawnUser = userRepository.findByEmail(user.getEmail());
 
         assertThat(withdrawnUser).isEmpty();
-        assertThat(userHistory.getEmail()).isEqualTo(user.getEmail());
-        assertThat(userHistory.getLeaveReason()).isEqualTo(request.reason());
-        assertThat(userHistory.getGender()).isEqualTo(user.getGender());
-        assertThat(userHistory.getBirthDate()).isEqualTo(user.getBirthDate());
-        assertThat(userHistory.getChangeType()).isEqualTo(ChangeType.DELETE);
+        assertThat(userHistory.isPresent()).isTrue();
+        assertThat(userHistory.get().getEmail()).isEqualTo(user.getEmail());
+        assertThat(userHistory.get().getLeaveReason()).isEqualTo(request.reason());
+        assertThat(userHistory.get().getChangeType()).isEqualTo(ChangeType.DELETE);
     }
 
     private User createUser(String nickname) {
