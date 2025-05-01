@@ -81,6 +81,23 @@ def generate_comment_by_gpt(code_changes, filename, total_changes_count):
 ## 개선방안
 [구체적인 수정 방법 1-2개만 제시]"""
 
+    print(f"[INFO] GPT에 코드 리뷰 요청")
+    try:
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY가 설정되지 않았습니다.")
+        
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"[ERROR] GPT 호출 실패: {str(e)}")
+        print(f"[ERROR] API 키 설정 여부: {bool(OPENAI_API_KEY)}")
+        print(f"[ERROR] 요청 프롬프트: {prompt}")
+        return f"GPT 호출 실패: {str(e)}"
+
 def should_review_file(filename, changes):
     # 리뷰 제외할 파일들
     if any(filename.endswith(ext) for ext in ['.md', '.txt', '.log', '.gitignore']):
