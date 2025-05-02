@@ -3,7 +3,6 @@ name: Auto Code Review with GPT
 on:
   pull_request:
     types: [opened, synchronize]
-    branches: ["dev"]
 
 jobs:
   review:
