@@ -1,0 +1,272 @@
+name: Java CI/CD with Gradle
+
+on:
+  push:
+    branches: ["dev", "github/action/config"]
+  pull_request:
+    branches: ["dev", "github/action/config"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Create application.yml
+        run: |
+          mkdir -p ./src/main/resources
+          cat << EOF > ./src/main/resources/application.yml
+          spring:
+            application:
+              name: soup
+            profiles:
+              active: \${SPRING_PROFILES_ACTIVE:local}
+            datasource:
+              url: \${DB_URL}
+              username: \${DB_USERNAME}
+              password: \${DB_PASSWORD}
+            jpa:
+              hibernate:
+                ddl-auto: create
+              properties:
+                hibernate:
+                  default_batch_fetch_size: 100
+            data:
+              redis:
+                host: \${REDIS_HOST}
+                port: \${REDIS_PORT}
+            rabbitmq:
+              host: \${RABBITMQ_HOST}
+              port: \${RABBITMQ_PORT}
+              username: \${RABBITMQ_USERNAME}
+              password: \${RABBITMQ_PASSWORD}
+            security:
+              oauth2:
+                client:
+                  registration:
+                    google:
+                      client-id: \${GOOGLE_CLIENT_ID}
+                      client-secret: \${GOOGLE_CLIENT_SECRET}
+                      scope:
+                        - email
+                        - profile
+                    kakao:
+                      client-id: \${KAKAO_CLIENT_ID}
+                      client-secret: \${KAKAO_CLIENT_SECRET}
+                      client-authentication-method: client_secret_post
+                      redirect-uri: \${KAKAO_REDIRECT_URI}
+                      authorization-grant-type: authorization_code
+                      client-name: kakao
+                      scope:
+                        - profile_nickname
+                        - profile_image
+                        - account_email
+                  provider:
+                    kakao:
+                      authorization-uri: https://kauth.kakao.com/oauth/authorize
+                      token-uri: https://kauth.kakao.com/oauth/token
+                      user-info-uri: https://kapi.kakao.com/v2/user/me
+                      user-name-attribute: id
+
+          security:
+            jwt:
+              access-token:
+                ttl: \${JWT_ACCESS_TOKEN_TTL:3600}
+              refresh-token:
+                ttl: \${JWT_REFRESH_TOKEN_TTL:1209600}
+
+          jwt:
+            issuer: \${JWT_ISSUER}
+            client-secret: \${JWT_CLIENT_SECRET}
+
+          front:
+            domain: \${FRONT_DOMAIN}
+
+          logging:
+            level:
+              root: INFO
+              com.palangwi.soup: \${LOG_LEVEL:DEBUG}
+              org.springframework.security: \${SECURITY_LOG_LEVEL:DEBUG}
+              org.springframework.web: \${WEB_LOG_LEVEL:DEBUG}
+          EOF
+        env:
+          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+          JWT_REFRESH_TOKEN_TTL: ${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
+          FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        id: gradle-build
+        run: ./gradlew build -x test
+
+      - name: Notify Mattermost on CI Success
+        if: success() && steps.gradle-build.conclusion == 'success'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":white_check_mark: CI(Gradle 빌드) 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
+
+      - name: Notify Mattermost on CI Failure
+        if: failure() && steps.gradle-build.conclusion == 'failure'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":x: CI(Gradle 빌드) 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
+
+      - name: Build Docker image
+        run: docker build -t soup-backend .
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push to Docker Hub
+        run: |
+          docker tag soup-backend ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+
+      - name: Deploy to EC2
+        id: deploy-ec2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu
+
+            # Docker Compose 파일 업데이트
+            cat << EOF > docker-compose.yml
+            version: "3.8"
+
+            services:
+              mysql:
+                image: mysql:8.0
+                container_name: soup-mysql
+                environment:
+                  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+                  MYSQL_DATABASE: ${MYSQL_DATABASE}
+                  MYSQL_USER: ${MYSQL_USER}
+                  MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+                ports:
+                  - "3306:3306"
+                volumes:
+                  - mysql_data:/var/lib/mysql
+                command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+                restart: always
+
+              app:
+                image: ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+                container_name: soup-backend
+                depends_on:
+                  - mysql
+                ports:
+                  - "8080:8080"
+                environment:
+                  - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
+                  - DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+                  - DB_USERNAME=${MYSQL_USER}
+                  - DB_PASSWORD=${MYSQL_PASSWORD}
+                  - REDIS_HOST=${{ secrets.REDIS_HOST }}
+                  - REDIS_PORT=${{ secrets.REDIS_PORT }}
+                  - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+                  - RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+                  - RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+                  - RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+                  - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+                  - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+                  - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+                  - KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+                  - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+                  - JWT_ACCESS_TOKEN_TTL=${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+                  - JWT_REFRESH_TOKEN_TTL=${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+                  - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
+                  - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
+                  - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                restart: always
+
+            volumes:
+              mysql_data:
+            EOF
+
+            # .env 파일 업데이트
+            cat << EOF > .env
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            EOF
+
+            # Docker Compose 실행
+            sudo docker-compose down
+            sudo docker-compose pull
+            sudo docker-compose up -d
+
+      - name: Notify Mattermost on CD Success
+        if: success() && steps.deploy-ec2.conclusion == 'success'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":rocket: CD(EC2 배포) 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
+
+      - name: Notify Mattermost on CD Failure
+        if: failure() && steps.deploy-ec2.conclusion == 'failure'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":fire: CD(EC2 배포) 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
