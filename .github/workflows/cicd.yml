@@ -2,9 +2,9 @@ name: Java CI/CD with Gradle
 
 on:
   push:
-    branches: ["dev", "github/action/config"]
+    branches: ["dev", "fix/cicd-pipeline"]
   pull_request:
-    branches: ["dev", "github/action/config"]
+    branches: ["dev", "fix/cicd-pipeline"]
 
 permissions:
   contents: read
@@ -208,8 +208,8 @@ jobs:
                 environment:
                   - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
                   - DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-                  - DB_USERNAME=${MYSQL_USER}
-                  - DB_PASSWORD=${MYSQL_PASSWORD}
+                  - DB_USERNAME=${{ secrets.MYSQL_USER }}
+                  - DB_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
@@ -226,7 +226,6 @@ jobs:
                   - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
                   - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
-                restart: always
 
             volumes:
               mysql_data:
