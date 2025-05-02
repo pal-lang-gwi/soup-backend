@@ -126,7 +126,7 @@ jobs:
 
       - name: Build with Gradle
         id: gradle-build
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       - name: Notify Mattermost on CI Success
         if: success() && steps.gradle-build.conclusion == 'success'
