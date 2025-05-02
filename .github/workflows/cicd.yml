@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Java CI/CD with Gradle
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,7 +37,7 @@ jobs:
               password: \${DB_PASSWORD}
             jpa:
               hibernate:
-                ddl-auto: none
+                ddl-auto: create
               properties:
                 hibernate:
                   default_batch_fetch_size: 100
@@ -125,7 +125,34 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        id: gradle-build
+        run: ./gradlew build
+
+      - name: Notify Mattermost on CI Success
+        if: success() && steps.gradle-build.conclusion == 'success'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":white_check_mark: CI(Gradle 빌드) 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
+
+      - name: Notify Mattermost on CI Failure
+        if: failure() && steps.gradle-build.conclusion == 'failure'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":x: CI(Gradle 빌드) 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
 
       - name: Build Docker image
         run: docker build -t soup-backend .
@@ -141,8 +168,85 @@ jobs:
           docker tag soup-backend ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
 
-      - name: Notify Mattermost on CI Success
-        if: success()
+      - name: Deploy to EC2
+        id: deploy-ec2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu
+
+            # Docker Compose 파일 업데이트
+            cat << EOF > docker-compose.yml
+            version: "3.8"
+
+            services:
+              mysql:
+                image: mysql:8.0
+                container_name: soup-mysql
+                environment:
+                  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+                  MYSQL_DATABASE: ${MYSQL_DATABASE}
+                  MYSQL_USER: ${MYSQL_USER}
+                  MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+                ports:
+                  - "3306:3306"
+                volumes:
+                  - mysql_data:/var/lib/mysql
+                command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+                restart: always
+
+              app:
+                image: ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+                container_name: soup-backend
+                depends_on:
+                  - mysql
+                ports:
+                  - "8080:8080"
+                environment:
+                  - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
+                  - DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+                  - DB_USERNAME=${MYSQL_USER}
+                  - DB_PASSWORD=${MYSQL_PASSWORD}
+                  - REDIS_HOST=${{ secrets.REDIS_HOST }}
+                  - REDIS_PORT=${{ secrets.REDIS_PORT }}
+                  - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+                  - RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+                  - RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+                  - RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+                  - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+                  - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+                  - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+                  - KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+                  - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+                  - JWT_ACCESS_TOKEN_TTL=${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+                  - JWT_REFRESH_TOKEN_TTL=${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+                  - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
+                  - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
+                  - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                restart: always
+
+            volumes:
+              mysql_data:
+            EOF
+
+            # .env 파일 업데이트
+            cat << EOF > .env
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            EOF
+
+            # Docker Compose 실행
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d
+
+      - name: Notify Mattermost on CD Success
+        if: success() && steps.deploy-ec2.conclusion == 'success'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
@@ -151,11 +255,11 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "text": ":white_check_mark: CI 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}` by `${{ github.actor }}`"
+              "text": ":rocket: CD(EC2 배포) 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
-      - name: Notify Mattermost on CI Failure
-        if: failure()
+      - name: Notify Mattermost on CD Failure
+        if: failure() && steps.deploy-ec2.conclusion == 'failure'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
@@ -164,5 +268,5 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "text": ":x: CI 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}` by `${{ github.actor }}`"
+              "text": ":fire: CD(EC2 배포) 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
