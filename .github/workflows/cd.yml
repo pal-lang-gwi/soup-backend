@@ -1,16 +1,14 @@
-name: Java CI/CD with Gradle
+name: Java CD with Docker
 
 on:
   push:
-    branches: ["dev", "github/action/config"]
-  pull_request:
-    branches: ["dev", "github/action/config"]
+    branches: ["dev"]
 
 permissions:
   contents: read
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -128,7 +126,7 @@ jobs:
         id: gradle-build
         run: ./gradlew build -x test
 
-      - name: Notify Mattermost on CI Success
+      - name: Notify Mattermost on Build Success
         if: success() && steps.gradle-build.conclusion == 'success'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
@@ -138,10 +136,10 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "text": ":white_check_mark: CI(Gradle 빌드) 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "text": ":white_check_mark: 빌드 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
-      - name: Notify Mattermost on CI Failure
+      - name: Notify Mattermost on Build Failure
         if: failure() && steps.gradle-build.conclusion == 'failure'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
@@ -151,7 +149,7 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "text": ":x: CI(Gradle 빌드) 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "text": ":x: 빌드 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
       - name: Build Docker image
@@ -208,8 +206,8 @@ jobs:
                 environment:
                   - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
                   - DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-                  - DB_USERNAME=${MYSQL_USER}
-                  - DB_PASSWORD=${MYSQL_PASSWORD}
+                  - DB_USERNAME=${{ secrets.MYSQL_USER }}
+                  - DB_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
@@ -226,7 +224,6 @@ jobs:
                   - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
                   - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
-                restart: always
 
             volumes:
               mysql_data:
@@ -245,7 +242,7 @@ jobs:
             sudo docker-compose pull
             sudo docker-compose up -d
 
-      - name: Notify Mattermost on CD Success
+      - name: Notify Mattermost on Deploy Success
         if: success() && steps.deploy-ec2.conclusion == 'success'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
@@ -255,10 +252,10 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "text": ":rocket: CD(EC2 배포) 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "text": ":rocket: 배포 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
-      - name: Notify Mattermost on CD Failure
+      - name: Notify Mattermost on Deploy Failure
         if: failure() && steps.deploy-ec2.conclusion == 'failure'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
@@ -268,5 +265,5 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "text": ":fire: CD(EC2 배포) 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "text": ":fire: 배포 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
