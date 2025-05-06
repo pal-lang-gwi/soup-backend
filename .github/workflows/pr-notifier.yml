@@ -58,8 +58,7 @@ jobs:
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           method: 'POST'
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "text": ":speech_balloon: New comment on PR *${{ github.event.issue.title }}* by `${{ github.actor }}`\n<${{ github.event.comment.html_url }}|View Comment>"
