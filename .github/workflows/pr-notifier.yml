@@ -19,8 +19,7 @@ jobs:
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           method: 'POST'
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "text": ":bell: New PR *${{ github.event.pull_request.title }}* by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
@@ -32,8 +31,7 @@ jobs:
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           method: 'POST'
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "text": ":eyes: PR *${{ github.event.pull_request.title }}* was ${{ github.event.review.state }} by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
@@ -45,8 +43,7 @@ jobs:
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           method: 'POST'
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "text": ":white_check_mark: PR *${{ github.event.pull_request.title }}* was merged by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
@@ -70,8 +67,7 @@ jobs:
         with:
           url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
           method: 'POST'
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "text": ":speech_balloon: New review comment on PR *${{ github.event.pull_request.title }}* by `${{ github.actor }}`\n<${{ github.event.comment.html_url }}|View Comment>"
