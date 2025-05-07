@@ -3,16 +3,6 @@ package com.palangwi.soup.service.keyword;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.Gender;
@@ -25,8 +15,18 @@ import com.palangwi.soup.repository.KeywordRepository;
 import com.palangwi.soup.repository.UserKeywordRepository;
 import com.palangwi.soup.repository.UserRepository;
 import com.palangwi.soup.security.Role;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
+@Transactional
 class KeywordServiceTest {
 
     @Autowired
@@ -40,13 +40,6 @@ class KeywordServiceTest {
 
     @Autowired
     private UserKeywordRepository userKeywordRepository;
-
-    @AfterEach
-    void tearDown() {
-        userKeywordRepository.deleteAll();
-        keywordRepository.deleteAll();
-        userRepository.deleteAll();
-    }
 
     private User createUser() {
         return userRepository.save(
