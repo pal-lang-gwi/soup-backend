@@ -72,8 +72,9 @@ public class KeywordServiceImpl implements KeywordService {
                 .collect(Collectors.toSet());
 
         List<Keyword> newKeywords = keywords.stream()
-                .filter(name -> !existingKeywordNames.contains(name))
-                .map(name -> Keyword.of(name, name.toLowerCase(), Source.USER_REQUEST))
+                .filter(name -> !existingKeywordNames.contains(name.toLowerCase()))
+                // TODO : Keyword의 nomalizedName을 어떻게 설정할지 논의 필요
+                .map(name -> Keyword.of(name.toLowerCase(), name, Source.USER_REQUEST))
                 .toList();
         keywordRepository.saveAll(newKeywords);
 

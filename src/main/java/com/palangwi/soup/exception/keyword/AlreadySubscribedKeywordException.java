@@ -7,16 +7,16 @@ import org.springframework.http.HttpStatus;
 import com.palangwi.soup.exception.BaseCustomException;
 
 public class AlreadySubscribedKeywordException extends BaseCustomException {
-    private final List<String> alreadySubscribedNames;
+    private final List<String> alreadySubscribedKeywords;
 
-    public AlreadySubscribedKeywordException(List<String> alreadySubscribedNames) {
-        this.alreadySubscribedNames = alreadySubscribedNames;
+    public AlreadySubscribedKeywordException(List<String> alreadySubscribedKeywords) {
+        this.alreadySubscribedKeywords = alreadySubscribedKeywords;
     }
 
     @Override
     public String getMessage() {
         return KeywordExceptionMessage.ALREADY_SUBSCRIBED_KEYWORD.getMessage() + ": "
-                + String.join(", ", alreadySubscribedNames);
+                + String.join(", ", alreadySubscribedKeywords);
     }
 
     @Override
