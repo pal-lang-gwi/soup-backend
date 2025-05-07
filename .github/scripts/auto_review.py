@@ -61,9 +61,27 @@ def extract_added_lines(patch):
         print(f"[ERROR] patch 내용: {patch[:200]}...")  # 처음 200자만 출력
         raise
 
-def generate_comment_by_gpt(code_line):
-    prompt = f"다음 코드 한 줄에 대해 리뷰어처럼 개선할 점이나 칭찬할 점을 짧게 작성해줘.\n\n코드:\n{code_line}"
-    print(f"[INFO] GPT에 코드 리뷰 요청: {code_line[:30]}...")
+def generate_comment_by_gpt(code_changes, filename, total_changes_count):
+    prompt = f"""다음 PR의 '{filename}' 파일 변경사항({total_changes_count}줄)을 검토해주세요.
+
+변경사항:
+{code_changes}
+
+다음 우선순위로 400자 이내의 간단한 리뷰를 작성해주세요:
+
+1. 치명적인 버그나 보안 이슈 (있는 경우 최우선 언급)
+2. 성능 문제 (비효율적인 로직, 메모리 누수 등)
+3. 에러 처리 미흡
+4. 재사용성/유지보수성 문제
+
+리뷰 형식:
+## 주요 이슈
+[발견된 치명적/중요 문제만 기술]
+
+## 개선방안
+[구체적인 수정 방법 1-2개만 제시]"""
+
+    print(f"[INFO] GPT에 코드 리뷰 요청")
     try:
         if not OPENAI_API_KEY:
             raise ValueError("OPENAI_API_KEY가 설정되지 않았습니다.")
@@ -80,20 +98,49 @@ def generate_comment_by_gpt(code_line):
         print(f"[ERROR] 요청 프롬프트: {prompt}")
         return f"GPT 호출 실패: {str(e)}"
 
+def should_review_file(filename, changes):
+    # 리뷰 제외할 파일들
+    if any(filename.endswith(ext) for ext in ['.md', '.txt', '.log', '.gitignore']):
+        return False
+    return True
+
+def get_review_strategy(changes_count):
+    if changes_count > 500:
+        return "주요 로직 변경과 아키텍처 영향도만 검토"
+    elif changes_count > 200:
+        return "중요 함수 수준의 변경사항 검토"
+    else:
+        return "모든 변경사항 상세 검토"
+
+def get_previous_reviews(repo, pr_number, github_token):
+    url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
+    headers = {"Authorization": f"token {github_token}"}
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"[ERROR] 이전 리뷰 조회 실패: {str(e)}")
+        return []
+
+def avoid_duplicate_comments(new_comment, previous_reviews):
+    # 간단한 중복 체크 (유사도 검사는 생략)
+    for review in previous_reviews:
+        if review['body'] == new_comment:
+            return True
+    return False
+
 def post_inline_comment(repo, pr_number, body, path, line, github_token):
-    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/comments"
+    url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
     headers = {"Authorization": f"token {github_token}"}
     payload = {
-        "body": body,
-        "path": path,
-        "side": "RIGHT",
-        "line": line
+        "body": body
     }
-    print(f"[INFO] PR 인라인 코멘트 등록 시도: {path}:{line}")
+    print(f"[INFO] PR 코멘트 등록 시도")
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        print(f"[INFO] 코멘트 등록 성공: {path}:{line}")
+        print(f"[INFO] 코멘트 등록 성공")
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] 코멘트 등록 실패: {str(e)}")
         print(f"[ERROR] 상태 코드: {e.response.status_code if hasattr(e, 'response') else 'N/A'}")
@@ -112,45 +159,44 @@ def main():
 
     try:
         pr_files = get_pr_files(REPO, PR_NUMBER, GITHUB_TOKEN)
+        previous_reviews = get_previous_reviews(REPO, PR_NUMBER, GITHUB_TOKEN)
     except Exception as e:
-        print(f"[ERROR] PR 파일 목록 조회 실패: {str(e)}")
+        print(f"[ERROR] 초기 데이터 조회 실패: {str(e)}")
         return
 
     for file in pr_files:
         filename = file.get("filename")
         patch = file.get("patch")
-        print(f"[INFO] 파일 처리 시작: {filename}")
-        print(f"[DEBUG] patch 존재 여부: {'있음' if patch else '없음'}")
-        if patch:
-            print(f"[DEBUG] patch 일부: {patch[:300]}")
+        changes_count = len(patch.split('\n')) if patch else 0
 
-        try:
-            added_lines = extract_added_lines(patch)
-        except Exception as e:
-            print(f"[ERROR] {filename} 파일의 patch 처리 실패: {str(e)}")
+        if not should_review_file(filename, changes_count):
+            print(f"[INFO] 리뷰 제외 파일: {filename}")
             continue
 
-        for line_number, code in added_lines:
-            print(f"[DEBUG] 코멘트 등록 시도 정보")
-            print(f"  파일: {filename}")
-            print(f"  patch 내 라인: {line_number}")
-            print(f"  코드: {code}")
+        print(f"[INFO] 파일 처리 시작: {filename} (변경: {changes_count}줄)")
+        
+        try:
+            added_lines = extract_added_lines(patch)
+            if not added_lines:
+                continue
+
+            code_changes = "\n".join([f"Line {line_number}: {code}" for line_number, code in added_lines])
+            review_strategy = get_review_strategy(changes_count)
             
-            try:
-                comment = generate_comment_by_gpt(code)
-                print(f"  생성된 코멘트: {comment}")
+            comment = generate_comment_by_gpt(code_changes, filename, changes_count)
+            
+            if comment.startswith("GPT 호출 실패"):
+                continue
 
-                if comment.startswith("GPT 호출 실패"):
-                    print(f"[WARN] GPT 호출 실패로 코멘트 등록 건너뜀: {comment}")
-                    continue
+            if not avoid_duplicate_comments(comment, previous_reviews):
+                full_comment = f"## 파일: {filename}\n\n{comment}"
+                post_inline_comment(REPO, PR_NUMBER, full_comment, filename, 0, GITHUB_TOKEN)
+            else:
+                print(f"[INFO] 중복 리뷰 제외: {filename}")
 
-                post_inline_comment(REPO, PR_NUMBER, comment, filename, line_number, GITHUB_TOKEN)
-            except Exception as e:
-                print(f"[ERROR] 코멘트 처리 실패: {str(e)}")
-                print(f"  [ERROR 상세] 파일: {filename}")
-                print(f"  [ERROR 상세] 라인: {line_number}")
-                print(f"  [ERROR 상세] 코드: {code}")
-                print(f"  [ERROR 상세] 시도한 코멘트: {comment if 'comment' in locals() else 'N/A'}")
+        except Exception as e:
+            print(f"[ERROR] {filename} 처리 실패: {str(e)}")
+            continue
 
 def test():
     print("[INFO] 테스트 함수 시작")
@@ -176,4 +222,4 @@ def test():
 if __name__ == "__main__":
     print("[INFO] 프로그램 실행 시작")
     main()
-    test()
+    # test()
