@@ -90,6 +90,16 @@ def post_inline_review_comment(repo, pr_number, commit_id, path, line, body, git
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
+def get_file_comments(repo, pr_number, path, github_token):
+    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/comments"
+    headers = {"Authorization": f"token {github_token}"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    
+    # 특정 파일의 코멘트만 필터링
+    file_comments = [comment for comment in response.json() if comment['path'] == path]
+    return len(file_comments)
+
 def main():
     pr_files = get_pr_files(REPO, PR_NUMBER, GITHUB_TOKEN)
     commit_sha = get_pr_commit_sha(REPO, PR_NUMBER, GITHUB_TOKEN)
@@ -97,6 +107,13 @@ def main():
     for file in pr_files:
         filename = file["filename"]
         patch = file.get("patch")
+        
+        # 이미 코멘트가 있는 파일은 스킵
+        comment_count = get_file_comments(REPO, PR_NUMBER, filename, GITHUB_TOKEN)
+        if comment_count > 0:
+            print(f"[SKIP] {filename} already has {comment_count} comments")
+            continue
+
         if not patch or filename.endswith(('.md', '.txt', '.log', '.gitignore')):
             continue
 
@@ -113,6 +130,7 @@ def main():
             # 첫 번째 변경된 라인에 리뷰 달기
             first_line = added_lines[0][0]
             post_inline_review_comment(REPO, PR_NUMBER, commit_sha, filename, first_line, comment, GITHUB_TOKEN)
+            print(f"[SUCCESS] Added review to {filename}")
         except Exception as e:
             print(f"[ERROR] Failed to comment on {filename}: {e}")
 
