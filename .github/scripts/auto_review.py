@@ -53,7 +53,20 @@ def extract_added_lines(patch):
     return added_lines
 
 def generate_gpt_comment(code_snippet):
-    prompt = f"다음 코드에 대해 리뷰를 작성해주세요 (400자 이내):\n\n{code_snippet}\n\n포맷:\n## 이슈\n- 문제 설명\n## 제안\n- 개선 방법"
+    prompt = f"""다음 코드 변경사항에 대해 리뷰를 작성해주세요 (400자 이내):
+
+{code_snippet}
+
+다음 형식으로 작성해주세요:
+## 주요 변경사항
+- 변경된 내용 요약
+
+## 이슈
+- 발견된 문제점들
+
+## 제안
+- 개선 방안"""
+    
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -88,12 +101,20 @@ def main():
             continue
 
         added_lines = extract_added_lines(patch)
-        for line_num, code_line in added_lines:
-            try:
-                comment = generate_gpt_comment(code_line)
-                post_inline_review_comment(REPO, PR_NUMBER, commit_sha, filename, line_num, comment, GITHUB_TOKEN)
-            except Exception as e:
-                print(f"[ERROR] Failed to comment on {filename} line {line_num}: {e}")
+        if not added_lines:
+            continue
+
+        # 파일의 모든 변경사항을 하나의 문자열로 모음
+        file_changes = "\n".join([f"Line {line_num}: {code}" for line_num, code in added_lines])
+        
+        try:
+            # 파일 전체에 대한 하나의 리뷰 생성
+            comment = generate_gpt_comment(file_changes)
+            # 첫 번째 변경된 라인에 리뷰 달기
+            first_line = added_lines[0][0]
+            post_inline_review_comment(REPO, PR_NUMBER, commit_sha, filename, first_line, comment, GITHUB_TOKEN)
+        except Exception as e:
+            print(f"[ERROR] Failed to comment on {filename}: {e}")
 
 if __name__ == "__main__":
     main()
