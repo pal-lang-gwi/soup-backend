@@ -2,19 +2,99 @@ name: Java CD with Docker
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["develop"]
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
 
+      - name: Check Required Environment Variables
+        env:
+          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+          JWT_REFRESH_TOKEN_TTL: ${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
+          FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+        run: |
+          required_vars=(
+            "SPRING_PROFILES_ACTIVE"
+            "DB_URL"
+            "DB_USERNAME"
+            "DB_PASSWORD"
+            "REDIS_HOST"
+            "REDIS_PORT"
+            "RABBITMQ_HOST"
+            "RABBITMQ_PORT"
+            "RABBITMQ_USERNAME"
+            "RABBITMQ_PASSWORD"
+            "GOOGLE_CLIENT_ID"
+            "GOOGLE_CLIENT_SECRET"
+            "KAKAO_CLIENT_ID"
+            "KAKAO_CLIENT_SECRET"
+            "KAKAO_REDIRECT_URI"
+            "JWT_ISSUER"
+            "JWT_CLIENT_SECRET"
+            "FRONT_DOMAIN"
+            "DOCKER_HUB_USERNAME"
+            "DOCKER_HUB_TOKEN"
+            "EC2_HOST"
+            "EC2_USERNAME"
+            "EC2_SSH_KEY"
+            "MYSQL_ROOT_PASSWORD"
+            "MYSQL_DATABASE"
+            "MYSQL_USER"
+            "MYSQL_PASSWORD"
+            "MATTERMOST_WEBHOOK_URL"
+          )
+
+          missing_vars=()
+          for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+              missing_vars+=("$var")
+            fi
+          done
+
+          if [ ${#missing_vars[@]} -ne 0 ]; then
+            echo "::error::Missing required environment variables: ${missing_vars[*]}"
+            exit 1
+          fi
+
+          echo "All required environment variables are set"
+
       - name: Set up JDK 21
+
         uses: actions/setup-java@v3
         with:
           java-version: "21"
