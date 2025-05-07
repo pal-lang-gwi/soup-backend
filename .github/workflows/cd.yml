@@ -264,8 +264,8 @@ jobs:
                 environment:
                   - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
                   - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-                  - DB_USERNAME=root
-                  - DB_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
