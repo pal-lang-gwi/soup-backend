@@ -39,6 +39,10 @@ dependencies {
     // 📨 Java Mail-Sender
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // thymeLeaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
     // 🧪 테스트 관련
     testImplementation 'org.springframework.boot:spring-boot-starter-test'        // 통합 테스트
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'      // Testcontainers 연동

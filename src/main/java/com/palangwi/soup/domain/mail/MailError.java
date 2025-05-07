@@ -24,4 +24,11 @@ public class MailError extends BaseEntity {
 
     @Column(nullable = false)
     private String message;
+
+    public static MailError of(String code, String reason) {
+        MailError error = new MailError();
+        error.code = code;
+        error.message = reason;
+        return error;
+    }
 }
