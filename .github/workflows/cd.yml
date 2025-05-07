@@ -240,6 +240,14 @@ jobs:
             cat << EOF > docker-compose.yml
             version: "3.8"
 
+            networks:
+              soup-network:
+                name: soup-network
+                driver: bridge
+
+            volumes:
+              mysql_data:
+
             services:
               mysql:
                 image: mysql:8.0
@@ -251,14 +259,27 @@ jobs:
                   - "3306:3306"
                 volumes:
                   - mysql_data:/var/lib/mysql
-                command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+                command: >
+                  --character-set-server=utf8mb4
+                  --collation-server=utf8mb4_unicode_ci
+                  --default-authentication-plugin=caching_sha2_password
+                  --skip-character-set-client-handshake
                 restart: always
+                networks:
+                  - soup-network
+                healthcheck:
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psoup1234"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 20
+                  start_period: 30s
 
               app:
                 image: ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
                 container_name: soup-backend
                 depends_on:
-                  - mysql
+                  mysql:
+                    condition: service_healthy
                 ports:
                   - "8080:8080"
                 environment:
@@ -282,14 +303,13 @@ jobs:
                   - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
                   - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                networks:
+                  - soup-network
 
-            volumes:
-              mysql_data:
             EOF
 
             # Docker Compose 실행
-            sudo docker-compose down
-            sudo docker-compose pull
+            sudo docker-compose down -v
             sudo docker-compose up -d
 
       # 헬스 체크 추가
@@ -298,7 +318,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -s -f "http://${{ secrets.EC2_HOST }}:8080/actuator/health" > /dev/null; then
+            if curl -s -f "http://${{ secrets.EC2_HOST }}:8080/health" > /dev/null; then
               echo "Application is healthy!"
               exit 0
             fi
