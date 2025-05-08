@@ -2,19 +2,100 @@ name: Java CD with Docker
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["develop"]
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
+
+    env:
+      SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+      RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+      KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+      KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+      JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+      JWT_REFRESH_TOKEN_TTL: ${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+      JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
+      FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
 
     steps:
       - uses: actions/checkout@v3
 
+      - name: Check Required Environment Variables
+        run: |
+          required_vars=(
+            "SPRING_PROFILES_ACTIVE"
+            "DB_URL"
+            "DB_USERNAME"
+            "DB_PASSWORD"
+            "REDIS_HOST"
+            "REDIS_PORT"
+            "RABBITMQ_HOST"
+            "RABBITMQ_PORT"
+            "RABBITMQ_USERNAME"
+            "RABBITMQ_PASSWORD"
+            "GOOGLE_CLIENT_ID"
+            "GOOGLE_CLIENT_SECRET"
+            "KAKAO_CLIENT_ID"
+            "KAKAO_CLIENT_SECRET"
+            "KAKAO_REDIRECT_URI"
+            "JWT_ISSUER"
+            "JWT_CLIENT_SECRET"
+            "FRONT_DOMAIN"
+            "DOCKER_HUB_USERNAME"
+            "DOCKER_HUB_TOKEN"
+            "EC2_HOST"
+            "EC2_USERNAME"
+            "EC2_SSH_KEY"
+            "MYSQL_ROOT_PASSWORD"
+            "MYSQL_DATABASE"
+            "MYSQL_USER"
+            "MYSQL_PASSWORD"
+            "MATTERMOST_WEBHOOK_URL"
+          )
+
+          missing_vars=()
+          for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+              missing_vars+=("$var")
+            fi
+          done
+
+          if [ ${#missing_vars[@]} -ne 0 ]; then
+            echo "::error::Missing required environment variables: ${missing_vars[*]}"
+            exit 1
+          fi
+
+          echo "All required environment variables are set"
+
       - name: Set up JDK 21
+
         uses: actions/setup-java@v3
         with:
           java-version: "21"
@@ -97,27 +178,6 @@ jobs:
               org.springframework.security: \${SECURITY_LOG_LEVEL:DEBUG}
               org.springframework.web: \${WEB_LOG_LEVEL:DEBUG}
           EOF
-        env:
-          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
-          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
-          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
-          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
-          JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
-          JWT_REFRESH_TOKEN_TTL: ${{ secrets.JWT_REFRESH_TOKEN_TTL }}
-          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
-          JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
-          FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -180,34 +240,53 @@ jobs:
             cat << EOF > docker-compose.yml
             version: "3.8"
 
+            networks:
+              soup-network:
+                name: soup-network
+                driver: bridge
+
+            volumes:
+              mysql_data:
+
             services:
               mysql:
                 image: mysql:8.0
                 container_name: soup-mysql
                 environment:
-                  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-                  MYSQL_DATABASE: ${MYSQL_DATABASE}
-                  MYSQL_USER: ${MYSQL_USER}
-                  MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+                  MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+                  MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
                 ports:
                   - "3306:3306"
                 volumes:
                   - mysql_data:/var/lib/mysql
-                command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+                command: >
+                  --character-set-server=utf8mb4
+                  --collation-server=utf8mb4_unicode_ci
+                  --default-authentication-plugin=caching_sha2_password
+                  --skip-character-set-client-handshake
                 restart: always
+                networks:
+                  - soup-network
+                healthcheck:
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psoup1234"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 20
+                  start_period: 30s
 
               app:
                 image: ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
                 container_name: soup-backend
                 depends_on:
-                  - mysql
+                  mysql:
+                    condition: service_healthy
                 ports:
                   - "8080:8080"
                 environment:
                   - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
-                  - DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-                  - DB_USERNAME=${{ secrets.MYSQL_USER }}
-                  - DB_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+                  - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
@@ -224,23 +303,56 @@ jobs:
                   - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
                   - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                networks:
+                  - soup-network
 
-            volumes:
-              mysql_data:
-            EOF
-
-            # .env 파일 업데이트
-            cat << EOF > .env
-            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
-            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-            MYSQL_USER=${{ secrets.MYSQL_USER }}
-            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
             EOF
 
             # Docker Compose 실행
-            sudo docker-compose down
-            sudo docker-compose pull
+            sudo docker-compose down -v
             sudo docker-compose up -d
+
+      # 헬스 체크 추가
+      - name: Health Check
+        id: health-check
+        run: |
+          echo "Waiting for application to start..."
+          for i in {1..30}; do
+            if curl -s -f "http://${{ secrets.EC2_HOST }}:8080/health" > /dev/null; then
+              echo "Application is healthy!"
+              exit 0
+            fi
+            echo "Attempt $i: Application not ready yet..."
+            sleep 10
+          done
+          echo "Health check failed after 30 attempts"
+          exit 1
+
+      - name: Notify Mattermost on Health Check Success
+        if: success() && steps.health-check.conclusion == 'success'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":green_heart: 헬스 체크 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
+
+      - name: Notify Mattermost on Health Check Failure
+        if: failure() && steps.health-check.conclusion == 'failure'
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":broken_heart: 헬스 체크 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+            }
 
       - name: Notify Mattermost on Deploy Success
         if: success() && steps.deploy-ec2.conclusion == 'success'
