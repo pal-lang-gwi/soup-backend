@@ -15,12 +15,11 @@ import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
 import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
-import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
-import com.palangwi.soup.repository.KeywordRepository;
-import com.palangwi.soup.repository.UserKeywordRepository;
-import com.palangwi.soup.repository.UserRepository;
+import com.palangwi.soup.repository.keyword.KeywordRepository;
+import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
+import com.palangwi.soup.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.user;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

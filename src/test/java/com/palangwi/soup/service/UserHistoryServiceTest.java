@@ -4,7 +4,7 @@ import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userlog.ChangeType;
 import com.palangwi.soup.domain.userlog.UserHistory;
-import com.palangwi.soup.repository.UserHistoryRepository;
+import com.palangwi.soup.repository.user.UserHistoryRepository;
 import com.palangwi.soup.security.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

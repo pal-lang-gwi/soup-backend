@@ -1,4 +1,4 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.userkeyword;
 
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import java.util.List;

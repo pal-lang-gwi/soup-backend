@@ -1,4 +1,4 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.user;
 
 import com.palangwi.soup.domain.user.User;
 import java.util.Optional;

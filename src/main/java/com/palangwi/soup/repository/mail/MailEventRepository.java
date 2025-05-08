@@ -1,4 +1,4 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.mail;
 
 import com.palangwi.soup.domain.mail.MailEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
