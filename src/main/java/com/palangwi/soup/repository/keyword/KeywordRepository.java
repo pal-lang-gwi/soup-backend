@@ -1,4 +1,4 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.keyword;
 
 import java.util.List;
 import java.util.Optional;
