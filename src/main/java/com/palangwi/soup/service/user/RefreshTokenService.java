@@ -1,7 +1,7 @@
 package com.palangwi.soup.service.user;
 
 import com.palangwi.soup.exception.user.InvalidRefreshTokenException;
-import com.palangwi.soup.repository.RefreshTokenRedisRepository;
+import com.palangwi.soup.repository.user.RefreshTokenRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
