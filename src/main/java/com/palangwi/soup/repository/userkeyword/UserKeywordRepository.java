@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> {
 
-    @Query("SELECT uk FROM UserKeyword uk JOIN uk.user u WHERE uk.subscribed = true")
+    @Query("SELECT uk FROM UserKeyword uk JOIN FETCH uk.user JOIN FETCH uk.keyword WHERE uk.subscribed = true")
     List<UserKeyword> findAllSubscribedUserKeywords();
 }

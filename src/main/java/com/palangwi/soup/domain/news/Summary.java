@@ -9,4 +9,9 @@ import lombok.NoArgsConstructor;
 public class Summary {
     private String shortSummary;
     private String longSummary;
+
+    public Summary(String shortSummary, String longSummary) {
+        this.shortSummary = shortSummary;
+        this.longSummary = longSummary;
+    }
 }

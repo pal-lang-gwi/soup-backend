@@ -1,24 +1,37 @@
 package com.palangwi.soup.service.news;
 
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.repository.keyword.KeywordRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palangwi.soup.domain.news.News;
+import com.palangwi.soup.dto.news.NewsResult;
+import com.palangwi.soup.repository.news.NewsRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NewsService {
 
     private final NewsRepository newsRepository;
-    private final KeywordRepository keywordRepository;
+    private final OpenAIService openAIService;
+    private final ObjectMapper objectMapper;
 
-    public void collectNews() {
-        List<Keyword> keywords = keywordRepository.findAll();
+    public void collectAndSaveNews(String keyword) {
+        openAIService.searchAndSummarizeAsync(keyword)
+                .thenAccept(responseText -> {
+                    try {
+                        NewsResult result = objectMapper.readValue(responseText, NewsResult.class);
 
-        for (Keyword keyword : keywords) {
-
-        }
+                        News news = new News(keyword, result.summary(), result.articles());
+                        newsRepository.save(news);
+                    } catch (Exception e) {
+                        log.error("❌ 뉴스 파싱 실패 - {}", keyword, e);
+                    }
+                })
+                .exceptionally(ex -> {
+                    log.error("❌ OpenAI 응답 실패 - {}", keyword, ex);
+                    return null;
+                });
     }
 }
