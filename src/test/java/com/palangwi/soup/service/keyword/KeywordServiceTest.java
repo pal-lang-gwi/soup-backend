@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,12 @@ class KeywordServiceTest {
 
     @Autowired
     private UserKeywordRepository userKeywordRepository;
+
+    @BeforeEach
+    void setUp() {
+        keywordRepository.deleteAll();
+        userRepository.deleteAll();
+    }
 
     private User createUser() {
         return userRepository.save(

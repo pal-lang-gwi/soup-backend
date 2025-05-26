@@ -1,6 +1,7 @@
 package com.palangwi.soup.domain.news;
 
-import jakarta.persistence.Id;
+import com.palangwi.soup.domain.BaseEntity;
+import org.springframework.data.annotation.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.List;
 @Document(collection = "news")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class News {
+public class News extends BaseEntity {
 
     @Id
     private ObjectId id;
@@ -22,4 +23,10 @@ public class News {
     private Summary summary;
 
     private List<Article> articles;
+
+    public News(String keyword, Summary summary, List<Article> articles) {
+        this.keyword = keyword;
+        this.summary = summary;
+        this.articles = articles;
+    }
 }

@@ -5,19 +5,24 @@ import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userlog.ChangeType;
 import com.palangwi.soup.domain.userlog.UserHistory;
 import com.palangwi.soup.repository.user.UserHistoryRepository;
+import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DataJpaTest
+@SpringBootTest
 class UserHistoryServiceTest {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private UserHistoryRepository userHistoryRepository;
@@ -73,7 +78,7 @@ class UserHistoryServiceTest {
     }
 
     private User createUser(String nickname) {
-        return User.builder()
+        User user = User.builder()
                 .email(TEST_EMAIL)
                 .username("테스트")
                 .nickname(nickname)
@@ -83,5 +88,6 @@ class UserHistoryServiceTest {
                 .providerId("구글")
                 .profileImageUrl("https://sample-image.png")
                 .build();
+        return userRepository.save(user);
     }
 }
