@@ -2,6 +2,7 @@ package com.palangwi.soup.repository;
 
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
