@@ -11,14 +11,14 @@ import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
-import com.palangwi.soup.repository.KeywordRepository;
-import com.palangwi.soup.repository.UserKeywordRepository;
-import com.palangwi.soup.repository.UserRepository;
+import com.palangwi.soup.repository.keyword.KeywordRepository;
+import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
+import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

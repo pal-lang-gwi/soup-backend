@@ -4,14 +4,12 @@ import static com.palangwi.soup.domain.user.User.createFirstLoginUser;
 
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.user.Gender;
-import com.palangwi.soup.domain.userlog.UserHistory;
 import com.palangwi.soup.dto.UserInfo;
 import com.palangwi.soup.dto.user.*;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.exception.user.InvalidFormatNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
-import com.palangwi.soup.repository.UserHistoryRepository;
-import com.palangwi.soup.repository.UserRepository;
+import com.palangwi.soup.repository.user.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
