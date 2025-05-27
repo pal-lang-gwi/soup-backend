@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -19,7 +21,7 @@ public class NewsSelectionPolicy {
      */
     private final NewsRepository newsRepository;
 
-    public List<Summary> select (List<String> keywords) {
+    public Map<String, Summary> select (List<String> keywords) {
         LocalDate today = LocalDate.now();
         LocalDateTime from = today.atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -27,7 +29,10 @@ public class NewsSelectionPolicy {
         List<News> newsList = newsRepository.findByCreatedDateBetweenAndKeywordIn(from, to, keywords);
 
         return newsList.stream()
-                .map(News::getSummary)
-                .toList();
+                .collect(Collectors.toMap(
+                        News::getKeyword,
+                        News::getSummary,
+                        (existing, replacement) ->existing
+                ));
     }
 }

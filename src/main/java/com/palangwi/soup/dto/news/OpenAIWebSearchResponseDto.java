@@ -1,35 +1,28 @@
 package com.palangwi.soup.dto.news;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record OpenAIWebSearchResponseDto(
-        List<Output> output
+        List<Output> output,
+        Usage usage
 ) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record Output(
-            String id,
             String type,
-            String status
-    ) {}
-
-    public record MessageOutput(
-            String id,
-            String type,
-            String status,
-            String role,
             List<Content> content
     ) {}
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record Content(
             String type,
-            String text,
-            List<Annotation> annotations
+            String text
     ) {}
 
-    public record Annotation(
-            String type,
-            int start_index,
-            int end_index,
-            String url,
-            String title
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Usage(
+            int total_tokens
     ) {}
 }

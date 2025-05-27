@@ -19,11 +19,9 @@ public class NewsService {
 
     public void collectAndSaveNews(String keyword) {
         openAIService.searchAndSummarizeAsync(keyword)
-                .thenAccept(responseText -> {
+                .thenAccept(result -> {
                     try {
-                        NewsResult result = objectMapper.readValue(responseText, NewsResult.class);
-
-                        News news = new News(keyword, result.summary(), result.articles());
+                        News news = result.toNews();
                         newsRepository.save(news);
                     } catch (Exception e) {
                         log.error("❌ 뉴스 파싱 실패 - {}", keyword, e);

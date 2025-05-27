@@ -2,6 +2,8 @@ package com.palangwi.soup.service.news;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palangwi.soup.dto.news.NewsResult;
+import com.palangwi.soup.dto.news.NewsSummary;
 import com.palangwi.soup.dto.news.OpenAIWebSearchRequestDto;
 import com.palangwi.soup.dto.news.OpenAIWebSearchResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +38,8 @@ public class OpenAIService {
     private final OkHttpClient client = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public CompletableFuture<String> searchAndSummarizeAsync(String keyword) {
-        CompletableFuture<String> future = new CompletableFuture<>();
+    public CompletableFuture<NewsResult> searchAndSummarizeAsync(String keyword) {
+        CompletableFuture<NewsResult> future = new CompletableFuture<>();
 
         try {
             String prompt = loadPrompt("prompts/news-prompt.txt").replace("{keyword}", keyword);
@@ -72,18 +74,36 @@ public class OpenAIService {
         return future;
     }
 
-    private String parseOpenAIResponse(Response response) throws IOException {
-        OpenAIWebSearchResponseDto parsed = objectMapper.readValue(response.body().string(), OpenAIWebSearchResponseDto.class);
+    private NewsResult parseOpenAIResponse(Response response) throws IOException {
+        String responseBody = response.body().string();
 
-        return parsed.output().stream()
+        log.warn("🔎 OpenAI 원시 응답:\n{}", responseBody);
+
+        OpenAIWebSearchResponseDto parsed = objectMapper.readValue(responseBody, OpenAIWebSearchResponseDto.class);
+
+        int tokens = parsed.usage().total_tokens();
+
+        String rawJson = parsed.output().stream()
                 .filter(o -> "message".equals(o.type()))
-                .map(o -> objectMapper.convertValue(o, MessageOutput.class))
-                .flatMap(m -> m.content().stream())
+                .flatMap(o -> o.content().stream())
                 .filter(c -> "output_text".equals(c.type()))
-                .map(Content::text)
+                .map(OpenAIWebSearchResponseDto.Content::text)
                 .findFirst()
-                .orElse("결과 없음");
+                .orElseThrow(() -> new RuntimeException("요약 JSON 누락"));
+
+        String cleanedJson = rawJson
+                .replaceAll("^```json\\s*", "")  // 시작 백틱 제거
+                .replaceAll("```\\s*$", "")      // 끝 백틱 제거
+                .trim();
+
+        // 확인용 로그
+        log.warn("📝 클린된 요약 JSON:\n{}", cleanedJson);
+
+        NewsSummary summary = objectMapper.readValue(cleanedJson, NewsSummary.class);
+
+        return new NewsResult(summary.keyword(), summary.summary(), summary.articles(), tokens);
     }
+
 
     private Request buildOpenAIRequest(String prompt) throws JsonProcessingException {
         OpenAIWebSearchRequestDto requestBody = new OpenAIWebSearchRequestDto(

@@ -7,6 +7,7 @@ import com.palangwi.soup.domain.news.Summary;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.mail.MailMessage;
 import com.palangwi.soup.dto.news.DailyNewsMailRequestDto;
+import com.palangwi.soup.dto.news.SummaryForMailTemplateDto;
 import com.palangwi.soup.infrastructure.mail.MailViewRenderer;
 import com.palangwi.soup.repository.mail.MailEventRepository;
 import jakarta.transaction.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static com.palangwi.soup.domain.mail.MailType.DAILY_NEWS;
 
@@ -37,12 +39,19 @@ public class MailService {
 
         log.info("메일 전송 처리 시작: userId={}, keywords={}", user.getId(), keywords);
 
-        List<Summary> summaries = newsSelectionPolicy.select(request.keywords());
-        if (summaries.isEmpty()) return;
+        Map<String, Summary> summaryMap = newsSelectionPolicy.select(request.keywords());
+        if (summaryMap.isEmpty()) return;
 
         MailEvent mailEvent = getMailEvent(user, now);
 
-         String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaries, mailEvent.getId());
+        List<SummaryForMailTemplateDto> summaryForMail = summaryMap.entrySet().stream()
+                .map(entry -> new SummaryForMailTemplateDto(
+                        entry.getKey(),
+                        entry.getValue().getShortSummary()
+                ))
+                .toList();
+
+         String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaryForMail, mailEvent.getId());
 
         MailMessage message = new MailMessage(
                 user.getId(),

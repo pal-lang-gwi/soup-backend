@@ -10,4 +10,10 @@ public class Article {
     private String title;
     private String link;
     private String summary;
+
+    public Article(String title, String link, String summary) {
+        this.title = title;
+        this.link = link;
+        this.summary = summary;
+    }
 }
