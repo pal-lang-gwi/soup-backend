@@ -1,5 +1,6 @@
 package com.palangwi.soup.service.news;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.dto.news.OpenAIWebSearchRequestDto;
 import com.palangwi.soup.dto.news.OpenAIWebSearchResponseDto;
@@ -39,25 +40,8 @@ public class OpenAIService {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         try {
-            String promptTemplate = loadPrompt("prompts/news-prompt.txt");
-            String prompt = promptTemplate.replace("{keyword}", keyword);
-
-            OpenAIWebSearchRequestDto requestBody = new OpenAIWebSearchRequestDto(
-                    openaiModel,
-                    List.of(new OpenAIWebSearchRequestDto.Tool("web_search_preview")),
-                    prompt,
-                    true,
-                    "auto"
-            );
-
-            Request request = new Request.Builder()
-                    .url(openaiUrl)
-                    .header("Authorization", "Bearer " + openaiKey)
-                    .header("Content-Type", "application/json")
-                    .post(RequestBody.create(
-                            objectMapper.writeValueAsString(requestBody),
-                            MediaType.parse("application/json")))
-                    .build();
+            String prompt = loadPrompt("prompts/news-prompt.txt").replace("{keyword}", keyword);
+            Request request = buildOpenAIRequest(prompt);
 
             client.newCall(request).enqueue(new Callback() {
                 @Override
@@ -74,18 +58,7 @@ public class OpenAIService {
                             return;
                         }
 
-                        OpenAIWebSearchResponseDto parsed = objectMapper.readValue(response.body().string(), OpenAIWebSearchResponseDto.class);
-
-                        String result = parsed.output().stream()
-                                .filter(o -> "message".equals(o.type()))
-                                .map(o -> objectMapper.convertValue(o, MessageOutput.class))
-                                .flatMap(m -> m.content().stream())
-                                .filter(c -> "output_text".equals(c.type()))
-                                .map(Content::text)
-                                .findFirst()
-                                .orElse("결과 없음");
-
-                        future.complete(result);
+                        future.complete(parseOpenAIResponse(response));
                     } catch (Exception ex) {
                         future.completeExceptionally(ex);
                     }
@@ -97,6 +70,38 @@ public class OpenAIService {
         }
 
         return future;
+    }
+
+    private String parseOpenAIResponse(Response response) throws IOException {
+        OpenAIWebSearchResponseDto parsed = objectMapper.readValue(response.body().string(), OpenAIWebSearchResponseDto.class);
+
+        return parsed.output().stream()
+                .filter(o -> "message".equals(o.type()))
+                .map(o -> objectMapper.convertValue(o, MessageOutput.class))
+                .flatMap(m -> m.content().stream())
+                .filter(c -> "output_text".equals(c.type()))
+                .map(Content::text)
+                .findFirst()
+                .orElse("결과 없음");
+    }
+
+    private Request buildOpenAIRequest(String prompt) throws JsonProcessingException {
+        OpenAIWebSearchRequestDto requestBody = new OpenAIWebSearchRequestDto(
+                openaiModel,
+                List.of(new OpenAIWebSearchRequestDto.Tool("web_search_preview")),
+                prompt,
+                true,
+                "auto"
+        );
+
+        return new Request.Builder()
+                .url(openaiUrl)
+                .header("Authorization", "Bearer " + openaiKey)
+                .header("Content-Type", "application/json")
+                .post(RequestBody.create(
+                        objectMapper.writeValueAsString(requestBody),
+                        MediaType.parse("application/json")))
+                .build();
     }
 
     private String loadPrompt(String path) {
