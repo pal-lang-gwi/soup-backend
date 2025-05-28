@@ -1,8 +1,6 @@
 package com.palangwi.soup.service.news;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.domain.news.News;
-import com.palangwi.soup.dto.news.NewsResult;
 import com.palangwi.soup.repository.news.NewsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +13,6 @@ public class NewsService {
 
     private final NewsRepository newsRepository;
     private final OpenAIService openAIService;
-    private final ObjectMapper objectMapper;
 
     public void collectAndSaveNews(String keyword) {
         openAIService.searchAndSummarizeAsync(keyword)
