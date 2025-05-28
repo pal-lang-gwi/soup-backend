@@ -314,7 +314,7 @@ jobs:
                   - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
                   - DB_USERNAME=${{ secrets.DB_USERNAME }}
                   - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                  - SPRING_DATA_MONGODB_URI=mongodb://${{ secrets.MONGO_ROOT_USERNAME }}:${{ secrets.MONGO_ROOT_PASSWORD }}@soup-mongodb:27017
+                  - SPRING_DATA_MONGODB_URI=mongodb://${{ secrets.MONGO_ROOT_USERNAME }}:${{ secrets.MONGO_ROOT_PASSWORD }}@soup-mongodb:27017/soup?authSource=admin
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
