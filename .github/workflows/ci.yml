@@ -34,6 +34,8 @@ jobs:
           JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
           JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
           FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
         run: |
           required_vars=(
             "SPRING_PROFILES_ACTIVE"
@@ -54,6 +56,8 @@ jobs:
             "JWT_ISSUER"
             "JWT_CLIENT_SECRET"
             "FRONT_DOMAIN"
+            "MONGO_ROOT_USERNAME"
+            "MONGO_ROOT_PASSWORD"
           )
 
           missing_vars=()
@@ -91,7 +95,7 @@ jobs:
               password: \${DB_PASSWORD}
             jpa:
               hibernate:
-                ddl-auto: create
+                ddl-auto: update
               properties:
                 hibernate:
                   default_batch_fetch_size: 100

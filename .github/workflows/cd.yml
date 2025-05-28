@@ -43,6 +43,8 @@ jobs:
       MYSQL_USER: ${{ secrets.MYSQL_USER }}
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+      MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+      MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v3
@@ -78,6 +80,8 @@ jobs:
             "MYSQL_USER"
             "MYSQL_PASSWORD"
             "MATTERMOST_WEBHOOK_URL"
+            "MONGO_ROOT_USERNAME"
+            "MONGO_ROOT_PASSWORD"
           )
 
           missing_vars=()
@@ -116,7 +120,7 @@ jobs:
               password: \${DB_PASSWORD}
             jpa:
               hibernate:
-                ddl-auto: create
+                ddl-auto: update
               properties:
                 hibernate:
                   default_batch_fetch_size: 100
@@ -247,6 +251,7 @@ jobs:
 
             volumes:
               mysql_data:
+              mongodb_data:
 
             services:
               mysql:
@@ -268,7 +273,27 @@ jobs:
                 networks:
                   - soup-network
                 healthcheck:
-                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psoup1234"]
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 20
+                  start_period: 30s
+
+              mongodb:
+                image: mongo:latest
+                container_name: soup-mongodb
+                environment:
+                  MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+                  MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+                ports:
+                  - "27017:27017"
+                volumes:
+                  - mongodb_data:/data/db
+                restart: always
+                networks:
+                  - soup-network
+                healthcheck:
+                  test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
                   interval: 5s
                   timeout: 5s
                   retries: 20
@@ -280,29 +305,32 @@ jobs:
                 depends_on:
                   mysql:
                     condition: service_healthy
+                  mongodb:
+                    condition: service_healthy
                 ports:
                   - "8080:8080"
                 environment:
-                  - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
-                  - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
-                  - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                  - REDIS_HOST=${{ secrets.REDIS_HOST }}
-                  - REDIS_PORT=${{ secrets.REDIS_PORT }}
-                  - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
-                  - RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
-                  - RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
-                  - RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
-                  - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-                  - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-                  - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
-                  - KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
-                  - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
-                  - JWT_ACCESS_TOKEN_TTL=${{ secrets.JWT_ACCESS_TOKEN_TTL }}
-                  - JWT_REFRESH_TOKEN_TTL=${{ secrets.JWT_REFRESH_TOKEN_TTL }}
-                  - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
-                  - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
-                  - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                  - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+                  - DB_URL=jdbc:mysql://soup-mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+                  - DB_USERNAME=${DB_USERNAME}
+                  - DB_PASSWORD=${DB_PASSWORD}
+                  - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@soup-mongodb:27017
+                  - REDIS_HOST=${REDIS_HOST}
+                  - REDIS_PORT=${REDIS_PORT}
+                  - RABBITMQ_HOST=${RABBITMQ_HOST}
+                  - RABBITMQ_PORT=${RABBITMQ_PORT}
+                  - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+                  - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+                  - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+                  - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+                  - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+                  - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
+                  - KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
+                  - JWT_ACCESS_TOKEN_TTL=${JWT_ACCESS_TOKEN_TTL}
+                  - JWT_REFRESH_TOKEN_TTL=${JWT_REFRESH_TOKEN_TTL}
+                  - JWT_ISSUER=${JWT_ISSUER}
+                  - JWT_CLIENT_SECRET=${JWT_CLIENT_SECRET}
+                  - FRONT_DOMAIN=${FRONT_DOMAIN}
                 networks:
                   - soup-network
 
