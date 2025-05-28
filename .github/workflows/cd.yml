@@ -310,27 +310,27 @@ jobs:
                 ports:
                   - "8080:8080"
                 environment:
-                  - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-                  - DB_URL=jdbc:mysql://soup-mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-                  - DB_USERNAME=${DB_USERNAME}
-                  - DB_PASSWORD=${DB_PASSWORD}
-                  - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@soup-mongodb:27017
-                  - REDIS_HOST=${REDIS_HOST}
-                  - REDIS_PORT=${REDIS_PORT}
-                  - RABBITMQ_HOST=${RABBITMQ_HOST}
-                  - RABBITMQ_PORT=${RABBITMQ_PORT}
-                  - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-                  - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-                  - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-                  - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-                  - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
-                  - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
-                  - KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
-                  - JWT_ACCESS_TOKEN_TTL=${JWT_ACCESS_TOKEN_TTL}
-                  - JWT_REFRESH_TOKEN_TTL=${JWT_REFRESH_TOKEN_TTL}
-                  - JWT_ISSUER=${JWT_ISSUER}
-                  - JWT_CLIENT_SECRET=${JWT_CLIENT_SECRET}
-                  - FRONT_DOMAIN=${FRONT_DOMAIN}
+                  - SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
+                  - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  - SPRING_DATA_MONGODB_URI=mongodb://${{ secrets.MONGO_ROOT_USERNAME }}:${{ secrets.MONGO_ROOT_PASSWORD }}@soup-mongodb:27017
+                  - REDIS_HOST=${{ secrets.REDIS_HOST }}
+                  - REDIS_PORT=${{ secrets.REDIS_PORT }}
+                  - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+                  - RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+                  - RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+                  - RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+                  - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+                  - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+                  - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+                  - KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+                  - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+                  - JWT_ACCESS_TOKEN_TTL=${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+                  - JWT_REFRESH_TOKEN_TTL=${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+                  - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
+                  - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
+                  - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
                 networks:
                   - soup-network
 
