@@ -3,12 +3,15 @@ package com.palangwi.soup.service.news;
 import com.palangwi.soup.domain.news.News;
 import com.palangwi.soup.dto.news.DailyNewsResponseDto;
 import com.palangwi.soup.dto.news.NewsDto;
+import com.palangwi.soup.exception.news.NewsNotFoundException;
 import com.palangwi.soup.repository.news.NewsRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,15 +27,10 @@ public class NewsService {
     private final OpenAIService openAIService;
 
     public DailyNewsResponseDto getDailyNews(String keyword, String startDate, String endDate, int page) {
-        LocalDateTime from = LocalDateTime.parse(startDate);
-        LocalDateTime to = LocalDateTime.parse(endDate);
-
         int size = 20;
-
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
 
-        Page<News> resultPage;
-        resultPage = getNews(keyword, from, to, pageable);
+        Page<News> resultPage = getNews(keyword, startDate, endDate, pageable);
 
         List<NewsDto> newsDtos = resultPage.getContent().stream()
                 .map(NewsDto::from)
@@ -41,12 +39,32 @@ public class NewsService {
         return new DailyNewsResponseDto(newsDtos, resultPage.getTotalElements(), resultPage.getTotalPages(), resultPage.getNumber() + 1);
     }
 
-    private Page<News> getNews(String keyword, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+    private Page<News> getNews(String keyword, String startDate, String endDate, Pageable pageable) {
+        boolean hasStart = startDate != null && !startDate.isBlank();
+        boolean hasEnd = endDate != null && !endDate.isBlank();
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        LocalDateTime from = hasStart ? LocalDate.parse(startDate).atStartOfDay() : null;
+        LocalDateTime to = hasEnd ? LocalDate.parse(endDate).plusDays(1).atStartOfDay() : null;
+
         Page<News> resultPage;
-        if (keyword != null && !keyword.isBlank()) {
+
+        resultPage = findNewsByCondition(keyword, pageable, hasKeyword, hasStart, hasEnd, from, to);
+
+        return resultPage;
+    }
+
+    private Page<News> findNewsByCondition(String keyword, Pageable pageable, boolean hasKeyword, boolean hasStart, boolean hasEnd,
+                               LocalDateTime from, LocalDateTime to) {
+        Page<News> resultPage;
+        if (hasKeyword && hasStart && hasEnd) {
             resultPage = newsRepository.findByCreatedDateBetweenAndKeyword(from, to, keyword, pageable);
-        } else {
+        } else if (hasStart && hasEnd) {
             resultPage = newsRepository.findByCreatedDateBetween(from, to, pageable);
+        } else if (hasKeyword) {
+            resultPage = newsRepository.findByKeyword(keyword, pageable);
+        } else {
+            resultPage = newsRepository.findAll(pageable);
         }
         return resultPage;
     }
@@ -65,5 +83,12 @@ public class NewsService {
                     log.error("❌ OpenAI 응답 실패 - {}", keyword, ex);
                     return null;
                 });
+    }
+
+    public NewsDto getNewsDetailInfo(String newsId) {
+        ObjectId id = new ObjectId(newsId);
+        News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
+
+        return NewsDto.from(news);
     }
 }

@@ -17,4 +17,6 @@ public interface NewsRepository extends MongoRepository<News, ObjectId> {
     Page<News> findByCreatedDateBetweenAndKeyword(LocalDateTime from, LocalDateTime to, String keyword, Pageable pageable);
 
     Page<News> findByCreatedDateBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
+
+    Page<News> findByKeyword(String keyword, Pageable pageable);
 }
