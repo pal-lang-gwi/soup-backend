@@ -37,6 +37,8 @@ jobs:
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
       MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
       MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
 
     steps:
       - uses: actions/checkout@v3
@@ -62,6 +64,8 @@ jobs:
             "JWT_ISSUER"
             "JWT_CLIENT_SECRET"
             "FRONT_DOMAIN"
+            "OPENAI_API_KEY"
+            "OPENAI_API_URL"
             "MYSQL_ROOT_PASSWORD"
             "MYSQL_DATABASE"
             "MYSQL_USER"
@@ -162,6 +166,12 @@ jobs:
 
           front:
             domain: \${FRONT_DOMAIN}
+
+          openai:
+            model: gpt-4.1
+            api:
+              key: \${OPENAI_API_KEY}
+              url: \${OPENAI_API_URL}
 
           logging:
             level:
