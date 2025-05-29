@@ -43,6 +43,8 @@ jobs:
       MYSQL_USER: ${{ secrets.MYSQL_USER }}
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
 
     steps:
       - uses: actions/checkout@v3
@@ -78,6 +80,8 @@ jobs:
             "MYSQL_USER"
             "MYSQL_PASSWORD"
             "MATTERMOST_WEBHOOK_URL"
+            "OPENAI_API_KEY"
+            "OPENAI_API_URL"
           )
 
           missing_vars=()
@@ -170,6 +174,12 @@ jobs:
 
           front:
             domain: \${FRONT_DOMAIN}
+
+          openai:
+            model: gpt-4o-mini
+            api:
+              key: \${OPENAI_API_KEY}
+              url: \${OPENAI_API_URL}
 
           logging:
             level:
@@ -303,6 +313,8 @@ jobs:
                   - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
                   - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                  - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+                  - OPENAI_API_URL=${{ secrets.OPENAI_API_URL }}
                 networks:
                   - soup-network
 

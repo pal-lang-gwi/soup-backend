@@ -34,6 +34,8 @@ jobs:
           JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
           JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
           FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
         run: |
           required_vars=(
             "SPRING_PROFILES_ACTIVE"
@@ -54,6 +56,8 @@ jobs:
             "JWT_ISSUER"
             "JWT_CLIENT_SECRET"
             "FRONT_DOMAIN"
+            "OPENAI_API_KEY"
+            "OPENAI_API_URL"
           )
 
           missing_vars=()
@@ -145,6 +149,12 @@ jobs:
 
           front:
             domain: \${FRONT_DOMAIN}
+
+          openai:
+            model: gpt-4.1
+            api:
+              key: \${OPENAI_API_KEY}
+              url: \${OPENAI_API_URL}
 
           logging:
             level:
