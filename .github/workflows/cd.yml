@@ -47,6 +47,12 @@ jobs:
       OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
       MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
       MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+      MAIL_HOST: ${{ secrets.MAIL_HOST }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH }}
+      MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE }}
 
     steps:
       - uses: actions/checkout@v3
@@ -86,6 +92,12 @@ jobs:
             "OPENAI_API_URL"
             "MONGO_ROOT_USERNAME"
             "MONGO_ROOT_PASSWORD"
+            "MAIL_HOST"
+            "MAIL_PORT"
+            "MAIL_USERNAME"
+            "MAIL_PASSWORD"
+            "MAIL_PROPERTIES_MAIL_SMTP_AUTH"
+            "MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE"
           )
 
           missing_vars=()
@@ -132,11 +144,24 @@ jobs:
               redis:
                 host: \${REDIS_HOST}
                 port: \${REDIS_PORT}
+              mongodb:
+                uri: mongodb://\${MONGO_ROOT_USERNAME}:\${MONGO_ROOT_PASSWORD}@localhost:27017/soup?authSource=admin
             rabbitmq:
               host: \${RABBITMQ_HOST}
               port: \${RABBITMQ_PORT}
               username: \${RABBITMQ_USERNAME}
               password: \${RABBITMQ_PASSWORD}
+            mail:
+              host: \${MAIL_HOST}
+              port: \${MAIL_PORT}
+              username: \${MAIL_USERNAME}
+              password: \${MAIL_PASSWORD}
+              properties:
+                mail:
+                  smtp:
+                    auth: \${MAIL_PROPERTIES_MAIL_SMTP_AUTH}
+                    starttls:
+                      enable: \${MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}
             security:
               oauth2:
                 client:
@@ -343,7 +368,12 @@ jobs:
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
                   - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
                   - OPENAI_API_URL=${{ secrets.OPENAI_API_URL }}
-                  - OPENAI_MODEL=gpt-4.1
+                  - SPRING_MAIL_HOST=${{ secrets.MAIL_HOST }}
+                  - SPRING_MAIL_PORT=${{ secrets.MAIL_PORT }}
+                  - SPRING_MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+                  - SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+                  - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH }}
+                  - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE }}
                 networks:
                   - soup-network
 
