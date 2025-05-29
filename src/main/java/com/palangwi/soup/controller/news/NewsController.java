@@ -32,7 +32,7 @@ public class NewsController {
     public ApiResult<DailyNewsResponseDto> getFilteredNews(@AuthenticationPrincipal JwtAuthentication userInfo,
                                                            @Valid @ModelAttribute DailyNewsRequestDto request,
                                                            @PageableDefault(size = 20, sort = "createdDate", direction = Direction.DESC) Pageable pageable) {
-        return success(newsService.getDailyNews(request, pageable));
+        return success(newsService.getDailyNews(DailyNewsRequestDto.from(request), pageable));
     }
 
     @GetMapping("/{newsId}")

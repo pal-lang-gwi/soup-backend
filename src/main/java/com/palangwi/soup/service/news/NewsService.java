@@ -84,9 +84,12 @@ public class NewsService {
     }
 
     public NewsDto getNewsDetailInfo(String newsId) {
-        ObjectId id = new ObjectId(newsId);
-        News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
-
-        return NewsDto.from(news);
+        try {
+            ObjectId id = new ObjectId(newsId);
+            News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
+            return NewsDto.from(news);
+        } catch (IllegalArgumentException e) {
+            throw new NewsNotFoundException();
+        }
     }
 }
