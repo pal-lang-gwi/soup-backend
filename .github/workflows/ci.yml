@@ -39,6 +39,7 @@ jobs:
       MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
       MAIL_HOST: ${{ secrets.MAIL_HOST }}
       MAIL_PORT: ${{ secrets.MAIL_PORT }}
       MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
@@ -72,6 +73,7 @@ jobs:
             "FRONT_DOMAIN"
             "OPENAI_API_KEY"
             "OPENAI_API_URL"
+            "OPENAI_MODEL"
             "MYSQL_ROOT_PASSWORD"
             "MYSQL_DATABASE"
             "MYSQL_USER"
@@ -180,10 +182,18 @@ jobs:
             domain: \${FRONT_DOMAIN}
 
           openai:
-            model: gpt-4.1
+            model: \${OPENAI_MODEL:gpt-4.1}
             api:
               key: \${OPENAI_API_KEY}
               url: \${OPENAI_API_URL}
+
+          springdoc:
+            swagger-ui:
+              path: /swagger-ui.html
+              enabled: true
+            api-docs:
+              path: /v3/api-docs
+              enabled: true
 
           logging:
             level:
