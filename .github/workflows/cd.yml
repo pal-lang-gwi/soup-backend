@@ -53,6 +53,7 @@ jobs:
       MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
       MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH }}
       MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
 
     steps:
       - uses: actions/checkout@v3
@@ -98,6 +99,7 @@ jobs:
             "MAIL_PASSWORD"
             "MAIL_PROPERTIES_MAIL_SMTP_AUTH"
             "MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE"
+            "OPENAI_MODEL"
           )
 
           missing_vars=()
@@ -205,10 +207,18 @@ jobs:
             domain: \${FRONT_DOMAIN}
 
           openai:
-            model: gpt-4.1
+            model: \${OPENAI_MODEL:gpt-4.1}
             api:
               key: \${OPENAI_API_KEY}
               url: \${OPENAI_API_URL}
+
+          springdoc:
+            swagger-ui:
+              path: /swagger-ui.html
+              enabled: true
+            api-docs:
+              path: /v3/api-docs
+              enabled: true
 
           logging:
             level:
