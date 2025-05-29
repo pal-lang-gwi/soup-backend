@@ -45,6 +45,8 @@ jobs:
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
+      MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+      MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v3
@@ -82,6 +84,8 @@ jobs:
             "MATTERMOST_WEBHOOK_URL"
             "OPENAI_API_KEY"
             "OPENAI_API_URL"
+            "MONGO_ROOT_USERNAME"
+            "MONGO_ROOT_PASSWORD"
           )
 
           missing_vars=()
@@ -120,7 +124,7 @@ jobs:
               password: \${DB_PASSWORD}
             jpa:
               hibernate:
-                ddl-auto: create
+                ddl-auto: update
               properties:
                 hibernate:
                   default_batch_fetch_size: 100
@@ -257,6 +261,7 @@ jobs:
 
             volumes:
               mysql_data:
+              mongodb_data:
 
             services:
               mysql:
@@ -278,7 +283,27 @@ jobs:
                 networks:
                   - soup-network
                 healthcheck:
-                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psoup1234"]
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 20
+                  start_period: 30s
+
+              mongodb:
+                image: mongo:latest
+                container_name: soup-mongodb
+                environment:
+                  MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+                  MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+                ports:
+                  - "27017:27017"
+                volumes:
+                  - mongodb_data:/data/db
+                restart: always
+                networks:
+                  - soup-network
+                healthcheck:
+                  test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
                   interval: 5s
                   timeout: 5s
                   retries: 20
@@ -290,6 +315,8 @@ jobs:
                 depends_on:
                   mysql:
                     condition: service_healthy
+                  mongodb:
+                    condition: service_healthy
                 ports:
                   - "8080:8080"
                 environment:
@@ -297,6 +324,7 @@ jobs:
                   - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
                   - DB_USERNAME=${{ secrets.DB_USERNAME }}
                   - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  - SPRING_DATA_MONGODB_URI=mongodb://${{ secrets.MONGO_ROOT_USERNAME }}:${{ secrets.MONGO_ROOT_PASSWORD }}@soup-mongodb:27017/soup?authSource=admin
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
