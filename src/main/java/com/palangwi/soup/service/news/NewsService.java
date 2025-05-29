@@ -1,6 +1,7 @@
 package com.palangwi.soup.service.news;
 
 import com.palangwi.soup.domain.news.News;
+import com.palangwi.soup.dto.news.DailyNewsRequestDto;
 import com.palangwi.soup.dto.news.DailyNewsResponseDto;
 import com.palangwi.soup.dto.news.NewsDto;
 import com.palangwi.soup.exception.news.NewsNotFoundException;
@@ -26,11 +27,8 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private final OpenAIService openAIService;
 
-    public DailyNewsResponseDto getDailyNews(String keyword, String startDate, String endDate, int page) {
-        int size = 20;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
-
-        Page<News> resultPage = getNews(keyword, startDate, endDate, pageable);
+    public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
+        Page<News> resultPage = getNews(request.keyword(), request.startDate(), request.endDate(), pageable);
 
         List<NewsDto> newsDtos = resultPage.getContent().stream()
                 .map(NewsDto::from)
