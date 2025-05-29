@@ -43,6 +43,17 @@ jobs:
       MYSQL_USER: ${{ secrets.MYSQL_USER }}
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
+      MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+      MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+      MAIL_HOST: ${{ secrets.MAIL_HOST }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH }}
+      MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
 
     steps:
       - uses: actions/checkout@v3
@@ -78,6 +89,17 @@ jobs:
             "MYSQL_USER"
             "MYSQL_PASSWORD"
             "MATTERMOST_WEBHOOK_URL"
+            "OPENAI_API_KEY"
+            "OPENAI_API_URL"
+            "MONGO_ROOT_USERNAME"
+            "MONGO_ROOT_PASSWORD"
+            "MAIL_HOST"
+            "MAIL_PORT"
+            "MAIL_USERNAME"
+            "MAIL_PASSWORD"
+            "MAIL_PROPERTIES_MAIL_SMTP_AUTH"
+            "MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE"
+            "OPENAI_MODEL"
           )
 
           missing_vars=()
@@ -116,7 +138,7 @@ jobs:
               password: \${DB_PASSWORD}
             jpa:
               hibernate:
-                ddl-auto: create
+                ddl-auto: update
               properties:
                 hibernate:
                   default_batch_fetch_size: 100
@@ -124,11 +146,24 @@ jobs:
               redis:
                 host: \${REDIS_HOST}
                 port: \${REDIS_PORT}
+              mongodb:
+                uri: mongodb://\${MONGO_ROOT_USERNAME}:\${MONGO_ROOT_PASSWORD}@localhost:27017/soup?authSource=admin
             rabbitmq:
               host: \${RABBITMQ_HOST}
               port: \${RABBITMQ_PORT}
               username: \${RABBITMQ_USERNAME}
               password: \${RABBITMQ_PASSWORD}
+            mail:
+              host: \${MAIL_HOST}
+              port: \${MAIL_PORT}
+              username: \${MAIL_USERNAME}
+              password: \${MAIL_PASSWORD}
+              properties:
+                mail:
+                  smtp:
+                    auth: \${MAIL_PROPERTIES_MAIL_SMTP_AUTH}
+                    starttls:
+                      enable: \${MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}
             security:
               oauth2:
                 client:
@@ -170,6 +205,20 @@ jobs:
 
           front:
             domain: \${FRONT_DOMAIN}
+
+          openai:
+            model: \${OPENAI_MODEL:gpt-4.1}
+            api:
+              key: \${OPENAI_API_KEY}
+              url: \${OPENAI_API_URL}
+
+          springdoc:
+            swagger-ui:
+              path: /swagger-ui.html
+              enabled: true
+            api-docs:
+              path: /v3/api-docs
+              enabled: true
 
           logging:
             level:
@@ -247,6 +296,7 @@ jobs:
 
             volumes:
               mysql_data:
+              mongodb_data:
 
             services:
               mysql:
@@ -268,7 +318,27 @@ jobs:
                 networks:
                   - soup-network
                 healthcheck:
-                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psoup1234"]
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 20
+                  start_period: 30s
+
+              mongodb:
+                image: mongo:latest
+                container_name: soup-mongodb
+                environment:
+                  MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+                  MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+                ports:
+                  - "27017:27017"
+                volumes:
+                  - mongodb_data:/data/db
+                restart: always
+                networks:
+                  - soup-network
+                healthcheck:
+                  test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
                   interval: 5s
                   timeout: 5s
                   retries: 20
@@ -280,6 +350,8 @@ jobs:
                 depends_on:
                   mysql:
                     condition: service_healthy
+                  mongodb:
+                    condition: service_healthy
                 ports:
                   - "8080:8080"
                 environment:
@@ -287,6 +359,7 @@ jobs:
                   - DB_URL=jdbc:mysql://soup-mysql:3306/${{ secrets.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
                   - DB_USERNAME=${{ secrets.DB_USERNAME }}
                   - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  - SPRING_DATA_MONGODB_URI=mongodb://${{ secrets.MONGO_ROOT_USERNAME }}:${{ secrets.MONGO_ROOT_PASSWORD }}@soup-mongodb:27017/soup?authSource=admin
                   - REDIS_HOST=${{ secrets.REDIS_HOST }}
                   - REDIS_PORT=${{ secrets.REDIS_PORT }}
                   - RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
@@ -303,6 +376,15 @@ jobs:
                   - JWT_ISSUER=${{ secrets.JWT_ISSUER }}
                   - JWT_CLIENT_SECRET=${{ secrets.JWT_CLIENT_SECRET }}
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
+                  - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+                  - OPENAI_API_URL=${{ secrets.OPENAI_API_URL }}
+                  - OPENAI_MODEL=${{ secrets.OPENAI_MODEL }}
+                  - SPRING_MAIL_HOST=${{ secrets.MAIL_HOST }}
+                  - SPRING_MAIL_PORT=${{ secrets.MAIL_PORT }}
+                  - SPRING_MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+                  - SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+                  - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH }}
+                  - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE }}
                 networks:
                   - soup-network
 

@@ -9,31 +9,48 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
 
+    env:
+      SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+      RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+      KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+      KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+      JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+      JWT_REFRESH_TOKEN_TTL: ${{ secrets.JWT_REFRESH_TOKEN_TTL }}
+      JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
+      FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+      MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+      MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+      MAIL_HOST: ${{ secrets.MAIL_HOST }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_AUTH }}
+      MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${{ secrets.MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE }}
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Check Required Environment Variables
-        env:
-          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
-          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
-          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
-          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
-          JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
-          JWT_REFRESH_TOKEN_TTL: ${{ secrets.JWT_REFRESH_TOKEN_TTL }}
-          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
-          JWT_CLIENT_SECRET: ${{ secrets.JWT_CLIENT_SECRET }}
-          FRONT_DOMAIN: ${{ secrets.FRONT_DOMAIN }}
         run: |
           required_vars=(
             "SPRING_PROFILES_ACTIVE"
@@ -54,6 +71,22 @@ jobs:
             "JWT_ISSUER"
             "JWT_CLIENT_SECRET"
             "FRONT_DOMAIN"
+            "OPENAI_API_KEY"
+            "OPENAI_API_URL"
+            "OPENAI_MODEL"
+            "MYSQL_ROOT_PASSWORD"
+            "MYSQL_DATABASE"
+            "MYSQL_USER"
+            "MYSQL_PASSWORD"
+            "MATTERMOST_WEBHOOK_URL"
+            "MONGO_ROOT_USERNAME"
+            "MONGO_ROOT_PASSWORD"
+            "MAIL_HOST"
+            "MAIL_PORT"
+            "MAIL_USERNAME"
+            "MAIL_PASSWORD"
+            "MAIL_PROPERTIES_MAIL_SMTP_AUTH"
+            "MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE"
           )
 
           missing_vars=()
@@ -91,7 +124,7 @@ jobs:
               password: \${DB_PASSWORD}
             jpa:
               hibernate:
-                ddl-auto: create
+                ddl-auto: update
               properties:
                 hibernate:
                   default_batch_fetch_size: 100
@@ -99,6 +132,8 @@ jobs:
               redis:
                 host: \${REDIS_HOST}
                 port: \${REDIS_PORT}
+              mongodb:
+                uri: mongodb://\${MONGO_ROOT_USERNAME}:\${MONGO_ROOT_PASSWORD}@localhost:27017/soup?authSource=admin
             rabbitmq:
               host: \${RABBITMQ_HOST}
               port: \${RABBITMQ_PORT}
@@ -145,6 +180,20 @@ jobs:
 
           front:
             domain: \${FRONT_DOMAIN}
+
+          openai:
+            model: \${OPENAI_MODEL:gpt-4.1}
+            api:
+              key: \${OPENAI_API_KEY}
+              url: \${OPENAI_API_URL}
+
+          springdoc:
+            swagger-ui:
+              path: /swagger-ui.html
+              enabled: true
+            api-docs:
+              path: /v3/api-docs
+              enabled: true
 
           logging:
             level:

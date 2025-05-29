@@ -53,19 +53,19 @@ def extract_added_lines(patch):
     return added_lines
 
 def generate_gpt_comment(code_snippet):
-    prompt = f"""다음 코드 변경사항에 대해 리뷰를 작성해주세요 (400자 이내):
+    prompt = f"""다음 PR의 코드 변경사항에서 발견되는 치명적인 문제점만 알려주세요:
 
 {code_snippet}
 
 다음 형식으로 작성해주세요:
-## 주요 변경사항
-- 변경된 내용 요약
+## 치명적인 문제점
+- 발견된 심각한 버그나 보안 취약점
+- 성능에 심각한 영향을 미치는 문제
+- 시스템 안정성을 해치는 문제
+- 코드 가독성을 해치는 문제
 
-## 이슈
-- 발견된 문제점들
 
-## 제안
-- 개선 방안"""
+(문제점이 없다면 "발견된 치명적인 문제점이 없습니다."라고만 작성해주세요)"""
     
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
@@ -74,46 +74,26 @@ def generate_gpt_comment(code_snippet):
     )
     return response.choices[0].message.content
 
-def post_inline_review_comment(repo, pr_number, commit_id, path, line, body, github_token):
-    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/comments"
+def post_pr_comment(repo, pr_number, body, github_token):
+    url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
     headers = {
         "Authorization": f"token {github_token}",
         "Accept": "application/vnd.github+json"
     }
     payload = {
-        "body": body,
-        "commit_id": commit_id,
-        "path": path,
-        "side": "RIGHT",
-        "line": line
+        "body": body
     }
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
-def get_file_comments(repo, pr_number, path, github_token):
-    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/comments"
-    headers = {"Authorization": f"token {github_token}"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    
-    # 특정 파일의 코멘트만 필터링
-    file_comments = [comment for comment in response.json() if comment['path'] == path]
-    return len(file_comments)
-
 def main():
     pr_files = get_pr_files(REPO, PR_NUMBER, GITHUB_TOKEN)
-    commit_sha = get_pr_commit_sha(REPO, PR_NUMBER, GITHUB_TOKEN)
+    all_changes = []
 
     for file in pr_files:
         filename = file["filename"]
         patch = file.get("patch")
         
-        # 이미 코멘트가 있는 파일은 스킵
-        comment_count = get_file_comments(REPO, PR_NUMBER, filename, GITHUB_TOKEN)
-        if comment_count > 0:
-            print(f"[SKIP] {filename} already has {comment_count} comments")
-            continue
-
         if not patch or filename.endswith(('.md', '.txt', '.log', '.gitignore')):
             continue
 
@@ -122,17 +102,18 @@ def main():
             continue
 
         # 파일의 모든 변경사항을 하나의 문자열로 모음
-        file_changes = "\n".join([f"Line {line_num}: {code}" for line_num, code in added_lines])
-        
+        file_changes = f"\n### {filename}\n" + "\n".join([f"Line {line_num}: {code}" for line_num, code in added_lines])
+        all_changes.append(file_changes)
+    
+    if all_changes:
         try:
-            # 파일 전체에 대한 하나의 리뷰 생성
-            comment = generate_gpt_comment(file_changes)
-            # 첫 번째 변경된 라인에 리뷰 달기
-            first_line = added_lines[0][0]
-            post_inline_review_comment(REPO, PR_NUMBER, commit_sha, filename, first_line, comment, GITHUB_TOKEN)
-            print(f"[SUCCESS] Added review to {filename}")
+            # PR 전체에 대한 하나의 리뷰 생성
+            all_changes_text = "\n".join(all_changes)
+            comment = generate_gpt_comment(all_changes_text)
+            post_pr_comment(REPO, PR_NUMBER, comment, GITHUB_TOKEN)
+            print(f"[SUCCESS] Added review to PR #{PR_NUMBER}")
         except Exception as e:
-            print(f"[ERROR] Failed to comment on {filename}: {e}")
+            print(f"[ERROR] Failed to comment on PR: {e}")
 
 if __name__ == "__main__":
     main()
