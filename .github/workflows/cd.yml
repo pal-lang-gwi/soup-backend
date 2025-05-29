@@ -343,6 +343,7 @@ jobs:
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
                   - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
                   - OPENAI_API_URL=${{ secrets.OPENAI_API_URL }}
+                  - OPENAI_MODEL=gpt-4.1
                 networks:
                   - soup-network
 
