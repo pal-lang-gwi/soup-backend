@@ -19,8 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static com.palangwi.soup.dto.news.OpenAIWebSearchResponseDto.*;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
