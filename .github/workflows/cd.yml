@@ -378,6 +378,7 @@ jobs:
                   - FRONT_DOMAIN=${{ secrets.FRONT_DOMAIN }}
                   - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
                   - OPENAI_API_URL=${{ secrets.OPENAI_API_URL }}
+                  - OPENAI_MODEL=${{ secrets.OPENAI_MODEL }}
                   - SPRING_MAIL_HOST=${{ secrets.MAIL_HOST }}
                   - SPRING_MAIL_PORT=${{ secrets.MAIL_PORT }}
                   - SPRING_MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
