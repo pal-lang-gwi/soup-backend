@@ -60,6 +60,8 @@ public class MailEvent extends BaseEntity {
     }
 
     public void markAsOpen() {
+        if (this.opened) return;
+
         this.opened = true;
         this.openedAt = LocalDateTime.now();
     }
