@@ -52,7 +52,7 @@ public class KeywordServiceImpl implements KeywordService {
                                                                       RegisterKeywordRequestDto registerKeywordRequestDto) {
         List<String> keywords = registerKeywordRequestDto.registered();
 
-        List<Keyword> allKeywords = findOrCreateKeywords(keywords);
+        List<Keyword> allKeywords = findOrCreateKeywords(keywords, userId);
         User user = findUserById(userId);
 
         List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
@@ -64,7 +64,8 @@ public class KeywordServiceImpl implements KeywordService {
                         .toList());
     }
 
-    private List<Keyword> findOrCreateKeywords(List<String> keywords) {
+    private List<Keyword> findOrCreateKeywords(List<String> keywords, Long userId) {
+        User user = findUserById(userId);
         List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
         Set<String> existingKeywordNames = existingKeywords.stream()
                 .map(Keyword::getName)
@@ -73,7 +74,7 @@ public class KeywordServiceImpl implements KeywordService {
         List<Keyword> newKeywords = keywords.stream()
                 .filter(name -> !existingKeywordNames.contains(name.toLowerCase()))
                 // TODO : Keyword의 nomalizedName을 어떻게 설정할지 논의 필요
-                .map(name -> Keyword.of(name.toLowerCase(), name, Source.USER_REQUEST))
+                .map(name -> Keyword.of(name.toLowerCase(), name, Source.USER_REQUEST, user))
                 .toList();
         keywordRepository.saveAll(newKeywords);
 

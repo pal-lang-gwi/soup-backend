@@ -1,6 +1,7 @@
 package com.palangwi.soup.domain.keyword;
 
 import com.palangwi.soup.domain.BaseEntity;
+import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import jakarta.persistence.*;
 
@@ -10,7 +11,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
 @Entity
 @Table(name = "keyword")
@@ -34,13 +37,19 @@ public class Keyword extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public static Keyword of(String name, String normalizedName, Source source) {
-        return Keyword.builder()
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "requested_user_id", nullable = true)
+    private User requestedUser;
+
+    public static Keyword of(String name, String normalizedName, Source source, User user) {
+        Keyword keyword = Keyword.builder()
                 .name(name)
                 .normalizedName(normalizedName)
                 .source(source)
-                .status(Status.ACTIVE)
+                .status(Status.PENDING)
                 .build();
+        keyword.setRequestedUser(user);
+        return keyword;
     }
 
     @Builder
@@ -56,6 +65,14 @@ public class Keyword extends BaseEntity {
         return (int) userKeywords.stream()
                 .filter(UserKeyword::isSubscribed)
                 .count();
+    }
+
+    public void setRequestedUser(User user) {
+        if (this.requestedUser == user) return;
+        this.requestedUser = user;
+        if (user != null && !user.getRequestedKeywords().contains(this)) {
+            user.getRequestedKeywords().add(this);
+        }
     }
 
     @Override

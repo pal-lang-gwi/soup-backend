@@ -1,12 +1,18 @@
 package com.palangwi.soup.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.palangwi.soup.domain.BaseEntity;
+import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.userkeyword.UserKeywords;
 import com.palangwi.soup.security.Role;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,6 +48,11 @@ public class User extends BaseEntity {
 
     @Embedded
     private UserKeywords userKeywords = new UserKeywords();
+
+    @OneToMany(mappedBy = "requestedUser")
+    @JsonIgnore
+    private Set<Keyword> requestedKeywords = new HashSet<>();
+
 
     public static User createFirstLoginUser(String username, String nickname, String providerId) {
         return User.builder()
@@ -80,5 +91,11 @@ public class User extends BaseEntity {
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;
         }
+    }
+
+    public void addKeyword(Keyword keyword) {
+        if (keyword == null || this.requestedKeywords.contains(keyword)) return;
+        this.requestedKeywords.add(keyword);
+        keyword.setRequestedUser(this);
     }
 }
