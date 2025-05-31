@@ -43,14 +43,17 @@ public abstract class IntegrationTestSupport {
     @MockitoBean
     protected JavaMailSender javaMailSender;
 
-    @Container
-    static MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
+    static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");
 
-    @Container
-    static MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
+    static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
+
+    static {
+        mysqlContainer.start();
+        mongoContainer.start();
+    }
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
