@@ -7,11 +7,9 @@ import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import jakarta.transaction.Transactional;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,14 +28,6 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
         Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST);
         Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.MANUAL);
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
-    }
-
-    @Autowired
-    DataSource dataSource;
-
-    @BeforeEach
-    void printRealJdbcUrl() throws SQLException {
-        System.out.println("현재 연결된 JDBC URL: " + dataSource.getConnection().getMetaData().getURL());
     }
 
     @DisplayName("키워드 이름으로 존재 여부를 확인한다.")
