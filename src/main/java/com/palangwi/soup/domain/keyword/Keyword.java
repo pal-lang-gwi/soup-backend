@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
+import com.palangwi.soup.exception.keyword.KeywordInvalidStatusException;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -38,6 +40,10 @@ public class Keyword extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Nullable
+    @Column(length = 100)
+    private String rejectionReason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_user_id", nullable = true)
     private User requestedUser;
@@ -46,15 +52,13 @@ public class Keyword extends BaseEntity {
     @JsonIgnore
     private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
 
-    public static Keyword of(String name, String normalizedName, Source source, User user) {
-        Keyword keyword = Keyword.builder()
+    public static Keyword of(String name, String normalizedName, Source source) {
+        return Keyword.builder()
                 .name(name)
                 .normalizedName(normalizedName)
                 .source(source)
                 .status(Status.PENDING)
                 .build();
-        keyword.setRequestedUser(user);
-        return keyword;
     }
 
     @Builder
@@ -72,12 +76,18 @@ public class Keyword extends BaseEntity {
                 .count();
     }
 
-    public void setRequestedUser(User user) {
-        if (this.requestedUser == user) return;
-        this.requestedUser = user;
-        if (user != null && !user.getRequestedKeywords().contains(this)) {
-            user.getRequestedKeywords().add(this);
+    public void approve(User firstRequestUser) {
+        if (this.status != Status.PENDING) {
+            throw new KeywordInvalidStatusException();
         }
+        this.status = Status.ACTIVE;
+        this.rejectionReason = null;
+        this.requestedUser = firstRequestUser;
+    }
+
+    public void reject(String rejectionReason) {
+        this.status = Status.REJECTED;
+        this.rejectionReason = rejectionReason;
     }
 
     @Override

@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,4 +32,10 @@ public class PendingKeywordRequest extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Keyword keyword;
+
+    @Builder
+    public PendingKeywordRequest(User user, Keyword keyword) {
+        this.user = user;
+        this.keyword = keyword;
+    }
 }

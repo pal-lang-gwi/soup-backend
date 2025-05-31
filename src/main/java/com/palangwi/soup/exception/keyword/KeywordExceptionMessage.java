@@ -7,7 +7,10 @@ import org.springframework.http.HttpStatus;
 public enum KeywordExceptionMessage {
     KEYWORD_NOT_FOUND("해당 키워드가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     NOT_SUBSCRIBED_KEYWORD("구독중인 키워드가 아닙니다.", HttpStatus.BAD_REQUEST),
-    ALREADY_SUBSCRIBED_KEYWORD("이미 등록된 키워드입니다.", HttpStatus.BAD_REQUEST);
+    ALREADY_SUBSCRIBED_KEYWORD("이미 등록된 키워드입니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_REJECTED_KEYWORD("관리자에 의해 등록이 제한된 키워드입니다.", HttpStatus.BAD_REQUEST),
+    KEYWORD_INVALID_STATUS_EXCEPTION("키워드의 상태가 유효하지 않습니다.", HttpStatus.BAD_REQUEST),;
+
 
     private final String message;
     private final HttpStatus status;

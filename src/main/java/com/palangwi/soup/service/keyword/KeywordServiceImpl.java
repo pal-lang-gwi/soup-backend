@@ -1,8 +1,17 @@
 package com.palangwi.soup.service.keyword;
 
+import static com.palangwi.soup.utils.KeywordNormalizer.*;
+
+import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
+import com.palangwi.soup.domain.keyword.Status;
 import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
+import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
+import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
+import com.palangwi.soup.utils.KeywordNormalizer;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +39,7 @@ public class KeywordServiceImpl implements KeywordService {
     private final KeywordRepository keywordRepository;
     private final UserRepository userRepository;
     private final UserKeywordRepository userKeywordRepository;
+    private final PendingKeywordRequestRepository pendingKeywordRequestRepository;
 
     public KeywordResponseDto getKeywordByName(String name) {
         return null;
@@ -66,21 +76,59 @@ public class KeywordServiceImpl implements KeywordService {
 
     private List<Keyword> findOrCreateKeywords(List<String> keywords, Long userId) {
         User user = findUserById(userId);
+
         List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
+
         Set<String> existingKeywordNames = existingKeywords.stream()
                 .map(Keyword::getName)
                 .collect(Collectors.toSet());
 
-        List<Keyword> newKeywords = keywords.stream()
-                .filter(name -> !existingKeywordNames.contains(name.toLowerCase()))
-                // TODO : Keyword의 nomalizedName을 어떻게 설정할지 논의 필요
-                .map(name -> Keyword.of(name.toLowerCase(), name, Source.USER_REQUEST, user))
-                .toList();
-        keywordRepository.saveAll(newKeywords);
+        List<Keyword> result = new ArrayList<>(existingKeywords);
 
-        List<Keyword> allKeywords = new ArrayList<>(existingKeywords);
-        allKeywords.addAll(newKeywords);
-        return allKeywords;
+        for (String name : keywords) {
+            if (existingKeywordNames.contains(name)) continue;
+
+            Keyword keyword = handleNonExistingKeyword(name, user);
+            result.add(keyword);
+        }
+        return result;
+    }
+
+    private Keyword handleNonExistingKeyword(String name, User user) {
+        Optional<Keyword> keywordOpt = keywordRepository.findByName(name);
+
+        if (keywordOpt.isPresent()) {
+            Keyword keyword = keywordOpt.get();
+
+            return switch (keyword.getStatus()) {
+                case REJECTED -> throw new AlreadyRejectedKeywordException();
+                case PENDING -> {
+                    handlePendingKeyword(keyword, user);
+                    yield keyword;
+                }
+                default -> keyword;
+            };
+        }
+
+        return createNewKeyword(name, user);
+    }
+
+    private Keyword createNewKeyword(String name, User user) {
+        String normalizedName = normalize(name);
+        return Keyword.of(name.toLowerCase(), normalizedName, Source.USER_REQUEST, user);
+    }
+
+    private void handlePendingKeyword(Keyword keyword, User user) {
+        boolean alreadyRequested = keyword.getPendingKeywordRequests().stream()
+                .anyMatch(req -> req.getUser().getId().equals(user.getId()));
+
+        if (!alreadyRequested) {
+            PendingKeywordRequest request = PendingKeywordRequest.builder()
+                    .keyword(keyword)
+                    .user(user)
+                    .build();
+            pendingKeywordRequestRepository.save(request);
+        }
     }
 
     private User findUserById(Long userId) {
