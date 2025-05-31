@@ -62,8 +62,8 @@ public class KeywordServiceImpl implements KeywordService {
                                                                       RegisterKeywordRequestDto registerKeywordRequestDto) {
         List<String> keywords = registerKeywordRequestDto.registered();
 
-        List<Keyword> allKeywords = findOrCreateKeywords(keywords, userId);
         User user = findUserById(userId);
+        List<Keyword> allKeywords = findOrCreateKeywords(keywords, user);
 
         List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
         userKeywordRepository.saveAll(userKeywords);
@@ -74,9 +74,7 @@ public class KeywordServiceImpl implements KeywordService {
                         .toList());
     }
 
-    private List<Keyword> findOrCreateKeywords(List<String> keywords, Long userId) {
-        User user = findUserById(userId);
-
+    private List<Keyword> findOrCreateKeywords(List<String> keywords, User user) {
         List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
 
         Set<String> existingKeywordNames = existingKeywords.stream()
@@ -103,7 +101,7 @@ public class KeywordServiceImpl implements KeywordService {
             return switch (keyword.getStatus()) {
                 case REJECTED -> throw new AlreadyRejectedKeywordException();
                 case PENDING -> {
-                    handlePendingKeyword(keyword, user);
+                    keyword.addPendingRequestIfNotExists(user);
                     yield keyword;
                 }
                 default -> keyword;
@@ -116,19 +114,6 @@ public class KeywordServiceImpl implements KeywordService {
     private Keyword createNewKeyword(String name, User user) {
         String normalizedName = normalize(name);
         return Keyword.of(name.toLowerCase(), normalizedName, Source.USER_REQUEST, user);
-    }
-
-    private void handlePendingKeyword(Keyword keyword, User user) {
-        boolean alreadyRequested = keyword.getPendingKeywordRequests().stream()
-                .anyMatch(req -> req.getUser().getId().equals(user.getId()));
-
-        if (!alreadyRequested) {
-            PendingKeywordRequest request = PendingKeywordRequest.builder()
-                    .keyword(keyword)
-                    .user(user)
-                    .build();
-            pendingKeywordRequestRepository.save(request);
-        }
     }
 
     private User findUserById(Long userId) {

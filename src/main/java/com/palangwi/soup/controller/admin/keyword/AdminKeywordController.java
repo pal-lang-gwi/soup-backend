@@ -3,6 +3,7 @@ package com.palangwi.soup.controller.admin.keyword;
 import static com.palangwi.soup.utils.ApiUtils.success;
 
 import com.palangwi.soup.dto.admin.keyword.AdminKeywordResponseListDto;
+import com.palangwi.soup.dto.admin.keyword.ApproveKeywordResponseDto;
 import com.palangwi.soup.service.admin.keyword.AdminKeywordService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.Valid;
@@ -33,8 +34,8 @@ public class AdminKeywordController {
     }
 
     @PostMapping("/{requestId}/approve")
-    public ApiResult<Void> createRequestedKeyword(@PathVariable Long requestId) {
-        adminKeywordService.approveKeyword(requestId);
-        return success(null);
+    public ApiResult<ApproveKeywordResponseDto> approveRequestedKeyword(@PathVariable Long requestId) {
+
+        return success(adminKeywordService.approveKeyword(requestId));
     }
 }

@@ -97,10 +97,4 @@ public class User extends BaseEntity {
             this.profileImageUrl = profileImageUrl;
         }
     }
-
-    public void addKeyword(Keyword keyword) {
-        if (keyword == null || this.requestedKeywords.contains(keyword)) return;
-        this.requestedKeywords.add(keyword);
-        keyword.setRequestedUser(this);
-    }
 }
