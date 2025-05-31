@@ -1,7 +1,6 @@
 package com.palangwi.soup.service.mail;
 
 import com.palangwi.soup.domain.mail.MailEvent;
-import com.palangwi.soup.domain.mail.MailType;
 import com.palangwi.soup.domain.mail.policy.NewsSelectionPolicy;
 import com.palangwi.soup.domain.news.Summary;
 import com.palangwi.soup.domain.user.User;
@@ -10,7 +9,8 @@ import com.palangwi.soup.dto.news.DailyNewsMailRequestDto;
 import com.palangwi.soup.dto.news.SummaryForMailTemplateDto;
 import com.palangwi.soup.infrastructure.mail.MailViewRenderer;
 import com.palangwi.soup.repository.mail.MailEventRepository;
-import jakarta.transaction.Transactional;
+import java.util.Base64;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.palangwi.soup.domain.mail.MailType.DAILY_NEWS;
 
@@ -30,6 +31,10 @@ public class MailService {
     private final MailAsyncExecutor mailAsyncExecutor;
     private final MailViewRenderer mailViewRenderer;
     private final NewsSelectionPolicy newsSelectionPolicy;
+
+    private static final byte[] TRANSPARENT_PIXEL = Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=="
+    );
 
     @Transactional
     public void sendDailyNews(DailyNewsMailRequestDto request) {
@@ -69,5 +74,24 @@ public class MailService {
         MailEvent mailEvent = new MailEvent(user.getId(), DAILY_NEWS, now, false);
         mailEventRepository.save(mailEvent);
         return mailEvent;
+    }
+
+    @Transactional
+    public byte[] trackingMail(Long mailId) {
+        Optional<MailEvent> eventOpt = mailEventRepository.findById(mailId);
+
+        if (eventOpt.isPresent()) {
+            MailEvent mailEvent = eventOpt.get();
+            mailEvent.markAsOpen();
+            mailEventRepository.save(mailEvent);
+        } else {
+            log.warn("존재 하지 않는 MailID : {} 에 대한 추적 요청이 발생했습니다.", mailId);
+        }
+
+        return getTransparentPixel();
+    }
+
+    private byte[] getTransparentPixel() {
+        return TRANSPARENT_PIXEL;
     }
 }

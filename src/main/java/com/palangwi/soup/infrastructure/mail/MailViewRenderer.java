@@ -23,7 +23,7 @@ public class MailViewRenderer {
         Context context = new Context();
         context.setVariable("name", username);
         context.setVariable("summaries", summaries);
-        context.setVariable("trackingUrl", "https://trackingUrl-example.com/read?eventId=" + mailEventId);
+        context.setVariable("trackingUrl", "https://my-homepage/read?eventId=" + mailEventId);
         // resources/templates/mail/daily-news.html 파일에 적용
         return templateEngine.process("mail/daily-news", context);
     }
