@@ -38,4 +38,11 @@ public class PendingKeywordRequest extends BaseEntity {
         this.user = user;
         this.keyword = keyword;
     }
+
+    public static PendingKeywordRequest of(final User user, final Keyword keyword) {
+        return PendingKeywordRequest.builder()
+                .user(user)
+                .keyword(keyword)
+                .build();
+    }
 }

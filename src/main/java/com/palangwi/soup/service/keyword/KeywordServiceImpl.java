@@ -6,6 +6,7 @@ import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
 import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
+import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 import com.palangwi.soup.utils.KeywordNormalizer;
 import java.text.Normalizer;
@@ -101,7 +102,11 @@ public class KeywordServiceImpl implements KeywordService {
             return switch (keyword.getStatus()) {
                 case REJECTED -> throw new AlreadyRejectedKeywordException();
                 case PENDING -> {
-                    keyword.addPendingRequestIfNotExists(user);
+                    if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
+                        throw new KeywordAlreadyRequestedException();
+                    }
+                    PendingKeywordRequest pendingKeywordRequest = PendingKeywordRequest.of(user, keyword);
+                    pendingKeywordRequestRepository.save(pendingKeywordRequest);
                     yield keyword;
                 }
                 default -> keyword;

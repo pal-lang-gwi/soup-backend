@@ -93,21 +93,6 @@ public class Keyword extends BaseEntity {
         this.rejectionReason = rejectionReason;
     }
 
-    public boolean alreadyRequested(User user) {
-        return pendingKeywordRequests.stream()
-                .anyMatch(req -> req.getUser().equals(user));
-    }
-
-    public void addPendingRequestIfNotExists(User user) {
-        if (!alreadyRequested(user)) {
-            pendingKeywordRequests.add(
-                    PendingKeywordRequest.builder().keyword(this).user(user).build()
-            );
-        } else {
-            throw new KeywordAlreadyRequestedException();
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
