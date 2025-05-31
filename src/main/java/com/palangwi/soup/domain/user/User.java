@@ -3,6 +3,7 @@ package com.palangwi.soup.domain.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.keyword.Keyword;
+import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.userkeyword.UserKeywords;
 import com.palangwi.soup.security.Role;
 import jakarta.persistence.*;
@@ -52,6 +53,10 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "requestedUser")
     @JsonIgnore
     private Set<Keyword> requestedKeywords = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
 
 
     public static User createFirstLoginUser(String username, String nickname, String providerId) {

@@ -1,5 +1,6 @@
 package com.palangwi.soup.domain.keyword;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
@@ -40,6 +41,10 @@ public class Keyword extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_user_id", nullable = true)
     private User requestedUser;
+
+    @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
 
     public static Keyword of(String name, String normalizedName, Source source, User user) {
         Keyword keyword = Keyword.builder()
