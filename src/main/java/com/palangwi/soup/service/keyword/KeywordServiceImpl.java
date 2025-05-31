@@ -48,11 +48,11 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional
-    public RegisterKeywordResponseDto registerKeyword(Long userId,
-                                                                      RegisterKeywordRequestDto registerKeywordRequestDto) {
+    public RegisterKeywordResponseDto registerKeyword(Long userId, RegisterKeywordRequestDto registerKeywordRequestDto) {
         List<String> keywords = registerKeywordRequestDto.registered();
 
         List<Keyword> allKeywords = findOrCreateKeywords(keywords);
+
         User user = findUserById(userId);
 
         List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
