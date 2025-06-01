@@ -1,4 +1,4 @@
-package com.palangwi.soup.controller.keyword;
+package com.palangwi.soup.controller;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.palangwi.soup.IntegrationTestSupport;
+import com.palangwi.soup.service.keyword.KeywordService;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,13 +17,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.palangwi.soup.controller.ControllerTestSupport;
 import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.security.WithMockJwtAuthentication;
-import com.palangwi.soup.service.keyword.KeywordService;
 
-class KeywordControllerTest extends ControllerTestSupport {
+class KeywordControllerTest extends IntegrationTestSupport {
 
     @MockitoBean
     private KeywordService keywordService;
@@ -32,13 +33,20 @@ class KeywordControllerTest extends ControllerTestSupport {
     void registerKeyword_success() throws Exception {
         // given
         RegisterKeywordRequestDto request = new RegisterKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
+        RegisterKeywordResponseDto response = RegisterKeywordResponseDto.of(Arrays.asList("키워드1", "키워드2"));
+
+        given(keywordService.registerKeyword(1L, request))
+                .willReturn(response);
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isOk());
+                .andDo(print()) // 실제 응답 내용을 보기 위해 추가
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.registeredKeywords[0]").value("키워드1"))
+                .andExpect(jsonPath("$.data.registeredKeywords[1]").value("키워드2"));
 
         verify(keywordService).registerKeyword(1L, request);
     }

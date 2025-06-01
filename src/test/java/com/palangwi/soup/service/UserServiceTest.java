@@ -3,6 +3,7 @@ package com.palangwi.soup.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userlog.ChangeType;
@@ -22,13 +23,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class UserServiceTest {
+class UserServiceTest extends IntegrationTestSupport {
 
-    @Autowired
-    private UserService userService;
+     @Autowired
+     private UserService userService;
 
     @Autowired
     private UserRepository userRepository;
@@ -44,13 +43,13 @@ class UserServiceTest {
     @DisplayName("유저의 정보를 반환한다.")
     @Test
     void getUserInfo() {
-        //given
+        // given
         User user = userRepository.save(createUser("테스트닉네임"));
 
-        //when
+        // when
         UserResponseDto result = userService.getUserInfo(user.getId());
 
-        //then
+        // then
         assertThat(result).isNotNull()
                 .extracting("email", "username", "nickname", "role", "gender", "birthDate", "profileImageUrl")
                 .containsExactly(
@@ -60,8 +59,7 @@ class UserServiceTest {
                         user.getRole(),
                         user.getGender(),
                         user.getBirthDate(),
-                        user.getProfileImageUrl()
-                );
+                        user.getProfileImageUrl());
     }
 
     @DisplayName("유저의 정보를 수정할 수 있다.")
@@ -77,7 +75,7 @@ class UserServiceTest {
 
         // when
         UserResponseDto result = userService.updateUserInfo(user1.getId(), request);
-
+        System.out.println("result: " + result);
         // then
         assertThat(result.nickname()).isEqualTo(newNickname);
         assertThat(result.profileImageUrl()).isEqualTo(newImageUrl);

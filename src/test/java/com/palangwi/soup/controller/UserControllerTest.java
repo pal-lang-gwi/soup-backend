@@ -1,5 +1,6 @@
 package com.palangwi.soup.controller;
 
+import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.dto.user.UserAdditionalInfoRequestDto;
 import com.palangwi.soup.dto.user.UserDeleteRequestDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class UserControllerTest extends ControllerTestSupport{
+public class UserControllerTest extends IntegrationTestSupport {
 
     @MockitoBean
     private UserService userService;
@@ -36,9 +37,8 @@ public class UserControllerTest extends ControllerTestSupport{
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/init")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -56,9 +56,8 @@ public class UserControllerTest extends ControllerTestSupport{
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/init")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
@@ -78,8 +77,7 @@ public class UserControllerTest extends ControllerTestSupport{
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))
-                )
+                .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -98,9 +96,8 @@ public class UserControllerTest extends ControllerTestSupport{
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
@@ -145,7 +142,7 @@ public class UserControllerTest extends ControllerTestSupport{
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/check-nickname")
-                        .param("nickname", nickname))
+                .param("nickname", nickname))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -164,8 +161,8 @@ public class UserControllerTest extends ControllerTestSupport{
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/delete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
