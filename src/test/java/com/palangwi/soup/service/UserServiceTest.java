@@ -139,5 +139,4 @@ class UserServiceTest {
                 .profileImageUrl("https://sample-image.png")
                 .build();
     }
-
 }

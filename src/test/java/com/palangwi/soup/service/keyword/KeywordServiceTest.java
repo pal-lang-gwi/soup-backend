@@ -8,8 +8,8 @@ import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
-import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
-import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
+import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
@@ -68,10 +68,10 @@ class KeywordServiceTest {
         // given
         User user = createUser();
         List<String> keywords = Arrays.asList("키워드1", "키워드2");
-        RegisterKeywordRequestDto requestDto = new RegisterKeywordRequestDto(keywords);
+        SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
 
         // when
-        RegisterKeywordResponseDto result = keywordService.registerKeyword(user.getId(), requestDto);
+        SubscribeKeywordResponseDto result = keywordService.subscribeKeywords(user.getId(), requestDto);
 
         // then
         assertThat(result.registeredKeywords()).hasSize(2);
@@ -84,15 +84,15 @@ class KeywordServiceTest {
     void registerKeyword_이미구독시_예외() {
         // given
         User user = createUser();
-        Keyword keyword = keywordRepository.save(Keyword.of("키워드1", "키워드1", Source.USER_REQUEST));
+        Keyword keyword = keywordRepository.save(Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user));
         // 유저-키워드 관계 생성(이미 구독)
         userKeywordRepository.save(UserKeyword.create(user, keyword));
 
         List<String> keywords = List.of("키워드1");
-        RegisterKeywordRequestDto requestDto = new RegisterKeywordRequestDto(keywords);
+        SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
 
         // when & then
-        assertThatThrownBy(() -> keywordService.registerKeyword(user.getId(), requestDto))
+        assertThatThrownBy(() -> keywordService.subscribeKeywords(user.getId(), requestDto))
                 .isInstanceOf(AlreadySubscribedKeywordException.class)
                 .hasMessageContaining("이미 등록된 키워드입니다");
     }

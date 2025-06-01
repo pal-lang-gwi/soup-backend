@@ -2,6 +2,10 @@ package com.palangwi.soup.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.palangwi.soup.domain.user.Gender;
+import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.security.Role;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +30,9 @@ class KeywordRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST);
-        Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.MANUAL);
+        User user = createUser("테스트 닉네임");
+        Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user);
+        Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.MANUAL, user);
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
     }
 
@@ -66,5 +71,18 @@ class KeywordRepositoryTest {
         List<Keyword> result = keywordRepository.findAllByNameIn(Arrays.asList("키워드1", "키워드2", "없는키워드"));
         assertThat(result).hasSize(2);
         assertThat(result).extracting("name").containsExactlyInAnyOrder("키워드1", "키워드2");
+    }
+
+    private User createUser(String nickname) {
+        return User.builder()
+                .email("asdf1234@naver.com")
+                .username("테스트")
+                .nickname(nickname)
+                .role(Role.USER)
+                .gender(Gender.MALE)
+                .birthDate(LocalDate.of(1999, 9, 9))
+                .providerId("구글")
+                .profileImageUrl("https://sample-image.png")
+                .build();
     }
 }

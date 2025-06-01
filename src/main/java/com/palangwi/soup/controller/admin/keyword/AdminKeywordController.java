@@ -35,7 +35,6 @@ public class AdminKeywordController {
 
     @PostMapping("/{requestId}/approve")
     public ApiResult<ApproveKeywordResponseDto> approveRequestedKeyword(@PathVariable Long requestId) {
-
         return success(adminKeywordService.approveKeyword(requestId));
     }
 }

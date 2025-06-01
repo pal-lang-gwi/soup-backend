@@ -3,13 +3,12 @@ package com.palangwi.soup.service.keyword;
 import static com.palangwi.soup.utils.KeywordNormalizer.*;
 
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
-import com.palangwi.soup.domain.keyword.Status;
-import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
+import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
 import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
-import com.palangwi.soup.utils.KeywordNormalizer;
-import java.text.Normalizer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +23,6 @@ import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
-import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
@@ -59,9 +57,9 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional
-    public RegisterKeywordResponseDto registerKeyword(Long userId,
-                                                                      RegisterKeywordRequestDto registerKeywordRequestDto) {
-        List<String> keywords = registerKeywordRequestDto.registered();
+    public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
+                                                       SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
+        List<String> keywords = subscribeKeywordRequestDto.subscribeKeywords();
 
         User user = findUserById(userId);
         List<Keyword> allKeywords = findOrCreateKeywords(keywords, user);
@@ -69,7 +67,7 @@ public class KeywordServiceImpl implements KeywordService {
         List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
         userKeywordRepository.saveAll(userKeywords);
 
-        return RegisterKeywordResponseDto.of(
+        return SubscribeKeywordResponseDto.of(
                 allKeywords.stream()
                         .map(Keyword::getName)
                         .toList());

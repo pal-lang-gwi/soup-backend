@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +17,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.palangwi.soup.controller.ControllerTestSupport;
-import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.security.WithMockJwtAuthentication;
 import com.palangwi.soup.service.keyword.KeywordService;
@@ -31,7 +31,7 @@ class KeywordControllerTest extends ControllerTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_success() throws Exception {
         // given
-        RegisterKeywordRequestDto request = new RegisterKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords")
@@ -40,7 +40,7 @@ class KeywordControllerTest extends ControllerTestSupport {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(keywordService).registerKeyword(1L, request);
+        verify(keywordService).subscribeKeywords(1L, request);
     }
 
     @Test
@@ -48,9 +48,9 @@ class KeywordControllerTest extends ControllerTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_alreadySubscribed() throws Exception {
         // given
-        RegisterKeywordRequestDto request = new RegisterKeywordRequestDto(Arrays.asList("키워드1"));
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1"));
         // 예외 발생 설정
-        given(keywordService.registerKeyword(1L, request))
+        given(keywordService.subscribeKeywords(1L, request))
                 .willThrow(new AlreadySubscribedKeywordException(List.of("키워드1")));
 
         // when // then
