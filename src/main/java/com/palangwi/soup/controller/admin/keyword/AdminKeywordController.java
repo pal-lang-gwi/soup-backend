@@ -4,6 +4,8 @@ import static com.palangwi.soup.utils.ApiUtils.success;
 
 import com.palangwi.soup.dto.admin.keyword.AdminKeywordResponseListDto;
 import com.palangwi.soup.dto.admin.keyword.ApproveKeywordResponseDto;
+import com.palangwi.soup.dto.admin.keyword.RejectKeywordRequestDto;
+import com.palangwi.soup.dto.admin.keyword.RejectKeywordResponseDto;
 import com.palangwi.soup.service.admin.keyword.AdminKeywordService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,5 +39,10 @@ public class AdminKeywordController {
     @PostMapping("/{requestId}/approve")
     public ApiResult<ApproveKeywordResponseDto> approveRequestedKeyword(@PathVariable Long requestId) {
         return success(adminKeywordService.approveKeyword(requestId));
+    }
+
+    @PostMapping("/{requestId}/reject")
+    public ApiResult<RejectKeywordResponseDto> rejectRequestedKeyword(@PathVariable Long requestId, @Valid @RequestBody RejectKeywordRequestDto request) {
+        return success(adminKeywordService.rejectKeyword(requestId, request.rejectReason()));
     }
 }

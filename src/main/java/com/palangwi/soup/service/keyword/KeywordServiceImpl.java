@@ -9,6 +9,7 @@ import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
 import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -98,13 +99,24 @@ public class KeywordServiceImpl implements KeywordService {
             Keyword keyword = keywordOpt.get();
 
             return switch (keyword.getStatus()) {
-                case REJECTED -> throw new AlreadyRejectedKeywordException();
+                case REJECTED -> {
+                    if (keyword.getRejectedAt() != null &&
+                    keyword.getRejectedAt().isAfter(LocalDateTime.now().minusMonths(1))) {
+                        throw new AlreadyRejectedKeywordException();
+                    }
+
+                    if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
+                        throw new KeywordAlreadyRequestedException();
+                    }
+                    initPendingKeywordRequest(user, keyword);
+                    yield keyword;
+                }
+
                 case PENDING -> {
                     if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
                         throw new KeywordAlreadyRequestedException();
                     }
-                    PendingKeywordRequest pendingKeywordRequest = PendingKeywordRequest.of(user, keyword);
-                    pendingKeywordRequestRepository.save(pendingKeywordRequest);
+                    initPendingKeywordRequest(user, keyword);
                     yield keyword;
                 }
                 default -> keyword;
@@ -112,6 +124,11 @@ public class KeywordServiceImpl implements KeywordService {
         }
 
         return createNewKeyword(name, user);
+    }
+
+    private void initPendingKeywordRequest(User user, Keyword keyword) {
+        PendingKeywordRequest request = PendingKeywordRequest.of(user, keyword);
+        pendingKeywordRequestRepository.save(request);
     }
 
     private Keyword createNewKeyword(String name, User user) {

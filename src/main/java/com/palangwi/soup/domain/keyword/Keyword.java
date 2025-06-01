@@ -9,6 +9,7 @@ import com.palangwi.soup.exception.keyword.KeywordInvalidStatusException;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -45,31 +46,34 @@ public class Keyword extends BaseEntity {
     @Column(length = 100)
     private String rejectionReason;
 
+    @Nullable
+    private LocalDateTime rejectedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_user_id", nullable = true)
-    private User requestedUser;
+    private User firstRequestUser;
 
     @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
 
-    public static Keyword of(String name, String normalizedName, Source source, User requestedUser) {
+    public static Keyword of(String name, String normalizedName, Source source, User firstRequestUser) {
         return Keyword.builder()
                 .name(name)
                 .normalizedName(normalizedName)
                 .source(source)
-                .requestedUser(requestedUser)
+                .firstRequestUser(firstRequestUser)
                 .status(Status.PENDING)
                 .build();
     }
 
     @Builder
-    private Keyword(String name, String normalizedName, Source source, Status status, User requestedUser) {
+    private Keyword(String name, String normalizedName, Source source, Status status, User firstRequestUser) {
         this.name = name;
         this.normalizedName = normalizedName;
         this.source = source;
         this.status = status;
-        this.requestedUser = requestedUser;
+        this.firstRequestUser = firstRequestUser;
     }
 
     // 추후 Keyword 도메인을 분리하게 된다면, 구독중인 사용자의 수를 어떻게 관리할 지 논의가 필요할 것 같습니다.
@@ -85,12 +89,13 @@ public class Keyword extends BaseEntity {
         }
         this.status = Status.ACTIVE;
         this.rejectionReason = null;
-        this.requestedUser = firstRequestUser;
+        this.firstRequestUser = firstRequestUser;
     }
 
-    public void reject(String rejectionReason) {
+    public void reject(String rejectionReason, LocalDateTime rejectedAt) {
         this.status = Status.REJECTED;
         this.rejectionReason = rejectionReason;
+        this.rejectedAt = rejectedAt;
     }
 
     @Override
