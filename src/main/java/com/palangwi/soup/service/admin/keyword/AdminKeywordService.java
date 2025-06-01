@@ -36,7 +36,9 @@ public class AdminKeywordService {
 
     @Transactional(readOnly = true)
     public AdminKeywordResponseListDto getRequestedKeywords(String stringStatus, Pageable pageable) {
-        Page<PendingKeywordRequest> page = getStatus(stringStatus)
+        Optional<Status> statusOpt = getStatus(stringStatus);
+
+        Page<PendingKeywordRequest> page = statusOpt
                 .map(status -> adminKeywordRepository.findByStatus(status, pageable))
                 .orElseGet(() -> adminKeywordRepository.findAll(pageable));
 
@@ -57,8 +59,7 @@ public class AdminKeywordService {
         PendingKeywordRequest request = adminKeywordRepository.findById(requestId)
                 .orElseThrow(KeywordNotFoundException::new);
 
-        Keyword keyword = keywordRepository.findByName(request.getKeyword().getName())
-                .orElseThrow(KeywordNotFoundException::new);
+        Keyword keyword = request.getKeyword();
 
         User firstRequestUser = getFirstRequestUser(keyword);
 
@@ -106,8 +107,7 @@ public class AdminKeywordService {
         PendingKeywordRequest request = adminKeywordRepository.findById(requestId)
                 .orElseThrow(KeywordNotFoundException::new);
 
-        Keyword keyword = keywordRepository.findByName(request.getKeyword().getName())
-                .orElseThrow(KeywordNotFoundException::new);
+        Keyword keyword = request.getKeyword();
 
         keyword.reject(rejectReason, rejectedAt);
 

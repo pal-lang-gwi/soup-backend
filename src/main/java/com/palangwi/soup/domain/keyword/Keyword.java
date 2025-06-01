@@ -21,7 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Entity
-@Table(name = "keyword")
+@Table(
+        name = "keyword",
+        uniqueConstraints = @UniqueConstraint(name = "uk_keyword_name", columnNames = "name")
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Keyword extends BaseEntity {
 
