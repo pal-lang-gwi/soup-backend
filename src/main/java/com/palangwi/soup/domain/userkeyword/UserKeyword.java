@@ -45,7 +45,6 @@ public class UserKeyword extends BaseEntity {
         UserKeyword userKeyword = new UserKeyword();
         userKeyword.user = user;
         userKeyword.keyword = keyword;
-        userKeyword.subscribed = true;
         return userKeyword;
     }
 }

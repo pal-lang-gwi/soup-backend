@@ -67,7 +67,11 @@ public class AdminKeywordService {
         List<UserKeyword> newUserKeywords = keyword.getPendingKeywordRequests().stream()
                 .map(PendingKeywordRequest::getUser)
                 .filter(user -> !user.getUserKeywords().isAlreadySubscribed(keyword))
-                .map(user -> UserKeyword.create(user, keyword))
+                .map(user -> {
+                    UserKeyword userKeyword = UserKeyword.create(user, keyword);
+                    userKeyword.subscribe();
+                    return userKeyword;
+                })
                 .toList();
 
         userKeywordRepository.saveAll(newUserKeywords);
