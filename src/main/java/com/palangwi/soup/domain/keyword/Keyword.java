@@ -44,7 +44,7 @@ public class Keyword extends BaseEntity {
 
     @Nullable
     @Column(length = 100)
-    private String rejectionReason;
+    private String rejectReason;
 
     @Nullable
     private LocalDateTime rejectedAt;
@@ -88,13 +88,12 @@ public class Keyword extends BaseEntity {
             throw new KeywordInvalidStatusException();
         }
         this.status = Status.ACTIVE;
-        this.rejectionReason = null;
         this.firstRequestUser = firstRequestUser;
     }
 
-    public void reject(String rejectionReason, LocalDateTime rejectedAt) {
+    public void reject(String rejectReason, LocalDateTime rejectedAt) {
         this.status = Status.REJECTED;
-        this.rejectionReason = rejectionReason;
+        this.rejectReason = rejectReason;
         this.rejectedAt = rejectedAt;
     }
 
