@@ -6,11 +6,11 @@ import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 
 public interface KeywordService {
 
-    KeywordResponseDto getKeywordByName(String name);
+    KeywordResponseDto findKeywordByName(String name);
 
-    KeywordResponseDto createKeyword(String name);
+    KeywordResponseDto addKeyword(String name);
 
-    KeywordResponseDto updateKeyword(Long id, String name);
+    KeywordResponseDto updateKeywordName(Long id, String name);
 
     SubscribeKeywordResponseDto subscribeKeywords(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
 

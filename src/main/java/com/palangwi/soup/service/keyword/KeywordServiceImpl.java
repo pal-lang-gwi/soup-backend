@@ -40,15 +40,15 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserKeywordRepository userKeywordRepository;
     private final PendingKeywordRequestRepository pendingKeywordRequestRepository;
 
-    public KeywordResponseDto getKeywordByName(String name) {
+    public KeywordResponseDto findKeywordByName(String name) {
         return null;
     }
 
-    public KeywordResponseDto createKeyword(String name) {
+    public KeywordResponseDto addKeyword(String name) {
         return null;
     }
 
-    public KeywordResponseDto updateKeyword(Long id, String name) {
+    public KeywordResponseDto updateKeywordName(Long id, String name) {
         return null;
     }
 
@@ -62,7 +62,7 @@ public class KeywordServiceImpl implements KeywordService {
         List<String> keywords = subscribeKeywordRequestDto.subscribeKeywords();
 
         User user = findUserById(userId);
-        List<Keyword> allKeywords = findOrCreateKeywords(keywords, user);
+        List<Keyword> allKeywords = getOrCreateKeywords(keywords, user);
 
         List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
         userKeywordRepository.saveAll(userKeywords);
@@ -73,7 +73,7 @@ public class KeywordServiceImpl implements KeywordService {
                         .toList());
     }
 
-    private List<Keyword> findOrCreateKeywords(List<String> keywords, User user) {
+    private List<Keyword> getOrCreateKeywords(List<String> keywords, User user) {
         List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
 
         Set<String> existingKeywordNames = existingKeywords.stream()
