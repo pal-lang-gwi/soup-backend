@@ -29,14 +29,12 @@ public class UserController {
     @PostMapping("/api/v1/users/init")
     public ApiResult<UserInitSettingResponseDto> initAdditionalInfo(@AuthenticationPrincipal JwtAuthentication userInfo,
                                                                     @Valid @RequestBody UserAdditionalInfoRequestDto request) {
-
         return success(userService.initAdditionalUserInfo(userInfo.id(), request));
     }
 
     @PatchMapping("/api/v1/users")
     public ApiResult<UserResponseDto> updateUser(@AuthenticationPrincipal JwtAuthentication userInfo,
                                                  @Valid @RequestBody UserUpdateRequestDto request) {
-
         return success(userService.updateUserInfo(userInfo.id(), request));
     }
 
