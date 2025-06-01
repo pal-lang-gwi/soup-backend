@@ -1,5 +1,6 @@
 package com.palangwi.soup.repository;
 
+import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.userlog.ChangeType;
 import com.palangwi.soup.domain.userlog.UserHistory;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,9 +18,8 @@ import java.util.Optional;
 import static com.palangwi.soup.domain.userlog.ChangeType.*;
 import static org.assertj.core.api.Assertions.*;
 
-@SpringBootTest
 @Transactional
-public class UserHistoryRepositoryTest {
+class UserHistoryRepositoryTest extends IntegrationTestSupport {
 
     @Autowired
     private UserHistoryRepository userHistoryRepository;
@@ -40,9 +39,9 @@ public class UserHistoryRepositoryTest {
     public void getLatestUserDeleteHistory() {
         // given은 beforeEach에서 처리
 
-
         // when
-        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", DELETE);
+        Optional<UserHistory> userHistory = userHistoryRepository
+                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", DELETE);
 
         // then
         assertThat(userHistory.get().getChangeType()).isEqualTo(DELETE);
@@ -54,9 +53,9 @@ public class UserHistoryRepositoryTest {
     public void getLatestUserCreateHistory() {
         // given은 beforeEach에서 처리
 
-
         // when
-        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", CREATE);
+        Optional<UserHistory> userHistory = userHistoryRepository
+                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc("email2@email.com", CREATE);
 
         // then
         assertThat(userHistory.get().getChangeType()).isEqualTo(CREATE);

@@ -6,24 +6,25 @@ import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.security.Role;
 import java.time.LocalDate;
+
+import com.palangwi.soup.IntegrationTestSupport;
+import com.palangwi.soup.domain.keyword.Keyword;
+import com.palangwi.soup.domain.keyword.Source;
+import com.palangwi.soup.repository.keyword.KeywordRepository;
+import jakarta.transaction.Transactional;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import com.palangwi.soup.repository.keyword.KeywordRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.domain.keyword.Source;
-
-@SpringBootTest
 @Transactional
-class KeywordRepositoryTest {
+@Testcontainers
+class KeywordRepositoryTest extends IntegrationTestSupport {
 
     @Autowired
     private KeywordRepository keywordRepository;

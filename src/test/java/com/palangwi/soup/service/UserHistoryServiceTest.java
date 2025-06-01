@@ -1,5 +1,6 @@
 package com.palangwi.soup.service;
 
+import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userlog.ChangeType;
@@ -10,16 +11,12 @@ import com.palangwi.soup.security.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-@SpringBootTest
-class UserHistoryServiceTest {
+class UserHistoryServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private UserRepository userRepository;
@@ -38,7 +35,8 @@ class UserHistoryServiceTest {
 
         // when
         userHistoryRepository.save(history);
-        Optional<UserHistory> result = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc(TEST_EMAIL, ChangeType.CREATE);
+        Optional<UserHistory> result = userHistoryRepository
+                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc(TEST_EMAIL, ChangeType.CREATE);
 
         // then
         assertThat(result).isPresent();
@@ -55,7 +53,8 @@ class UserHistoryServiceTest {
 
         // when
         userHistoryRepository.save(history);
-        Optional<UserHistory> result = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc(TEST_EMAIL, ChangeType.DELETE);
+        Optional<UserHistory> result = userHistoryRepository
+                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc(TEST_EMAIL, ChangeType.DELETE);
 
         // then
         assertThat(result).isPresent();
@@ -71,7 +70,8 @@ class UserHistoryServiceTest {
         UserHistory history = UserHistory.ofCreate(user.getEmail(), user.getGender(), user.getBirthDate());
 
         // when
-        Optional<UserHistory> result = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc("nonexistent@email.com", ChangeType.CREATE);
+        Optional<UserHistory> result = userHistoryRepository
+                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc("nonexistent@email.com", ChangeType.CREATE);
 
         // then
         assertThat(result).isNotPresent();

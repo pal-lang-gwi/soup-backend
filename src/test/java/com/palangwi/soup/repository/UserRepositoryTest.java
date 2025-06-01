@@ -1,5 +1,6 @@
 package com.palangwi.soup.repository;
 
+import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.repository.user.UserRepository;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,9 +17,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SpringBootTest
 @Transactional
-class UserRepositoryTest {
+class UserRepositoryTest extends IntegrationTestSupport {
 
     @Autowired
     private UserRepository userRepository;
@@ -103,10 +102,10 @@ class UserRepositoryTest {
     void findByUsernameException() {
         // given은 beforeEach에서 처리
 
-        //when
+        // when
         Optional<User> result = userRepository.findByUsername("NOT_EXIST_USERNAME");
 
-        //then
+        // then
         assertThat(result).isEmpty();
     }
 

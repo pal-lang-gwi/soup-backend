@@ -1,34 +1,38 @@
 package com.palangwi.soup.service.keyword;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
+
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
+
 import com.palangwi.soup.repository.keyword.KeywordRepository;
-import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
 import com.palangwi.soup.repository.user.UserRepository;
+import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
 import com.palangwi.soup.security.Role;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import jakarta.transaction.Transactional;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @Transactional
-class KeywordServiceTest {
+@ActiveProfiles("test")
+class KeywordServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private KeywordService keywordService;
@@ -37,15 +41,16 @@ class KeywordServiceTest {
     private KeywordRepository keywordRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserKeywordRepository userKeywordRepository;
 
     @Autowired
-    private UserKeywordRepository userKeywordRepository;
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
         keywordRepository.deleteAll();
         userRepository.deleteAll();
+        userKeywordRepository.deleteAll();
     }
 
     private User createUser() {

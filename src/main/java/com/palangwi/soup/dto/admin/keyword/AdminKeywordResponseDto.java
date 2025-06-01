@@ -13,7 +13,7 @@ public record AdminKeywordResponseDto(Long requestId, Keyword keyword, String re
                 request.getUser().getEmail(),
                 request.getKeyword().getStatus(),
                 request.getCreatedDate(),
-                request.getKeyword().getRejectionReason()
+                request.getKeyword().getRejectReason()
         );
     }
 }
