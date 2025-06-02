@@ -12,6 +12,8 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     
     boolean existsByName(String name);
 
+    boolean existsByNameAndStatus(String name, Status status);
+
     Optional<Keyword> findByName(String name);
 
     List<Keyword> findAllByNameIn(List<String> names);

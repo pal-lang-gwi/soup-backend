@@ -3,17 +3,15 @@ package com.palangwi.soup.service.keyword;
 import static com.palangwi.soup.utils.KeywordNormalizer.*;
 
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
+import com.palangwi.soup.domain.keyword.Status;
+import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
-import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
+import com.palangwi.soup.exception.keyword.*;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -24,7 +22,6 @@ import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
-import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
@@ -58,12 +55,37 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional
+    public RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto) {
+        User user = findUserById(userId);
+
+        String requestedKeyword = requestKeywordRequestDto.keyword();
+        String normalizedKeyword = normalize(requestedKeyword);
+
+        Keyword keyword = findOrCreateKeyword(requestedKeyword, normalizedKeyword, user);
+
+        initPendingKeywordRequest(user, keyword);
+        return RequestKeywordResponseDto.of(user, keyword);
+    }
+
+    private Keyword findOrCreateKeyword(String requestedKeyword, String normalizedKeyword, User user) {
+        if (keywordRepository.existsByNameAndStatus(requestedKeyword, Status.ACTIVE)) {
+            throw new KeywordAlreadyRequestedException();
+        }
+
+        return keywordRepository.findByNameAndStatus(requestedKeyword, Status.PENDING)
+                .orElseGet(() -> {
+                    Keyword newKeyword = Keyword.of(requestedKeyword, normalizedKeyword, Source.USER_REQUEST, user);
+                    return keywordRepository.save(newKeyword);
+                });
+    }
+
+    @Transactional
     public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
                                                        SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         List<String> keywords = subscribeKeywordRequestDto.subscribeKeywords();
 
         User user = findUserById(userId);
-        List<Keyword> allKeywords = getOrCreateKeywords(keywords, user);
+        List<Keyword> allKeywords = validateKeywords(user, keywords);
 
         List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
         userKeywordRepository.saveAll(userKeywords);
@@ -74,66 +96,40 @@ public class KeywordServiceImpl implements KeywordService {
                         .toList());
     }
 
-    private List<Keyword> getOrCreateKeywords(List<String> keywords, User user) {
+    private List<Keyword> validateKeywords(User user, List<String> keywords) {
         List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
 
-        Set<String> existingKeywordNames = existingKeywords.stream()
-                .map(Keyword::getName)
-                .collect(Collectors.toSet());
+        Map<String, Keyword> keywordMap = existingKeywords.stream()
+                .collect(Collectors.toMap(Keyword::getName, k -> k));
 
-        List<Keyword> result = new ArrayList<>(existingKeywords);
+        List<String> notFoundKeywords = keywords.stream()
+                .filter(name -> !keywordMap.containsKey(name))
+                .toList();
 
-        for (String name : keywords) {
-            if (existingKeywordNames.contains(name)) continue;
-
-            Keyword keyword = handleNonExistingKeyword(name, user);
-            result.add(keyword);
-        }
-        return result;
-    }
-
-    private Keyword handleNonExistingKeyword(String name, User user) {
-        Optional<Keyword> keywordOpt = keywordRepository.findByName(name);
-
-        if (keywordOpt.isPresent()) {
-            Keyword keyword = keywordOpt.get();
-
-            switch (keyword.getStatus()) {
-                case REJECTED -> {
-                    if (keyword.getRejectedAt() != null &&
-                    keyword.getRejectedAt().isAfter(LocalDateTime.now().minusMonths(1))) {
-                        throw new AlreadyRejectedKeywordException();
-                    }
-
-                    if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
-                        throw new KeywordAlreadyRequestedException();
-                    }
-                    initPendingKeywordRequest(user, keyword);
-                    return keyword;
-                }
-
-                case PENDING -> {
-                    if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
-                        throw new KeywordAlreadyRequestedException();
-                    }
-                    initPendingKeywordRequest(user, keyword);
-                    return keyword;
-                }
-            };
+        if (!notFoundKeywords.isEmpty()) {
+            throw new KeywordNotExistException(notFoundKeywords);
         }
 
-        return createNewKeyword(name, user);
+        List<String> alreadySubscribed = keywords.stream()
+                .filter(name -> user.getUserKeywords().isAlreadySubscribed(keywordMap.get(name)))
+                .toList();
+
+        if (!alreadySubscribed.isEmpty()) {
+            throw new AlreadySubscribedKeywordException(alreadySubscribed);
+        }
+
+        return keywords.stream()
+                .map(keywordMap::get)
+                .toList();
     }
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {
+        if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
+            throw new KeywordAlreadyRequestedException();
+        }
+
         PendingKeywordRequest request = PendingKeywordRequest.of(user, keyword);
         pendingKeywordRequestRepository.save(request);
-    }
-
-    private Keyword createNewKeyword(String name, User user) {
-        String normalizedName = normalize(name);
-        Keyword keyword = Keyword.of(name.toLowerCase(), normalizedName, Source.USER_REQUEST, user);
-        return keywordRepository.save(keyword);
     }
 
     private User findUserById(Long userId) {
@@ -142,18 +138,9 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     private List<UserKeyword> createUserKeywordsIfNotSubscribed(User user, List<Keyword> keywords) {
-        List<String> alreadySubscribedNames = new ArrayList<>();
         List<UserKeyword> userKeywords = new ArrayList<>();
         for (Keyword keyword : keywords) {
-            boolean alreadySubscribed = user.getUserKeywords().isAlreadySubscribed(keyword);
-            if (alreadySubscribed) {
-                alreadySubscribedNames.add(keyword.getName());
-            } else {
-                userKeywords.add(UserKeyword.create(user, keyword));
-            }
-        }
-        if (!alreadySubscribedNames.isEmpty()) {
-            throw new AlreadySubscribedKeywordException(alreadySubscribedNames);
+            userKeywords.add(UserKeyword.create(user, keyword));
         }
         return userKeywords;
     }

@@ -2,7 +2,9 @@ package com.palangwi.soup.controller.keyword;
 
 import static com.palangwi.soup.utils.ApiUtils.success;
 
+import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,9 +40,17 @@ public class KeywordController {
     @Operation(summary = "키워드 등록", description = "새로운 키워드를 등록합니다.")
     @ApiResponse(responseCode = "200", description = "등록 성공")
     @PostMapping("/api/v1/keywords")
-    public ApiResult<SubscribeKeywordResponseDto> registerKeyword(
+    public ApiResult<SubscribeKeywordResponseDto> subscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         return success(keywordService.subscribeKeywords(userDetails.id(), subscribeKeywordRequestDto));
+    }
+
+    @PostMapping("/api/v1/keywords-request")
+    public ApiResult<RequestKeywordResponseDto> requestKeywords(
+            @AuthenticationPrincipal JwtAuthentication userDetails,
+            @Valid @RequestBody RequestKeywordRequestDto requestKeywordRequestDto
+    ) {
+        return success(keywordService.requestKeywords(userDetails.id(), requestKeywordRequestDto));
     }
 }

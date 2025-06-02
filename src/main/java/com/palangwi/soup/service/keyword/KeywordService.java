@@ -1,8 +1,11 @@
 package com.palangwi.soup.service.keyword;
 
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
+import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
+import jakarta.validation.Valid;
 
 public interface KeywordService {
 
@@ -15,4 +18,6 @@ public interface KeywordService {
     SubscribeKeywordResponseDto subscribeKeywords(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
 
     void deleteKeyword(Long id);
+
+    RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto);
 }
