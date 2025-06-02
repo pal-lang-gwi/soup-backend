@@ -35,7 +35,7 @@ public class KeywordController {
         return success(null);
     }
 
-    @Operation(summary = "키워드 등록", description = "새로운 키워드를 등록합니다.")
+    @Operation(summary = "키워드 구독", description = "새로운 키워드를 구독합니다.")
     @ApiResponse(responseCode = "200", description = "등록 성공")
     @PostMapping("/api/v1/keywords")
     public ApiResult<SubscribeKeywordResponseDto> subscribeKeyword(
@@ -51,7 +51,7 @@ public class KeywordController {
         return success(keywordService.unsubscribeKeyword(userDetails.id(), keywordId));
     }
 
-    @PostMapping("/api/v1/keywords-request")
+    @PostMapping("/api/v1/keywords/request")
     public ApiResult<RequestKeywordResponseDto> requestKeywords(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody RequestKeywordRequestDto requestKeywordRequestDto
