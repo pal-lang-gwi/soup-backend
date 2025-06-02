@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -34,7 +35,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))
+//                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -63,13 +65,9 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public UrlBasedCorsConfigurationSource  corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern(allowedOrigin);
-        configuration.addAllowedOriginPattern("http://localhost:5173");
-        configuration.addAllowedOriginPattern("http://127.0.0.1:5173");
-        configuration.addAllowedOriginPattern("https://unrivaled-dusk-a77b11.netlify.app");
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigin, "http://localhost:5173", "https://unrivaled-dusk-a77b11.netlify.app"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
