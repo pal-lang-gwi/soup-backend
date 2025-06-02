@@ -50,7 +50,7 @@ public class User extends BaseEntity {
     @Embedded
     private UserKeywords userKeywords = new UserKeywords();
 
-    @OneToMany(mappedBy = "requestedUser")
+    @OneToMany(mappedBy = "firstRequestUser")
     @JsonIgnore
     private Set<Keyword> requestedKeywords = new HashSet<>();
 

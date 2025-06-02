@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import java.time.LocalDate;
 
@@ -28,6 +29,9 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
 
     @Autowired
     private KeywordRepository keywordRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -75,7 +79,7 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
     }
 
     private User createUser(String nickname) {
-        return User.builder()
+        User user = User.builder()
                 .email("asdf1234@naver.com")
                 .username("테스트")
                 .nickname(nickname)
@@ -85,5 +89,7 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
                 .providerId("구글")
                 .profileImageUrl("https://sample-image.png")
                 .build();
+
+        return userRepository.save(user);
     }
 }

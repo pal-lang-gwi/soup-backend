@@ -126,7 +126,7 @@ class UserServiceTest extends IntegrationTestSupport {
     }
 
     private User createUser(String nickname) {
-        return User.builder()
+        User user = User.builder()
                 .email("asdf1234@naver.com")
                 .username("테스트")
                 .nickname(nickname)
@@ -136,5 +136,7 @@ class UserServiceTest extends IntegrationTestSupport {
                 .providerId("구글")
                 .profileImageUrl("https://sample-image.png")
                 .build();
+
+        return userRepository.save(user);
     }
 }

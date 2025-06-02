@@ -133,7 +133,8 @@ public class KeywordServiceImpl implements KeywordService {
 
     private Keyword createNewKeyword(String name, User user) {
         String normalizedName = normalize(name);
-        return Keyword.of(name.toLowerCase(), normalizedName, Source.USER_REQUEST, user);
+        Keyword keyword = Keyword.of(name.toLowerCase(), normalizedName, Source.USER_REQUEST, user);
+        return keywordRepository.save(keyword);
     }
 
     private User findUserById(Long userId) {

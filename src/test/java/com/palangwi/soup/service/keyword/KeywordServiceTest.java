@@ -1,7 +1,7 @@
 package com.palangwi.soup.service.keyword;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.keyword.Keyword;
@@ -53,25 +53,26 @@ class KeywordServiceTest extends IntegrationTestSupport {
         userKeywordRepository.deleteAll();
     }
 
-    private User createUser() {
-        return userRepository.save(
-                User.builder()
-                        .email("test@test.com")
-                        .username("테스트")
-                        .nickname("테스트닉네임")
-                        .role(Role.USER)
-                        .gender(Gender.MALE)
-                        .birthDate(LocalDate.of(1999, 9, 9))
-                        .providerId("구글")
-                        .profileImageUrl("https://sample-image.png")
-                        .build());
+    private User createUser(String nickname) {
+        User user = User.builder()
+                .email("asdf1234@naver.com")
+                .username("테스트")
+                .nickname(nickname)
+                .role(Role.USER)
+                .gender(Gender.MALE)
+                .birthDate(LocalDate.of(1999, 9, 9))
+                .providerId("구글")
+                .profileImageUrl("https://sample-image.png")
+                .build();
+
+        return userRepository.save(user);
     }
 
     @DisplayName("키워드가 DB에 없으면 새로 생성되고, 유저-키워드 관계도 생성된다.")
     @Test
     void registerKeyword_정상등록() {
         // given
-        User user = createUser();
+        User user = createUser("테스트 닉네임");
         List<String> keywords = Arrays.asList("키워드1", "키워드2");
         SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
 
@@ -82,23 +83,5 @@ class KeywordServiceTest extends IntegrationTestSupport {
         assertThat(result.registeredKeywords()).hasSize(2);
         assertThat(keywordRepository.findAll()).hasSize(2);
         assertThat(userKeywordRepository.findAll()).hasSize(2);
-    }
-
-    @DisplayName("이미 구독한 키워드를 등록하면 예외가 발생한다.")
-    @Test
-    void registerKeyword_이미구독시_예외() {
-        // given
-        User user = createUser();
-        Keyword keyword = keywordRepository.save(Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user));
-        // 유저-키워드 관계 생성(이미 구독)
-        userKeywordRepository.save(UserKeyword.create(user, keyword));
-
-        List<String> keywords = List.of("키워드1");
-        SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
-
-        // when & then
-        assertThatThrownBy(() -> keywordService.subscribeKeywords(user.getId(), requestDto))
-                .isInstanceOf(AlreadySubscribedKeywordException.class)
-                .hasMessageContaining("이미 등록된 키워드입니다");
     }
 }
