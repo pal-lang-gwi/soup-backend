@@ -4,11 +4,14 @@ import com.palangwi.soup.domain.mail.MailEvent;
 import com.palangwi.soup.domain.mail.policy.NewsSelectionPolicy;
 import com.palangwi.soup.domain.news.Summary;
 import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.dto.admin.email.EmailTestResponseDto;
 import com.palangwi.soup.dto.mail.MailMessage;
 import com.palangwi.soup.dto.news.DailyNewsMailRequestDto;
 import com.palangwi.soup.dto.news.SummaryForMailTemplateDto;
+import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.infrastructure.mail.MailViewRenderer;
 import com.palangwi.soup.repository.mail.MailEventRepository;
+import com.palangwi.soup.repository.user.UserRepository;
 import java.util.Base64;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import java.util.Map;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.palangwi.soup.domain.mail.MailType.DAILY_NEWS;
+import static com.palangwi.soup.domain.mail.MailType.TEST;
 
 @Slf4j
 @Service
@@ -31,6 +35,7 @@ public class MailService {
     private final MailAsyncExecutor mailAsyncExecutor;
     private final MailViewRenderer mailViewRenderer;
     private final NewsSelectionPolicy newsSelectionPolicy;
+    private final UserRepository userRepository;
 
     private static final byte[] TRANSPARENT_PIXEL = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=="
@@ -49,18 +54,12 @@ public class MailService {
 
         MailEvent mailEvent = getMailEvent(user, now);
 
-        List<SummaryForMailTemplateDto> summaryForMail = summaryMap.entrySet().stream()
-                .map(entry -> new SummaryForMailTemplateDto(
-                        entry.getKey(),
-                        entry.getValue().getShortSummary()
-                ))
-                .toList();
+        List<SummaryForMailTemplateDto> summaryForMail = convertToMailTemplateDtos(summaryMap);
 
          String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaryForMail, mailEvent.getId());
 
-        MailMessage message = new MailMessage(
-                user.getId(),
-                user.getEmail(),
+        MailMessage message = MailMessage.of(
+                user,
                 "오늘의 수프",
                 html,
                 DAILY_NEWS,
@@ -93,5 +92,46 @@ public class MailService {
 
     private byte[] getTransparentPixel() {
         return TRANSPARENT_PIXEL;
+    }
+
+    public EmailTestResponseDto testMail(Long id) {
+        User user = findUserById(id);
+
+        List<String> fixedKeywords = List.of("AI");
+        Map<String, Summary> summaryMap = newsSelectionPolicy.select(fixedKeywords);
+
+        if (summaryMap.isEmpty()) {
+            throw new IllegalStateException("테스트용 메일을 생성할 수 있는 뉴스 요약이 없습니다.");
+        }
+
+        List<SummaryForMailTemplateDto> summaryForMail = convertToMailTemplateDtos(summaryMap);
+
+        String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaryForMail, -1L);
+
+        MailMessage message = MailMessage.of(
+                user,
+                "[테스트] 오늘의 수프",
+                html,
+                TEST,
+                -1L
+        );
+
+        mailAsyncExecutor.send(message);
+
+        return EmailTestResponseDto.of(user);
+    }
+
+    private List<SummaryForMailTemplateDto> convertToMailTemplateDtos(Map<String, Summary> summaryMap) {
+        return summaryMap.entrySet().stream()
+                .map(entry -> new SummaryForMailTemplateDto(
+                        entry.getKey(),
+                        entry.getValue().getShortSummary()
+                ))
+                .toList();
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
     }
 }
