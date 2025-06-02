@@ -73,7 +73,12 @@ class KeywordServiceTest extends IntegrationTestSupport {
     void registerKeyword_정상등록() {
         // given
         User user = createUser("테스트 닉네임");
+        Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user);
+        Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.USER_REQUEST, user);
+        keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
+
         List<String> keywords = Arrays.asList("키워드1", "키워드2");
+
         SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
 
         // when
