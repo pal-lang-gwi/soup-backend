@@ -6,6 +6,7 @@ import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
 import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.*;
@@ -66,6 +67,14 @@ public class KeywordServiceImpl implements KeywordService {
         return RequestKeywordResponseDto.of(user, keyword);
     }
 
+    @Transactional
+    public KeywordUnsubscribeResponseDto unsubscribeKeyword(Long userId, Long keywordId) {
+        UserKeyword userKeyword = userKeywordRepository.findSubscribedByUserIdAndKeywordId(userId, keywordId)
+                .orElseThrow(NotSubscribedException::new);
+        userKeyword.unsubscribe();
+        return KeywordUnsubscribeResponseDto.of(userKeyword);
+    }
+
     private Keyword findOrCreateKeyword(String requestedKeyword, User user) {
         String normalizedKeyword = normalize(requestedKeyword);
 
@@ -83,21 +92,24 @@ public class KeywordServiceImpl implements KeywordService {
     @Transactional
     public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
                                                        SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
+        User user = findUserById(userId);
         List<String> keywords = subscribeKeywordRequestDto.subscribeKeywords();
 
-        User user = findUserById(userId);
-        List<Keyword> allKeywords = validateKeywords(user, keywords);
+        List<UserKeyword> toSave = new ArrayList<>();
+        List<Keyword> validKeywords = validateKeywords(user, keywords, toSave);
 
-        List<UserKeyword> userKeywords = createUserKeywords(user, allKeywords);
-        userKeywordRepository.saveAll(userKeywords);
+        List<UserKeyword> userKeywords = createUserKeywords(user, validKeywords);
+        toSave.addAll(userKeywords);
+
+        userKeywordRepository.saveAll(toSave);
 
         return SubscribeKeywordResponseDto.of(
-                allKeywords.stream()
+                validKeywords.stream()
                         .map(Keyword::getName)
                         .toList());
     }
 
-    private List<Keyword> validateKeywords(User user, List<String> keywords) {
+    private List<Keyword> validateKeywords(User user, List<String> keywords, List<UserKeyword> toSave) {
         List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
 
         Map<String, Keyword> keywordMap = existingKeywords.stream()
@@ -111,9 +123,9 @@ public class KeywordServiceImpl implements KeywordService {
             throw new KeywordNotExistException(notFoundKeywords);
         }
 
-        List<String> alreadySubscribed = keywords.stream()
-                .filter(name -> user.getUserKeywords().isAlreadySubscribed(keywordMap.get(name)))
-                .toList();
+        List<String> alreadySubscribed = new ArrayList<>();
+
+        handleExistingUserKeywords(user, keywords, toSave, keywordMap, alreadySubscribed);
 
         if (!alreadySubscribed.isEmpty()) {
             throw new AlreadySubscribedKeywordException(alreadySubscribed);
@@ -122,6 +134,23 @@ public class KeywordServiceImpl implements KeywordService {
         return keywords.stream()
                 .map(keywordMap::get)
                 .toList();
+    }
+
+    private static void handleExistingUserKeywords(User user, List<String> keywords, List<UserKeyword> toSave, Map<String, Keyword> keywordMap, List<String> alreadySubscribed) {
+        for (String name : keywords) {
+            Keyword keyword = keywordMap.get(name);
+
+            user.getUserKeywords().findByKeyword(keyword).ifPresent(
+                    userKeyword -> {
+                        if (userKeyword.isSubscribed()) {
+                            alreadySubscribed.add(name);
+                        } else {
+                            userKeyword.subscribe();
+                            toSave.add(userKeyword);
+                        }
+                    }
+            );
+        }
     }
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {

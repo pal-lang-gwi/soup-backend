@@ -4,14 +4,12 @@ import static com.palangwi.soup.utils.ApiUtils.success;
 
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
 import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
 import com.palangwi.soup.security.JwtAuthentication;
@@ -44,6 +42,13 @@ public class KeywordController {
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         return success(keywordService.subscribeKeywords(userDetails.id(), subscribeKeywordRequestDto));
+    }
+
+    @DeleteMapping("/api/v1/keywords/{keywordId}")
+    public ApiResult<KeywordUnsubscribeResponseDto> unsubscribeKeyword(
+            @AuthenticationPrincipal JwtAuthentication userDetails,
+            @PathVariable Long keywordId) {
+        return success(keywordService.unsubscribeKeyword(userDetails.id(), keywordId));
     }
 
     @PostMapping("/api/v1/keywords-request")
