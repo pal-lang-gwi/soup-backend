@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.IntegrationTestSupport;
+import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import com.palangwi.soup.service.keyword.KeywordService;
 import java.util.Arrays;
 import java.util.List;
@@ -17,8 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
-import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
 import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.security.WithMockJwtAuthentication;
 
@@ -32,10 +32,11 @@ class KeywordControllerTest extends IntegrationTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_success() throws Exception {
         // given
-        RegisterKeywordRequestDto request = new RegisterKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
-        RegisterKeywordResponseDto response = RegisterKeywordResponseDto.of(Arrays.asList("키워드1", "키워드2"));
 
-        given(keywordService.registerKeyword(1L, request))
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
+        SubscribeKeywordResponseDto response = new SubscribeKeywordResponseDto(Arrays.asList("키워드1", "키워드2"));
+
+        given(keywordService.subscribeKeywords(1L, request))
                 .willReturn(response);
 
         // when // then
@@ -48,7 +49,7 @@ class KeywordControllerTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.registeredKeywords[0]").value("키워드1"))
                 .andExpect(jsonPath("$.data.registeredKeywords[1]").value("키워드2"));
 
-        verify(keywordService).registerKeyword(1L, request);
+        verify(keywordService).subscribeKeywords(1L, request);
     }
 
     @Test
@@ -56,9 +57,9 @@ class KeywordControllerTest extends IntegrationTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_alreadySubscribed() throws Exception {
         // given
-        RegisterKeywordRequestDto request = new RegisterKeywordRequestDto(Arrays.asList("키워드1"));
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1"));
         // 예외 발생 설정
-        given(keywordService.registerKeyword(1L, request))
+        given(keywordService.subscribeKeywords(1L, request))
                 .willThrow(new AlreadySubscribedKeywordException(List.of("키워드1")));
 
         // when // then

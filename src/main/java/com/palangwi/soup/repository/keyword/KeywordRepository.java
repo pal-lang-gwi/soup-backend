@@ -1,5 +1,6 @@
 package com.palangwi.soup.repository.keyword;
 
+import com.palangwi.soup.domain.keyword.Status;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,4 +15,6 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     Optional<Keyword> findByName(String name);
 
     List<Keyword> findAllByNameIn(List<String> names);
+
+    Optional<Keyword> findByNameAndStatus(String name, Status status);
 }

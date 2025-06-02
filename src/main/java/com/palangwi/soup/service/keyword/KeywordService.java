@@ -1,18 +1,18 @@
 package com.palangwi.soup.service.keyword;
 
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
-import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
-import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
+import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 
 public interface KeywordService {
 
-    KeywordResponseDto getKeywordByName(String name);
+    KeywordResponseDto findKeywordByName(String name);
 
-    KeywordResponseDto createKeyword(String name);
+    KeywordResponseDto addKeyword(String name);
 
-    KeywordResponseDto updateKeyword(Long id, String name);
+    KeywordResponseDto updateKeywordName(Long id, String name);
 
-    RegisterKeywordResponseDto registerKeyword(Long userId, RegisterKeywordRequestDto registerKeywordRequestDto);
+    SubscribeKeywordResponseDto subscribeKeywords(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
 
     void deleteKeyword(Long id);
 }

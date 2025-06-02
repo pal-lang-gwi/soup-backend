@@ -1,13 +1,19 @@
 package com.palangwi.soup.service.keyword;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.palangwi.soup.IntegrationTestSupport;
+import com.palangwi.soup.domain.keyword.Keyword;
+import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.dto.keyword.RegisterKeywordRequestDto;
-import com.palangwi.soup.dto.keyword.response.RegisterKeywordResponseDto;
+
+import com.palangwi.soup.domain.userkeyword.UserKeyword;
+import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
+import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
+
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
@@ -47,30 +53,31 @@ class KeywordServiceTest extends IntegrationTestSupport {
         userKeywordRepository.deleteAll();
     }
 
-    private User createUser() {
-        return userRepository.save(
-                User.builder()
-                        .email("test@test.com")
-                        .username("테스트")
-                        .nickname("테스트닉네임")
-                        .role(Role.USER)
-                        .gender(Gender.MALE)
-                        .birthDate(LocalDate.of(1999, 9, 9))
-                        .providerId("구글")
-                        .profileImageUrl("https://sample-image.png")
-                        .build());
+    private User createUser(String nickname) {
+        User user = User.builder()
+                .email("asdf1234@naver.com")
+                .username("테스트")
+                .nickname(nickname)
+                .role(Role.USER)
+                .gender(Gender.MALE)
+                .birthDate(LocalDate.of(1999, 9, 9))
+                .providerId("구글")
+                .profileImageUrl("https://sample-image.png")
+                .build();
+
+        return userRepository.save(user);
     }
 
     @DisplayName("키워드가 DB에 없으면 새로 생성되고, 유저-키워드 관계도 생성된다.")
     @Test
     void registerKeyword_정상등록() {
         // given
-        User user = createUser();
+        User user = createUser("테스트 닉네임");
         List<String> keywords = Arrays.asList("키워드1", "키워드2");
-        RegisterKeywordRequestDto requestDto = new RegisterKeywordRequestDto(keywords);
+        SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
 
         // when
-        RegisterKeywordResponseDto result = keywordService.registerKeyword(user.getId(), requestDto);
+        SubscribeKeywordResponseDto result = keywordService.subscribeKeywords(user.getId(), requestDto);
 
         // then
         assertThat(result.registeredKeywords()).hasSize(2);
