@@ -1,17 +1,22 @@
 package com.palangwi.soup.service.mail;
 
 import com.palangwi.soup.domain.mail.MailEvent;
+import com.palangwi.soup.domain.mail.MailType;
 import com.palangwi.soup.domain.mail.policy.NewsSelectionPolicy;
 import com.palangwi.soup.domain.news.Summary;
 import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.dto.admin.email.EmailScheduleResponseDto;
 import com.palangwi.soup.dto.admin.email.EmailTestResponseDto;
 import com.palangwi.soup.dto.mail.MailMessage;
 import com.palangwi.soup.dto.news.DailyNewsMailRequestDto;
 import com.palangwi.soup.dto.news.SummaryForMailTemplateDto;
+import com.palangwi.soup.exception.mail.MailNotFoundException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.infrastructure.mail.MailViewRenderer;
 import com.palangwi.soup.repository.mail.MailEventRepository;
 import com.palangwi.soup.repository.user.UserRepository;
+import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
+import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import java.util.Base64;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +42,12 @@ public class MailService {
     private final NewsSelectionPolicy newsSelectionPolicy;
     private final UserRepository userRepository;
 
+    private static final long TEST_MAIL_EVENT_ID = -1L;
+
     private static final byte[] TRANSPARENT_PIXEL = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=="
     );
+    private final UserKeywordRepository userKeywordRepository;
 
     @Transactional
     public void sendDailyNews(DailyNewsMailRequestDto request) {
@@ -52,7 +60,7 @@ public class MailService {
         Map<String, Summary> summaryMap = newsSelectionPolicy.select(request.keywords());
         if (summaryMap.isEmpty()) return;
 
-        MailEvent mailEvent = getMailEvent(user, now);
+        MailEvent mailEvent = createMailEvent(user, now);
 
         List<SummaryForMailTemplateDto> summaryForMail = convertToMailTemplateDtos(summaryMap);
 
@@ -69,7 +77,7 @@ public class MailService {
         mailAsyncExecutor.send(message);
     }
 
-    private MailEvent getMailEvent(User user, LocalDateTime now) {
+    private MailEvent createMailEvent(User user, LocalDateTime now) {
         MailEvent mailEvent = new MailEvent(user.getId(), DAILY_NEWS, now, false);
         mailEventRepository.save(mailEvent);
         return mailEvent;
@@ -96,6 +104,7 @@ public class MailService {
 
     public EmailTestResponseDto testMail(Long id) {
         User user = findUserById(id);
+        LocalDateTime sentAt = LocalDateTime.now();
 
         List<String> fixedKeywords = List.of("AI");
         Map<String, Summary> summaryMap = newsSelectionPolicy.select(fixedKeywords);
@@ -113,12 +122,12 @@ public class MailService {
                 "[테스트] 오늘의 수프",
                 html,
                 TEST,
-                -1L
+                TEST_MAIL_EVENT_ID
         );
 
         mailAsyncExecutor.send(message);
 
-        return EmailTestResponseDto.of(user);
+        return EmailTestResponseDto.of(user, sentAt);
     }
 
     private List<SummaryForMailTemplateDto> convertToMailTemplateDtos(Map<String, Summary> summaryMap) {
@@ -133,5 +142,24 @@ public class MailService {
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    public EmailScheduleResponseDto getMailSchedule() {
+        Optional<MailEvent> lastEventLog = mailEventRepository.findTopByTypeOrderByCreatedDateDesc(DAILY_NEWS);
+
+        String lastStatus = lastEventLog.map(e -> e.isSendSuccess() ? "SUCCESS" : "FAIL").orElse("MAIL NOT FOUND");
+        String lastExecutionTime = lastEventLog.map(e -> e.getSentAt().toString()).orElse("MAIL NOT FOUND");
+
+        String nextExecutionTime = calculateNextExecutionTime();
+        int activeTasks = userKeywordRepository.findAllSubscribedUserKeywordsDistinct().size();
+
+        return EmailScheduleResponseDto.of(lastStatus, lastExecutionTime, nextExecutionTime, activeTasks);
+    }
+
+    private String calculateNextExecutionTime() {
+        return LocalDateTime.now()
+                .withHour(8).withMinute(0).withSecond(0).withNano(0)
+                .plusDays(1)
+                .toString();
     }
 }

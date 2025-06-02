@@ -2,6 +2,7 @@ package com.palangwi.soup.controller.admin.email;
 
 import static com.palangwi.soup.utils.ApiUtils.success;
 
+import com.palangwi.soup.dto.admin.email.EmailScheduleResponseDto;
 import com.palangwi.soup.dto.admin.email.EmailTestResponseDto;
 import com.palangwi.soup.security.JwtAuthentication;
 import com.palangwi.soup.service.mail.MailService;
@@ -21,8 +22,13 @@ public class EmailController {
 
     @GetMapping("/test")
     public ApiResult<EmailTestResponseDto> emailTest(
-            @AuthenticationPrincipal JwtAuthentication userInfo
-    ) {
+            @AuthenticationPrincipal JwtAuthentication userInfo) {
         return success(mailService.testMail(userInfo.id()));
+    }
+
+    @GetMapping("/schedule")
+    public ApiResult<EmailScheduleResponseDto> emailSchedule(
+            @AuthenticationPrincipal JwtAuthentication userInfo) {
+        return success(mailService.getMailSchedule());
     }
 }
