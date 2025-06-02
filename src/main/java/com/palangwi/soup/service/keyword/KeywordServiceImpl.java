@@ -98,7 +98,7 @@ public class KeywordServiceImpl implements KeywordService {
         if (keywordOpt.isPresent()) {
             Keyword keyword = keywordOpt.get();
 
-            return switch (keyword.getStatus()) {
+            switch (keyword.getStatus()) {
                 case REJECTED -> {
                     if (keyword.getRejectedAt() != null &&
                     keyword.getRejectedAt().isAfter(LocalDateTime.now().minusMonths(1))) {
@@ -109,7 +109,7 @@ public class KeywordServiceImpl implements KeywordService {
                         throw new KeywordAlreadyRequestedException();
                     }
                     initPendingKeywordRequest(user, keyword);
-                    yield keyword;
+                    return keyword;
                 }
 
                 case PENDING -> {
@@ -117,9 +117,8 @@ public class KeywordServiceImpl implements KeywordService {
                         throw new KeywordAlreadyRequestedException();
                     }
                     initPendingKeywordRequest(user, keyword);
-                    yield keyword;
+                    return keyword;
                 }
-                default -> keyword;
             };
         }
 
