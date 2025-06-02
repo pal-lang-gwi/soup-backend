@@ -59,15 +59,16 @@ public class KeywordServiceImpl implements KeywordService {
         User user = findUserById(userId);
 
         String requestedKeyword = requestKeywordRequestDto.keyword();
-        String normalizedKeyword = normalize(requestedKeyword);
 
-        Keyword keyword = findOrCreateKeyword(requestedKeyword, normalizedKeyword, user);
+        Keyword keyword = findOrCreateKeyword(requestedKeyword, user);
 
         initPendingKeywordRequest(user, keyword);
         return RequestKeywordResponseDto.of(user, keyword);
     }
 
-    private Keyword findOrCreateKeyword(String requestedKeyword, String normalizedKeyword, User user) {
+    private Keyword findOrCreateKeyword(String requestedKeyword, User user) {
+        String normalizedKeyword = normalize(requestedKeyword);
+
         if (keywordRepository.existsByNameAndStatus(requestedKeyword, Status.ACTIVE)) {
             throw new KeywordAlreadyRequestedException();
         }
@@ -87,7 +88,7 @@ public class KeywordServiceImpl implements KeywordService {
         User user = findUserById(userId);
         List<Keyword> allKeywords = validateKeywords(user, keywords);
 
-        List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
+        List<UserKeyword> userKeywords = createUserKeywords(user, allKeywords);
         userKeywordRepository.saveAll(userKeywords);
 
         return SubscribeKeywordResponseDto.of(
@@ -137,7 +138,7 @@ public class KeywordServiceImpl implements KeywordService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private List<UserKeyword> createUserKeywordsIfNotSubscribed(User user, List<Keyword> keywords) {
+    private List<UserKeyword> createUserKeywords(User user, List<Keyword> keywords) {
         List<UserKeyword> userKeywords = new ArrayList<>();
         for (Keyword keyword : keywords) {
             userKeywords.add(UserKeyword.create(user, keyword));
