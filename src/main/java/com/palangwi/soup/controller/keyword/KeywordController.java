@@ -44,7 +44,7 @@ public class KeywordController {
         return success(keywordService.subscribeKeywords(userDetails.id(), subscribeKeywordRequestDto));
     }
 
-    @DeleteMapping("/api/v1/keywords/{keywordId}")
+    @PostMapping("/api/v1/keywords/{keywordId}")
     public ApiResult<KeywordUnsubscribeResponseDto> unsubscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @PathVariable Long keywordId) {
