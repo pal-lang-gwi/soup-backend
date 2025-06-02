@@ -15,6 +15,7 @@ import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ import com.palangwi.soup.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class KeywordServiceImpl implements KeywordService {
 
@@ -120,6 +122,7 @@ public class KeywordServiceImpl implements KeywordService {
                 .toList();
 
         if (!notFoundKeywords.isEmpty()) {
+            log.warn("{} 사용자가 요청한 다음 키워드들을 찾을 수 없습니다: {}", user.getId(), notFoundKeywords);
             throw new KeywordNotExistException(notFoundKeywords);
         }
 
