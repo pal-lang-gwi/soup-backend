@@ -64,21 +64,16 @@ public class SecurityConfig {
     }
 
     private CorsConfigurationSource apiConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                allowedOrigin,
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "http://43.201.12.129:8080",
-                "https://unrivaled-dusk-a77b11.netlify.app"));
-        config.setAllowCredentials(true);
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
-        config.setExposedHeaders(List.of("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
-        config.setMaxAge(86400L);
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(allowedOrigin , "http://localhost:5173", "http://127.0.0.1:5173", "https://unrivaled-dusk-a77b11.netlify.app"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setMaxAge(86400L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
