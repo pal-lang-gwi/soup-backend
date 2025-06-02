@@ -93,67 +93,18 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Transactional
     public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
-                                                       SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
+                                                         SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         User user = findUserById(userId);
-        List<String> keywords = subscribeKeywordRequestDto.subscribeKeywords();
+        List<String> keywordNames = subscribeKeywordRequestDto.subscribeKeywords();
 
-        List<UserKeyword> toSave = new ArrayList<>();
-        List<Keyword> validKeywords = validateKeywords(user, keywords, toSave);
-
-        List<UserKeyword> userKeywords = createUserKeywords(user, validKeywords);
-        toSave.addAll(userKeywords);
-
-        userKeywordRepository.saveAll(toSave);
+        List<UserKeyword> userKeywords = createUserKeywords(user, keywordNames);
+        userKeywordRepository.saveAll(userKeywords);
 
         return SubscribeKeywordResponseDto.of(
-                validKeywords.stream()
-                        .map(Keyword::getName)
-                        .toList());
-    }
-
-    private List<Keyword> validateKeywords(User user, List<String> keywords, List<UserKeyword> toSave) {
-        List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
-
-        Map<String, Keyword> keywordMap = existingKeywords.stream()
-                .collect(Collectors.toMap(Keyword::getName, k -> k));
-
-        List<String> notFoundKeywords = keywords.stream()
-                .filter(name -> !keywordMap.containsKey(name))
-                .toList();
-
-        if (!notFoundKeywords.isEmpty()) {
-            log.warn("{} 사용자가 요청한 다음 키워드들을 찾을 수 없습니다: {}", user.getId(), notFoundKeywords);
-            throw new KeywordNotExistException(notFoundKeywords);
-        }
-
-        List<String> alreadySubscribed = new ArrayList<>();
-
-        handleExistingUserKeywords(user, keywords, toSave, keywordMap, alreadySubscribed);
-
-        if (!alreadySubscribed.isEmpty()) {
-            throw new AlreadySubscribedKeywordException(alreadySubscribed);
-        }
-
-        return keywords.stream()
-                .map(keywordMap::get)
-                .toList();
-    }
-
-    private static void handleExistingUserKeywords(User user, List<String> keywords, List<UserKeyword> toSave, Map<String, Keyword> keywordMap, List<String> alreadySubscribed) {
-        for (String name : keywords) {
-            Keyword keyword = keywordMap.get(name);
-
-            user.getUserKeywords().findByKeyword(keyword).ifPresent(
-                    userKeyword -> {
-                        if (userKeyword.isSubscribed()) {
-                            alreadySubscribed.add(name);
-                        } else {
-                            userKeyword.subscribe();
-                            toSave.add(userKeyword);
-                        }
-                    }
-            );
-        }
+                userKeywords.stream()
+                        .map(userKeyword -> userKeyword.getKeyword().getName())
+                        .toList()
+        );
     }
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {
@@ -170,11 +121,52 @@ public class KeywordServiceImpl implements KeywordService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private List<UserKeyword> createUserKeywords(User user, List<Keyword> keywords) {
-        List<UserKeyword> userKeywords = new ArrayList<>();
-        for (Keyword keyword : keywords) {
-            userKeywords.add(UserKeyword.create(user, keyword));
+    private List<UserKeyword> createUserKeywords(User user, List<String> keywordNames) {
+        Map<String, Keyword> keywordMap = validateKeywordNames(user, keywordNames);
+        return filterAndBuildUserKeywords(user, keywordNames, keywordMap);
+    }
+
+    private Map<String, Keyword> validateKeywordNames(User user, List<String> keywordNames) {
+        List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywordNames);
+        Map<String, Keyword> keywordMap = existingKeywords.stream()
+                .collect(Collectors.toMap(Keyword::getName, k -> k));
+
+        List<String> notFound = keywordNames.stream()
+                .filter(name -> !keywordMap.containsKey(name))
+                .toList();
+
+        if (!notFound.isEmpty()) {
+            log.warn("{} 사용자가 요청한 다음 키워드들을 찾을 수 없습니다: {}", user.getId(), notFound);
+            throw new KeywordNotExistException(notFound);
         }
-        return userKeywords;
+
+        return keywordMap;
+    }
+
+    private List<UserKeyword> filterAndBuildUserKeywords(User user, List<String> keywordNames, Map<String, Keyword> keywordMap) {
+        List<UserKeyword> result = new ArrayList<>();
+        List<String> alreadySubscribed = new ArrayList<>();
+
+        for (String name : keywordNames) {
+            Keyword keyword = keywordMap.get(name);
+
+            user.getUserKeywords().findByKeyword(keyword).ifPresentOrElse(
+                    userKeyword -> {
+                        if (userKeyword.isSubscribed()) {
+                            alreadySubscribed.add(name);
+                        } else {
+                            userKeyword.subscribe();
+                            result.add(userKeyword);
+                        }
+                    },
+                    () -> result.add(UserKeyword.create(user, keyword))
+            );
+        }
+
+        if (!alreadySubscribed.isEmpty()) {
+            throw new AlreadySubscribedKeywordException(alreadySubscribed);
+        }
+
+        return result;
     }
 }
