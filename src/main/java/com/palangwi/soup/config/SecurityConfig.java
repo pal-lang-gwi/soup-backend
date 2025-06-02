@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -34,7 +35,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(corsConfigurer -> corsConfigurer.configurationSource(apiConfigurationSource()))
+                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -45,16 +46,16 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/health/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/users/check-nickname").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/health/**").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
-                        .requestMatchers("/actuator/**").hasRole("ACTUATOR"))
+                        .requestMatchers("/actuator/**").hasRole("ACTUATOR")
+                        .requestMatchers("/api/**").authenticated())
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(configurer -> configurer
                         .userInfoEndpoint(endpointConfig -> endpointConfig.userService(customOAuth2UserService))
@@ -63,21 +64,23 @@ public class SecurityConfig {
                 .build();
     }
 
-    private CorsConfigurationSource apiConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of(
-                allowedOrigin,
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "http://43.201.12.129:8080",
-                "https://unrivaled-dusk-a77b11.netlify.app"));
-        config.setAllowCredentials(true);
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setMaxAge(86400L);
+     @Bean
+     public CorsConfigurationSource corsConfigurationSource() {
+         CorsConfiguration configuration = new CorsConfiguration();
+         configuration.setAllowedOrigins(List.of(
+                 allowedOrigin,
+                 "http://localhost:5173",
+                 "https://unrivaled-dusk-a77b11.netlify.app"
+         ));
+         configuration.setAllowCredentials(true);
+         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+         configuration.setAllowedHeaders(List.of("*"));
+         configuration.setExposedHeaders(List.of("Authorization"));
+         configuration.setMaxAge(86400L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+         source.registerCorsConfiguration("/**", configuration);
+
+         return source;
+     }
 }
