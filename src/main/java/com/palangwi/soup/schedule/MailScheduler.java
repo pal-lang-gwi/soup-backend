@@ -32,7 +32,7 @@ public class MailScheduler {
     private final UserKeywordRepository userKeywordRepository;
     private final MailService mailService;
 
-    @Scheduled(cron = "0 46 17 * * 1-5", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 8 * * 1-5", zone = "Asia/Seoul")
     public void scheduleDailyNewsLetter() {
         log.info("뉴스 메일 발송 시작");
         LocalDateTime now = LocalDateTime.now();
