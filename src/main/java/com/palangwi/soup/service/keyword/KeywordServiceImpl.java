@@ -3,19 +3,19 @@ package com.palangwi.soup.service.keyword;
 import static com.palangwi.soup.utils.KeywordNormalizer.*;
 
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
+import com.palangwi.soup.domain.keyword.Status;
+import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
+import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
+import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
-import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
+import com.palangwi.soup.exception.keyword.*;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +24,6 @@ import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
-import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
@@ -33,6 +32,7 @@ import com.palangwi.soup.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class KeywordServiceImpl implements KeywordService {
 
@@ -58,82 +58,62 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional
-    public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
-                                                       SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
-        List<String> keywords = subscribeKeywordRequestDto.subscribeKeywords();
-
+    public RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto) {
         User user = findUserById(userId);
-        List<Keyword> allKeywords = getOrCreateKeywords(keywords, user);
 
-        List<UserKeyword> userKeywords = createUserKeywordsIfNotSubscribed(user, allKeywords);
+        String requestedKeyword = requestKeywordRequestDto.keyword();
+
+        Keyword keyword = findOrCreateKeyword(requestedKeyword, user);
+
+        initPendingKeywordRequest(user, keyword);
+        return RequestKeywordResponseDto.of(user, keyword);
+    }
+
+    @Transactional
+    public KeywordUnsubscribeResponseDto unsubscribeKeyword(Long userId, Long keywordId) {
+        UserKeyword userKeyword = userKeywordRepository.findSubscribedByUserIdAndKeywordId(userId, keywordId)
+                .orElseThrow(NotSubscribedException::new);
+        userKeyword.unsubscribe();
+        return KeywordUnsubscribeResponseDto.of(userKeyword);
+    }
+
+    private Keyword findOrCreateKeyword(String requestedKeyword, User user) {
+        String normalizedKeyword = normalize(requestedKeyword);
+
+        if (keywordRepository.existsByNameAndStatus(requestedKeyword, Status.ACTIVE)) {
+            throw new KeywordAlreadyRequestedException();
+        }
+
+        return keywordRepository.findByNameAndStatus(requestedKeyword, Status.PENDING)
+                .orElseGet(() -> {
+                    Keyword newKeyword = Keyword.of(requestedKeyword, normalizedKeyword, Source.USER_REQUEST, user);
+                    return keywordRepository.save(newKeyword);
+                });
+    }
+
+    @Transactional
+    public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
+                                                         SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
+        User user = findUserById(userId);
+        List<String> keywordNames = subscribeKeywordRequestDto.subscribeKeywords();
+
+        List<UserKeyword> userKeywords = createUserKeywords(user, keywordNames);
         userKeywordRepository.saveAll(userKeywords);
 
         return SubscribeKeywordResponseDto.of(
-                allKeywords.stream()
-                        .map(Keyword::getName)
-                        .toList());
-    }
-
-    private List<Keyword> getOrCreateKeywords(List<String> keywords, User user) {
-        List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywords);
-
-        Set<String> existingKeywordNames = existingKeywords.stream()
-                .map(Keyword::getName)
-                .collect(Collectors.toSet());
-
-        List<Keyword> result = new ArrayList<>(existingKeywords);
-
-        for (String name : keywords) {
-            if (existingKeywordNames.contains(name)) continue;
-
-            Keyword keyword = handleNonExistingKeyword(name, user);
-            result.add(keyword);
-        }
-        return result;
-    }
-
-    private Keyword handleNonExistingKeyword(String name, User user) {
-        Optional<Keyword> keywordOpt = keywordRepository.findByName(name);
-
-        if (keywordOpt.isPresent()) {
-            Keyword keyword = keywordOpt.get();
-
-            switch (keyword.getStatus()) {
-                case REJECTED -> {
-                    if (keyword.getRejectedAt() != null &&
-                    keyword.getRejectedAt().isAfter(LocalDateTime.now().minusMonths(1))) {
-                        throw new AlreadyRejectedKeywordException();
-                    }
-
-                    if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
-                        throw new KeywordAlreadyRequestedException();
-                    }
-                    initPendingKeywordRequest(user, keyword);
-                    return keyword;
-                }
-
-                case PENDING -> {
-                    if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
-                        throw new KeywordAlreadyRequestedException();
-                    }
-                    initPendingKeywordRequest(user, keyword);
-                    return keyword;
-                }
-            };
-        }
-
-        return createNewKeyword(name, user);
+                userKeywords.stream()
+                        .map(userKeyword -> userKeyword.getKeyword().getName())
+                        .toList()
+        );
     }
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {
+        if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {
+            throw new KeywordAlreadyRequestedException();
+        }
+
         PendingKeywordRequest request = PendingKeywordRequest.of(user, keyword);
         pendingKeywordRequestRepository.save(request);
-    }
-
-    private Keyword createNewKeyword(String name, User user) {
-        String normalizedName = normalize(name);
-        Keyword keyword = Keyword.of(name.toLowerCase(), normalizedName, Source.USER_REQUEST, user);
-        return keywordRepository.save(keyword);
     }
 
     private User findUserById(Long userId) {
@@ -141,20 +121,52 @@ public class KeywordServiceImpl implements KeywordService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private List<UserKeyword> createUserKeywordsIfNotSubscribed(User user, List<Keyword> keywords) {
-        List<String> alreadySubscribedNames = new ArrayList<>();
-        List<UserKeyword> userKeywords = new ArrayList<>();
-        for (Keyword keyword : keywords) {
-            boolean alreadySubscribed = user.getUserKeywords().isAlreadySubscribed(keyword);
-            if (alreadySubscribed) {
-                alreadySubscribedNames.add(keyword.getName());
-            } else {
-                userKeywords.add(UserKeyword.create(user, keyword));
-            }
+    private List<UserKeyword> createUserKeywords(User user, List<String> keywordNames) {
+        Map<String, Keyword> keywordMap = validateKeywordNames(user, keywordNames);
+        return filterAndBuildUserKeywords(user, keywordNames, keywordMap);
+    }
+
+    private Map<String, Keyword> validateKeywordNames(User user, List<String> keywordNames) {
+        List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywordNames);
+        Map<String, Keyword> keywordMap = existingKeywords.stream()
+                .collect(Collectors.toMap(Keyword::getName, k -> k));
+
+        List<String> notFound = keywordNames.stream()
+                .filter(name -> !keywordMap.containsKey(name))
+                .toList();
+
+        if (!notFound.isEmpty()) {
+            log.warn("{} 사용자가 요청한 다음 키워드들을 찾을 수 없습니다: {}", user.getId(), notFound);
+            throw new KeywordNotExistException(notFound);
         }
-        if (!alreadySubscribedNames.isEmpty()) {
-            throw new AlreadySubscribedKeywordException(alreadySubscribedNames);
+
+        return keywordMap;
+    }
+
+    private List<UserKeyword> filterAndBuildUserKeywords(User user, List<String> keywordNames, Map<String, Keyword> keywordMap) {
+        List<UserKeyword> result = new ArrayList<>();
+        List<String> alreadySubscribed = new ArrayList<>();
+
+        for (String name : keywordNames) {
+            Keyword keyword = keywordMap.get(name);
+
+            user.getUserKeywords().findByKeyword(keyword).ifPresentOrElse(
+                    userKeyword -> {
+                        if (userKeyword.isSubscribed()) {
+                            alreadySubscribed.add(name);
+                        } else {
+                            userKeyword.subscribe();
+                            result.add(userKeyword);
+                        }
+                    },
+                    () -> result.add(UserKeyword.create(user, keyword))
+            );
         }
-        return userKeywords;
+
+        if (!alreadySubscribed.isEmpty()) {
+            throw new AlreadySubscribedKeywordException(alreadySubscribed);
+        }
+
+        return result;
     }
 }

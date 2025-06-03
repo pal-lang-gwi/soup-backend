@@ -7,6 +7,8 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.Getter;
 
 @Getter
@@ -30,5 +32,11 @@ public class UserKeywords {
     public boolean isAlreadySubscribed(Keyword keyword) {
         return userKeywordList.stream()
                 .anyMatch(uk -> uk.getKeyword().equals(keyword) && uk.isSubscribed());
+    }
+
+    public Optional<UserKeyword> findByKeyword(Keyword keyword) {
+        return userKeywordList.stream()
+                .filter(uk -> uk.getKeyword().equals(keyword))
+                .findFirst();
     }
 }
