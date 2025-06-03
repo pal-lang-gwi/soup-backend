@@ -102,7 +102,7 @@ public class MailService {
         return TRANSPARENT_PIXEL;
     }
 
-    public EmailTestResponseDto testMail(Long id) {
+    public EmailTestResponseDto testEmail(Long id) {
         User user = findUserById(id);
         LocalDateTime sentAt = LocalDateTime.now();
 

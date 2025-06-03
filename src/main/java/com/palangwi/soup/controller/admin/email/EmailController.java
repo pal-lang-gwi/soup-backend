@@ -21,13 +21,13 @@ public class EmailController {
     private final MailService mailService;
 
     @GetMapping("/test")
-    public ApiResult<EmailTestResponseDto> emailTest(
+    public ApiResult<EmailTestResponseDto> testEmail(
             @AuthenticationPrincipal JwtAuthentication userInfo) {
-        return success(mailService.testMail(userInfo.id()));
+        return success(mailService.testEmail(userInfo.id()));
     }
 
     @GetMapping("/schedule")
-    public ApiResult<EmailScheduleResponseDto> emailSchedule(
+    public ApiResult<EmailScheduleResponseDto> getEmailSchedule(
             @AuthenticationPrincipal JwtAuthentication userInfo) {
         return success(mailService.getMailSchedule());
     }
