@@ -86,12 +86,44 @@ def post_pr_comment(repo, pr_number, body, github_token):
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
+def generate_pr_description(pr_title, changed_files):
+    prompt = f"""다음 PR에 대한 설명을 작성해주세요:
+PR 제목: {pr_title}
+변경된 파일들: {changed_files}
+
+다음 형식으로 작성해주세요:
+1. 변경 사항 요약
+2. 주요 변경 내용
+3. 테스트 방법
+4. 관련 이슈
+"""
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
+
+def update_pr_description(repo, pr_number, description, github_token):
+    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+    headers = {
+        "Authorization": f"token {github_token}",
+        "Accept": "application/vnd.github+json"
+    }
+    payload = {
+        "body": description
+    }
+    response = requests.patch(url, headers=headers, json=payload)
+    response.raise_for_status()
+
 def main():
     pr_files = get_pr_files(REPO, PR_NUMBER, GITHUB_TOKEN)
     all_changes = []
+    changed_filenames = []
 
     for file in pr_files:
         filename = file["filename"]
+        changed_filenames.append(filename)
         patch = file.get("patch")
         
         if not patch or filename.endswith(('.md', '.txt', '.log', '.gitignore')):
@@ -114,6 +146,16 @@ def main():
             print(f"[SUCCESS] Added review to PR #{PR_NUMBER}")
         except Exception as e:
             print(f"[ERROR] Failed to comment on PR: {e}")
+
+    # === PR description 자동 업데이트 ===
+    try:
+        pr_title = os.getenv("PR_TITLE", "")
+        changed_files_str = ", ".join(changed_filenames)
+        pr_description = generate_pr_description(pr_title, changed_files_str)
+        update_pr_description(REPO, PR_NUMBER, pr_description, GITHUB_TOKEN)
+        print(f"[SUCCESS] PR 본문이 성공적으로 업데이트되었습니다.")
+    except Exception as e:
+        print(f"[ERROR] PR 본문 업데이트 실패: {e}")
 
 if __name__ == "__main__":
     main()
