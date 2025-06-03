@@ -33,11 +33,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { Octokit } = require("@octokit/rest");
-            const octokit = new Octokit({
-              auth: process.env.GITHUB_TOKEN
-            });
-
             // PR 정보 가져오기
             const pr = context.payload.pull_request;
             const changedFiles = process.env.CHANGED_FILES ? process.env.CHANGED_FILES.split('\n') : [];
@@ -46,7 +41,7 @@ jobs:
             const fileContents = await Promise.all(
               changedFiles.map(async (file) => {
                 try {
-                  const response = await octokit.repos.getContent({
+                  const response = await github.repos.getContent({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     path: file,
@@ -81,14 +76,14 @@ jobs:
             4. 관련 이슈`;
 
             const completion = await openai.createChatCompletion({
-              model: "gpt-4.1-nano-2025-04-14",
+              model: "gpt-4",
               messages: [{ role: "user", content: prompt }],
             });
 
             const description = completion.data.choices[0].message.content;
 
             // PR description 업데이트
-            await octokit.pulls.update({
+            await github.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number,
