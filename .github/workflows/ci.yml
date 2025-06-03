@@ -27,7 +27,7 @@ jobs:
       JWT_ISSUER: test
       JWT_CLIENT_SECRET: test
       FRONT_DOMAIN: http://localhost:5173
-      SERVER_DOMAIN: https://unrivaled-dusk-a77b11.netlify.app/api/v1
+      SERVER_DOMAIN: https://soupspoon.kr/api/v1
 
     steps:
       - uses: actions/checkout@v4
@@ -85,7 +85,7 @@ jobs:
           front:
             domain: http://localhost:5173
           server:
-            domain: https://unrivaled-dusk-a77b11.netlify.app/api/v1
+            domain: https://soupspoon.kr/api/v1
 
           openai:
             api:
