@@ -4,6 +4,7 @@ import com.palangwi.soup.domain.news.Summary;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.news.SummaryForMailTemplateDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -16,6 +17,9 @@ public class MailViewRenderer {
 
     private final TemplateEngine templateEngine;
 
+    @Value("${server.domain}")
+    private String serverDomain;
+
     /**
      * Todo : 요약 정보 넣기
      */
@@ -23,7 +27,7 @@ public class MailViewRenderer {
         Context context = new Context();
         context.setVariable("name", username);
         context.setVariable("summaries", summaries);
-        context.setVariable("trackingUrl", "https://my-homepage/read?eventId=" + mailEventId);
+        context.setVariable("trackingUrl", serverDomain + "/mails/traking/open/" + mailEventId);
         // resources/templates/mail/daily-news.html 파일에 적용
         return templateEngine.process("mail/daily-news", context);
     }
