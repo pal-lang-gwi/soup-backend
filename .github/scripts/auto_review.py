@@ -86,16 +86,12 @@ def post_pr_comment(repo, pr_number, body, github_token):
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
-def generate_pr_description(pr_title, changed_files):
+def generate_pr_description():
     prompt = f"""다음 PR에 대한 설명을 작성해주세요:
-PR 제목: {pr_title}
-변경된 파일들: {changed_files}
 
-다음 형식으로 작성해주세요:
+다음 형식으로  작성해주세요:
 1. 변경 사항 요약
 2. 주요 변경 내용
-3. 테스트 방법
-4. 관련 이슈
 """
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
@@ -151,7 +147,7 @@ def main():
     try:
         pr_title = os.getenv("PR_TITLE", "")
         changed_files_str = ", ".join(changed_filenames)
-        pr_description = generate_pr_description(pr_title, changed_files_str)
+        pr_description = generate_pr_description()
         update_pr_description(REPO, PR_NUMBER, pr_description, GITHUB_TOKEN)
         print(f"[SUCCESS] PR 본문이 성공적으로 업데이트되었습니다.")
     except Exception as e:
