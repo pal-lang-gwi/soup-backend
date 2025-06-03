@@ -37,7 +37,7 @@ jobs:
 
             // PR 정보 가져오기
             const pr = context.payload.pull_request;
-            const changedFiles = ${{ steps.changed-files.outputs.all_changed_files }};
+            const changedFiles = context.payload.pull_request.changed_files;
 
             // 변경된 파일들의 내용 가져오기
             const fileContents = await Promise.all(
