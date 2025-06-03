@@ -110,12 +110,12 @@ public class MailService {
         Map<String, Summary> summaryMap = newsSelectionPolicy.select(fixedKeywords);
 
         if (summaryMap.isEmpty()) {
-            throw new IllegalStateException("테스트용 메일을 생성할 수 있는 뉴스 요약이 없습니다.");
+            throw new MailNotFoundException();
         }
 
         List<SummaryForMailTemplateDto> summaryForMail = convertToMailTemplateDtos(summaryMap);
 
-        String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaryForMail, -1L);
+        String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaryForMail, TEST_MAIL_EVENT_ID);
 
         MailMessage message = MailMessage.of(
                 user,
@@ -147,8 +147,8 @@ public class MailService {
     public EmailScheduleResponseDto getMailSchedule() {
         Optional<MailEvent> lastEventLog = mailEventRepository.findTopByTypeOrderByCreatedDateDesc(DAILY_NEWS);
 
-        String lastStatus = lastEventLog.map(e -> e.isSendSuccess() ? "SUCCESS" : "FAIL").orElse("MAIL NOT FOUND");
-        String lastExecutionTime = lastEventLog.map(e -> e.getSentAt().toString()).orElse("MAIL NOT FOUND");
+        String lastStatus = lastEventLog.map(e -> e.isSendSuccess() ? "SUCCESS" : "FAIL").orElseThrow(MailNotFoundException::new);
+        String lastExecutionTime = lastEventLog.map(e -> e.getSentAt().toString()).orElseThrow(MailNotFoundException::new);
 
         String nextExecutionTime = calculateNextExecutionTime();
         int activeTasks = userKeywordRepository.findAllSubscribedUserKeywordsDistinct().size();
