@@ -10,7 +10,8 @@ public enum KeywordExceptionMessage {
     ALREADY_SUBSCRIBED_KEYWORD("이미 등록된 키워드입니다.", HttpStatus.BAD_REQUEST),
     ALREADY_REJECTED_KEYWORD("관리자에 의해 등록이 제한된 키워드입니다.", HttpStatus.BAD_REQUEST),
     KEYWORD_INVALID_STATUS_EXCEPTION("키워드의 상태가 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
-    KEYWORD_ALREADY_REQUESTED("이미 등록 요청한 키워드입니다.", HttpStatus.BAD_REQUEST),;
+    KEYWORD_ALREADY_REQUESTED("이미 등록 요청한 키워드입니다.", HttpStatus.BAD_REQUEST),
+    KEYWORD_NOT_EXIST("존재하지 않는 키워드입니다.", HttpStatus.BAD_REQUEST),;
 
 
     private final String message;

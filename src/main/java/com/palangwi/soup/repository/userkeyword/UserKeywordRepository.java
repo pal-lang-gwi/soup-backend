@@ -2,8 +2,11 @@ package com.palangwi.soup.repository.userkeyword;
 
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -14,4 +17,7 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
 
     @Query("SELECT DISTINCT uk.user FROM UserKeyword uk WHERE uk.subscribed = true")
     List<UserKeyword> findAllSubscribedUserKeywordsDistinct();
+
+    @Query("SELECT uk FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id = :keywordId AND uk.subscribed = true")
+    Optional<UserKeyword> findSubscribedByUserIdAndKeywordId(@Param("userId") Long userId, @Param("keywordId") Long keywordId);
 }
