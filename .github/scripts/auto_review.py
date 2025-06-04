@@ -66,7 +66,8 @@ PR 제목: {pr_title}
 {{
     "description": {{
         "summary": "변경 사항에 대한 간단한 요약",
-        "details": "주요 변경 내용에 대한 상세 설명"
+        "details": "주요 변경 내용에 대한 상세 설명",
+        "sequence_diagram": "mermaid 시퀀스 다이어그램 (필요한 경우에만 포함)"
     }},
     "review": {{
         "critical_issues": [
@@ -79,7 +80,8 @@ PR 제목: {pr_title}
     }}
 }}
 
-(문제점이 없다면 critical_issues 배열을 비우고 has_issues를 false로 설정해주세요)"""
+(문제점이 없다면 critical_issues 배열을 비우고 has_issues를 false로 설정해주세요)
+(시퀀스 다이어그램이 필요하지 않은 경우 sequence_diagram 필드를 비워두세요)"""
     
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
@@ -97,6 +99,15 @@ PR 제목: {pr_title}
 
 ## 주요 변경 내용
 {result['description']['details']}"""
+
+        # 시퀀스 다이어그램이 있는 경우 추가
+        if result['description'].get('sequence_diagram'):
+            description += f"""
+
+## 코드 흐름도
+```mermaid
+{result['description']['sequence_diagram']}
+```"""
         
         # 코드 리뷰 생성
         if result['review']['has_issues'] and result['review']['critical_issues']:
