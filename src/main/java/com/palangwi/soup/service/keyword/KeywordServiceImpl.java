@@ -4,11 +4,14 @@ import static com.palangwi.soup.utils.KeywordNormalizer.*;
 
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
+import com.palangwi.soup.dto.keyword.MyKeywordDto;
+import com.palangwi.soup.dto.keyword.MyKeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
 import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
+import com.palangwi.soup.dto.news.NewsDto;
 import com.palangwi.soup.exception.keyword.*;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 
@@ -16,6 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +80,17 @@ public class KeywordServiceImpl implements KeywordService {
                 .orElseThrow(NotSubscribedException::new);
         userKeyword.unsubscribe();
         return KeywordUnsubscribeResponseDto.of(userKeyword);
+    }
+
+    @Transactional(readOnly = true)
+    public MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable) {
+        Page<UserKeyword> userKeywords = userKeywordRepository.findAllByUser_Id(userId, pageable);
+
+        List<MyKeywordDto> userKeywordList = userKeywords.getContent().stream()
+                .map(MyKeywordDto::of)
+                .toList();
+
+        return MyKeywordListResponseDto.of(userKeywordList, userKeywords);
     }
 
     private Keyword findOrCreateKeyword(String requestedKeyword, User user) {

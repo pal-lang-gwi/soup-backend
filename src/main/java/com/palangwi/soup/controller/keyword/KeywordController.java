@@ -24,34 +24,35 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Keyword API", description = "키워드 관련 API")
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/keywords")
 public class KeywordController {
 
     private final KeywordService keywordService;
 
     @Operation(summary = "키워드 목록 조회", description = "키워드 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
-    @GetMapping("/api/v1/keywords")
+    @GetMapping
     public ApiResult<KeywordResponseDto> getKeywords() {
         return success(null);
     }
 
     @Operation(summary = "키워드 구독", description = "새로운 키워드를 구독합니다.")
     @ApiResponse(responseCode = "200", description = "등록 성공")
-    @PostMapping("/api/v1/keywords")
+    @PostMapping
     public ApiResult<SubscribeKeywordResponseDto> subscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         return success(keywordService.subscribeKeywords(userDetails.id(), subscribeKeywordRequestDto));
     }
 
-    @PostMapping("/api/v1/keywords/{keywordId}")
+    @PostMapping("/{keywordId}")
     public ApiResult<KeywordUnsubscribeResponseDto> unsubscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @PathVariable Long keywordId) {
         return success(keywordService.unsubscribeKeyword(userDetails.id(), keywordId));
     }
 
-    @PostMapping("/api/v1/keywords/request")
+    @PostMapping("/request")
     public ApiResult<RequestKeywordResponseDto> requestKeywords(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody RequestKeywordRequestDto requestKeywordRequestDto
