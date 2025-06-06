@@ -5,8 +5,8 @@ import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
 import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
+import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import jakarta.validation.Valid;
 
 public interface KeywordService {
 
@@ -23,4 +23,6 @@ public interface KeywordService {
     RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto);
 
     KeywordUnsubscribeResponseDto unsubscribeKeyword(Long id, Long keywordId);
+
+    SearchKeywordsResponseDto searchKeywords(Long userId, String keyword);
 }
