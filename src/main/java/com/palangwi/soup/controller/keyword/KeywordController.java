@@ -9,6 +9,8 @@ import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +44,7 @@ public class KeywordController {
     @GetMapping("/search")
     public ApiResult<SearchKeywordsResponseDto> searchKeywords(
             @AuthenticationPrincipal JwtAuthentication userDetails,
-            @RequestParam String keyword) {
+            @RequestParam @NotBlank @Size(min = 1, max = 100) String keyword) {
         return success(keywordService.searchKeywords(userDetails.id(), keyword));
     }
 

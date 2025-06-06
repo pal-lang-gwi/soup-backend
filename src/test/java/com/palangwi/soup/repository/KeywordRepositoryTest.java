@@ -35,7 +35,7 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
     @Autowired
     private UserRepository userRepository;
 
-    private static Long userId = 1L; // Assuming a user with ID 1 exists for testing
+    private Long userId;
 
     @BeforeEach
     void setUp() {
@@ -83,9 +83,9 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
         assertThat(result).extracting("name").containsExactlyInAnyOrder("키워드1", "키워드2");
     }
 
-    @DisplayName("입력받은 키워드 이름이 포함된 키워드를 조회한다.")
+    @DisplayName("사용자의 구독 상태와 함께 키워드를 조회한다.")
     @Test
-    void findByNameContaining() {
+    void findKeywordsWithSubscriptionStatus() {
 
         List<Object[]> results = keywordRepository.findKeywordsWithSubscriptionStatus(userId, "키워드", PENDING);
         List<SearchKeywordDto> keywords = results.stream()
