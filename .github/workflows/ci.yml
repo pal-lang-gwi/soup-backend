@@ -128,16 +128,28 @@ jobs:
           name: build-reports
           path: build/reports/
 
-      - name: Notify Mattermost on Success
+      - name: Notify Mattermost on Build Success
         if: success()
-        uses: 7c/mattermost-notify@v1
+        uses: fjogeleit/http-request-action@v1.14.0
         with:
-          webhook-url: ${{ env.MATTERMOST_WEBHOOK_URL }}
-          message: "✅ CI 성공: ${{ github.repository }}의 PR #${{ github.event.pull_request.number }} 빌드가 성공했습니다."
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":green_heart: CI 빌드 성공 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            }
 
-      - name: Notify Mattermost on Failure
+      - name: Notify Mattermost on Build Failure
         if: failure()
-        uses: 7c/mattermost-notify@v1
+        uses: fjogeleit/http-request-action@v1.14.0
         with:
-          webhook-url: ${{ env.MATTERMOST_WEBHOOK_URL }}
-          message: "❌ CI 실패: ${{ github.repository }}의 PR #${{ github.event.pull_request.number }} 빌드가 실패했습니다."
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":broken_heart: CI 빌드 실패 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            }
