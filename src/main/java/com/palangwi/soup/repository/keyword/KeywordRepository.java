@@ -4,6 +4,8 @@ import com.palangwi.soup.domain.keyword.Status;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,6 +25,8 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     Optional<Keyword> findByNameAndStatus(String name, Status status);
 
     List<Keyword> findByNameContainingIgnoreCaseAndStatus(String name, Status status);
+
+    Page<Keyword> findAllByStatus(Status status, Pageable pageable);
 
     @Query("SELECT k, CASE WHEN uk.subscribed = true THEN true ELSE false END " +
             "FROM Keyword k " +

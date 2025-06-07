@@ -2,6 +2,7 @@ package com.palangwi.soup.controller.keyword;
 
 import static com.palangwi.soup.utils.ApiUtils.success;
 
+import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
@@ -11,6 +12,9 @@ import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +39,11 @@ public class KeywordController {
     @Operation(summary = "키워드 목록 조회", description = "키워드 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping
-    public ApiResult<KeywordResponseDto> getKeywords() {
-        return success(null);
+    public ApiResult<KeywordListResponseDto> getKeywordList(
+            @AuthenticationPrincipal JwtAuthentication userDetails,
+            @PageableDefault(size = 20, sort = {"createdDate", "name"}, direction = Direction.DESC) Pageable pageable
+    ) {
+        return success(keywordService.getKeywordList(pageable));
     }
 
     @Operation(summary = "키워드 검색", description = "키워드를 검색합니다.")
