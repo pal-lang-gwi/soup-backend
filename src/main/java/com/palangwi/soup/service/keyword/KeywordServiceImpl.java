@@ -10,8 +10,9 @@ import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
 import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
+import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
+import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.dto.news.NewsDto;
 import com.palangwi.soup.exception.keyword.*;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 
@@ -62,6 +63,21 @@ public class KeywordServiceImpl implements KeywordService {
 
     }
 
+    @Transactional(readOnly = true)
+    public SearchKeywordsResponseDto searchKeywords(Long userId, String keyword) {
+        List<Object[]> results = keywordRepository.findKeywordsWithSubscriptionStatus(userId, keyword, Status.ACTIVE);
+
+        List<SearchKeywordDto> keywords = results.stream()
+                .map(result -> {
+                    Keyword foundKeyword = (Keyword) result[0];
+                    boolean isSubscribed = (boolean) result[1];
+                    return SearchKeywordDto.from(foundKeyword, isSubscribed);
+                })
+                .toList();
+
+        return SearchKeywordsResponseDto.from(keywords);
+    }
+
     @Transactional
     public RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto) {
         User user = findUserById(userId);
@@ -109,7 +125,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Transactional
     public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
-                                                         SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
+            SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         User user = findUserById(userId);
         List<String> keywordNames = subscribeKeywordRequestDto.subscribeKeywords();
 
@@ -119,8 +135,7 @@ public class KeywordServiceImpl implements KeywordService {
         return SubscribeKeywordResponseDto.of(
                 userKeywords.stream()
                         .map(userKeyword -> userKeyword.getKeyword().getName())
-                        .toList()
-        );
+                        .toList());
     }
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {
@@ -159,7 +174,8 @@ public class KeywordServiceImpl implements KeywordService {
         return keywordMap;
     }
 
-    private List<UserKeyword> filterAndBuildUserKeywords(User user, List<String> keywordNames, Map<String, Keyword> keywordMap) {
+    private List<UserKeyword> filterAndBuildUserKeywords(User user, List<String> keywordNames,
+            Map<String, Keyword> keywordMap) {
         List<UserKeyword> result = new ArrayList<>();
         List<String> alreadySubscribed = new ArrayList<>();
 
@@ -175,8 +191,7 @@ public class KeywordServiceImpl implements KeywordService {
                             result.add(userKeyword);
                         }
                     },
-                    () -> result.add(UserKeyword.create(user, keyword))
-            );
+                    () -> result.add(UserKeyword.create(user, keyword)));
         }
 
         if (!alreadySubscribed.isEmpty()) {

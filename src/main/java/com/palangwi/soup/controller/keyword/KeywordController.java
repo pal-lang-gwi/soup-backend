@@ -6,8 +6,11 @@ import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
 import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
+import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +39,15 @@ public class KeywordController {
         return success(null);
     }
 
+    @Operation(summary = "키워드 검색", description = "키워드를 검색합니다.")
+    @ApiResponse(responseCode = "200", description = "검색 성공")
+    @GetMapping("/search")
+    public ApiResult<SearchKeywordsResponseDto> searchKeywords(
+            @AuthenticationPrincipal JwtAuthentication userDetails,
+            @RequestParam @NotBlank @Size(min = 1, max = 100) String keyword) {
+        return success(keywordService.searchKeywords(userDetails.id(), keyword));
+    }
+
     @Operation(summary = "키워드 구독", description = "새로운 키워드를 구독합니다.")
     @ApiResponse(responseCode = "200", description = "등록 성공")
     @PostMapping
@@ -55,8 +67,7 @@ public class KeywordController {
     @PostMapping("/request")
     public ApiResult<RequestKeywordResponseDto> requestKeywords(
             @AuthenticationPrincipal JwtAuthentication userDetails,
-            @Valid @RequestBody RequestKeywordRequestDto requestKeywordRequestDto
-    ) {
+            @Valid @RequestBody RequestKeywordRequestDto requestKeywordRequestDto) {
         return success(keywordService.requestKeywords(userDetails.id(), requestKeywordRequestDto));
     }
 }
