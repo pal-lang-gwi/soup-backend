@@ -100,7 +100,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Transactional(readOnly = true)
     public MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable) {
-        Page<UserKeyword> userKeywords = userKeywordRepository.findAllByUser_Id(userId, pageable);
+        Page<UserKeyword> userKeywords = userKeywordRepository.findAllByUser_IdAndSubscribedTrue(userId, pageable);
 
         List<MyKeywordDto> userKeywordList = userKeywords.getContent().stream()
                 .map(MyKeywordDto::of)
