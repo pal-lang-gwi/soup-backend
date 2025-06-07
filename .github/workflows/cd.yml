@@ -400,7 +400,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -s -f "http://${{ secrets.EC2_HOST }}:8080/health" > /dev/null; then
+            if curl -s -f "http://${{ secrets.EC2_HOST }}/api/v1/health" > /dev/null; then
               echo "Application is healthy!"
               exit 0
             fi
