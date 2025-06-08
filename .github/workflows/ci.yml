@@ -28,6 +28,7 @@ jobs:
       JWT_CLIENT_SECRET: test
       FRONT_DOMAIN: http://localhost:5173
       SERVER_DOMAIN: https://soupspoon.kr/api/v1
+      MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -126,3 +127,29 @@ jobs:
         with:
           name: build-reports
           path: build/reports/
+
+      - name: Notify Mattermost on Build Success
+        if: success()
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":green_heart: CI 빌드 성공 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            }
+
+      - name: Notify Mattermost on Build Failure
+        if: failure()
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "text": ":broken_heart: CI 빌드 실패 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            }
