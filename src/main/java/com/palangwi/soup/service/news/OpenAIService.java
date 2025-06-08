@@ -6,6 +6,8 @@ import com.palangwi.soup.dto.news.NewsResult;
 import com.palangwi.soup.dto.news.NewsSummary;
 import com.palangwi.soup.dto.news.OpenAIWebSearchRequestDto;
 import com.palangwi.soup.dto.news.OpenAIWebSearchResponseDto;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -40,7 +42,8 @@ public class OpenAIService {
         CompletableFuture<NewsResult> future = new CompletableFuture<>();
 
         try {
-            String prompt = loadPrompt("prompts/news-prompt.txt").replace("{keyword}", keyword);
+            String today = getTodayString();
+            String prompt = loadPrompt().replace("{keyword}", keyword).replace("{today}", today);
             Request request = buildOpenAIRequest(prompt);
 
             client.newCall(request).enqueue(new Callback() {
@@ -70,6 +73,12 @@ public class OpenAIService {
         }
 
         return future;
+    }
+
+    private static String getTodayString() {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
+        return today.format(formatter);
     }
 
     private NewsResult parseOpenAIResponse(Response response) throws IOException {
@@ -122,11 +131,11 @@ public class OpenAIService {
                 .build();
     }
 
-    private String loadPrompt(String path) {
-        try (InputStream is = new ClassPathResource(path).getInputStream()) {
+    private String loadPrompt() {
+        try (InputStream is = new ClassPathResource("prompts/news-prompt.txt").getInputStream()) {
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException("프롬프트 파일 로딩 실패: " + path, e);
+            throw new RuntimeException("프롬프트 파일 로딩 실패: " + "prompts/news-prompt.txt", e);
         }
     }
 }
