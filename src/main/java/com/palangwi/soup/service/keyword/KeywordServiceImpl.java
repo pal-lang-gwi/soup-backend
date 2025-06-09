@@ -5,6 +5,8 @@ import static com.palangwi.soup.utils.KeywordNormalizer.*;
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
 import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
+import com.palangwi.soup.dto.keyword.MyKeywordDto;
+import com.palangwi.soup.dto.keyword.MyKeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
@@ -104,6 +106,17 @@ public class KeywordServiceImpl implements KeywordService {
                 .orElseThrow(NotSubscribedException::new);
         userKeyword.unsubscribe();
         return KeywordUnsubscribeResponseDto.of(userKeyword);
+    }
+
+    @Transactional(readOnly = true)
+    public MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable) {
+        Page<UserKeyword> userKeywords = userKeywordRepository.findAllByUser_IdAndSubscribedTrue(userId, pageable);
+
+        List<MyKeywordDto> userKeywordList = userKeywords.getContent().stream()
+                .map(MyKeywordDto::of)
+                .toList();
+
+        return MyKeywordListResponseDto.of(userKeywordList, userKeywords);
     }
 
     private Keyword findOrCreateKeyword(String requestedKeyword, User user) {

@@ -35,6 +35,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/api/v1/health") || requestURI.startsWith("/api/v1/health/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String authorizationToken = obtainAuthorizationToken(request);
             if (authorizationToken != null) {
@@ -46,8 +52,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                     List<GrantedAuthority> authorities = obtainAuthorities(claims);
 
                     if (nonNull(userKey) && !authorities.isEmpty()) {
-                        JwtAuthenticationToken authentication =
-                                new JwtAuthenticationToken(new JwtAuthentication(userKey), null, authorities);
+                        JwtAuthenticationToken authentication = new JwtAuthenticationToken(
+                                new JwtAuthentication(userKey), null, authorities);
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
@@ -65,9 +71,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     private List<GrantedAuthority> obtainAuthorities(Jwt.Claims claims) {
         String[] roles = claims.roles;
-        return roles == null || roles.length == 0 ?
-                Collections.emptyList() :
-                Arrays.stream(roles).map(SimpleGrantedAuthority::new).collect(toList());
+        return roles == null || roles.length == 0 ? Collections.emptyList()
+                : Arrays.stream(roles).map(SimpleGrantedAuthority::new).collect(toList());
     }
 
     private String obtainAuthorizationToken(HttpServletRequest request) {

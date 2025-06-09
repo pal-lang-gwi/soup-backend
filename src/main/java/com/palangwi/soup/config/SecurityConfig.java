@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,8 +47,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/health").permitAll()
-                        .requestMatchers("/api/v1/health/**").permitAll()
+                        .requestMatchers("/api/v1/health", "/api/v1/health/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
@@ -64,23 +64,19 @@ public class SecurityConfig {
                 .build();
     }
 
-     @Bean
-     public CorsConfigurationSource corsConfigurationSource() {
-         CorsConfiguration configuration = new CorsConfiguration();
-         configuration.setAllowedOrigins(List.of(
-                 allowedOrigin,
-                 "http://localhost:5173",
-                 "https://unrivaled-dusk-a77b11.netlify.app"
-         ));
-         configuration.setAllowCredentials(true);
-         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-         configuration.setAllowedHeaders(List.of("*"));
-         configuration.setExposedHeaders(List.of("Authorization"));
-         configuration.setMaxAge(86400L);
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(allowedOrigin));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setMaxAge(86400L);
 
-         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-         source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
 
-         return source;
-     }
+        return source;
+    }
 }

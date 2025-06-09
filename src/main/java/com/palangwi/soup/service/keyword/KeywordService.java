@@ -2,6 +2,7 @@ package com.palangwi.soup.service.keyword;
 
 import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
+import com.palangwi.soup.dto.keyword.MyKeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.KeywordUnsubscribeResponseDto;
@@ -25,6 +26,8 @@ public interface KeywordService {
     RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto);
 
     KeywordUnsubscribeResponseDto unsubscribeKeyword(Long id, Long keywordId);
+
+    MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable);
 
     SearchKeywordsResponseDto searchKeywords(Long userId, String keyword);
 
