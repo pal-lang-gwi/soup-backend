@@ -9,27 +9,6 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
 
-    env:
-      SPRING_PROFILES_ACTIVE: test
-      REDIS_HOST: localhost
-      REDIS_PORT: 6379
-      RABBITMQ_HOST: localhost
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: guest
-      RABBITMQ_PASSWORD: guest
-      GOOGLE_CLIENT_ID: dummy
-      GOOGLE_CLIENT_SECRET: dummy
-      KAKAO_CLIENT_ID: dummy
-      KAKAO_CLIENT_SECRET: dummy
-      KAKAO_REDIRECT_URI: http://localhost:8080/login/oauth2/code/kakao
-      JWT_ACCESS_TOKEN_TTL: 3600
-      JWT_REFRESH_TOKEN_TTL: 1209600
-      JWT_ISSUER: test
-      JWT_CLIENT_SECRET: test
-      FRONT_DOMAIN: http://localhost:5173
-      SERVER_DOMAIN: https://soupspoon.kr/api/v1
-      MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -39,84 +18,10 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      - name: Create application-test.yml
+      - name: Create application-test.yml from secret
         run: |
           mkdir -p ./src/main/resources
-          cat << EOF > ./src/main/resources/application-test.yml
-          spring:
-            application:
-              name: soup
-            security:
-              oauth2:
-                client:
-                  registration:
-                    google:
-                      client-id: test
-                      client-secret: test
-                      scope:
-                        - email
-                        - profile
-                    kakao:
-                      client-id: test
-                      client-secret: test
-                      client-authentication-method: client_secret_post
-                      redirect-uri: http://localhost:8080/login/oauth2/code/kakao
-                      authorization-grant-type: authorization_code
-                      client-name: kakao
-                      scope:
-                        - profile_nickname
-                        - profile_image
-                        - account_email
-                  provider:
-                    kakao:
-                      authorization-uri: https://kauth.kakao.com/oauth/authorize
-                      token-uri: https://kauth.kakao.com/oauth/token
-                      user-info-uri: https://kapi.kakao.com/v2/user/me
-                      user-name-attribute: id
-          security:
-            jwt:
-              access-token:
-                ttl: 3600
-              refresh-token:
-                ttl: 1209600
-          jwt:
-            issuer: test
-            client-secret: test
-
-          front:
-            domain: http://localhost:5173
-          server:
-            domain: https://soupspoon.kr/api/v1
-
-          openai:
-            api:
-              url: https://api.openai.com/v1
-              key: test
-            model: test-model
-
-          logging:
-            level:
-              root: INFO
-              com.palangwi.soup: DEBUG
-              org.springframework.security: DEBUG
-              org.springframework.web: DEBUG
-
-          management:
-            endpoints:
-              web:
-                exposure:
-                  include: "*"
-            endpoint:
-              health:
-                show-details: always
-            health:
-              redis:
-                enabled: true
-              db:
-                enabled: true
-              mongo:
-                enabled: false
-          EOF
+          echo "${{ secrets.APPLICATION_TEST_YML }}" > ./src/main/resources/application-test.yml
 
       - name: Build with Gradle
         run: chmod +x ./gradlew && ./gradlew build
@@ -128,28 +33,28 @@ jobs:
           name: build-reports
           path: build/reports/
 
-      - name: Notify Mattermost on Build Success
+      - name: Notify Discord on Build Success
         if: success()
         uses: fjogeleit/http-request-action@v1.14.0
         with:
-          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
           data: |
             {
-              "text": ":green_heart: CI 빌드 성공 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+              "content": ":green_heart: CI 빌드 성공 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
             }
 
-      - name: Notify Mattermost on Build Failure
+      - name: Notify Discord on Build Failure
         if: failure()
         uses: fjogeleit/http-request-action@v1.14.0
         with:
-          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
           data: |
             {
-              "text": ":broken_heart: CI 빌드 실패 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+              "content": ":broken_heart: CI 빌드 실패 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
             }
