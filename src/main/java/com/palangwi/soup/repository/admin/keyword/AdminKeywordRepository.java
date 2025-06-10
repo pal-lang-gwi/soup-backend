@@ -12,4 +12,6 @@ import org.springframework.stereotype.Repository;
 public interface AdminKeywordRepository extends JpaRepository<PendingKeywordRequest, Long> {
     @Query("SELECT p FROM PendingKeywordRequest p WHERE p.keyword.status = :status")
     Page<PendingKeywordRequest> findByStatus(Status status, Pageable pageable);
+
+    void deleteByKeywordId(Long id);
 }
