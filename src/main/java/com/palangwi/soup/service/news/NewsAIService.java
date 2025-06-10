@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OpenAIService {
+public class NewsAIService {
 
     @Value("${openai.api.url}")
     private String openaiUrl;

@@ -9,14 +9,11 @@ import com.palangwi.soup.repository.news.NewsRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -25,7 +22,7 @@ import org.springframework.stereotype.Service;
 public class NewsService {
 
     private final NewsRepository newsRepository;
-    private final OpenAIService openAIService;
+    private final NewsAIService openAIService;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
         Page<News> resultPage = getNews(request.keyword(), request.startDate(), request.endDate(), pageable);
