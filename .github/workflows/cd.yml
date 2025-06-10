@@ -3,8 +3,6 @@ name: Java CD with Docker
 on:
   push:
     branches: ["develop"]
-  pull_request:
-    branches: ["develop"]
 
 permissions:
   contents: read
@@ -48,6 +46,7 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
 
       - name: Deploy to EC2
+        id: deploy-ec2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -65,7 +64,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -s -f "https://soupspoon.kr/api/v1/health" > /dev/null; then
+            if curl -s -f "https://${{ secrets.EC2_HOST }}/api/v1/health" > /dev/null; then
               echo "Application is healthy!"
               exit 0
             fi
