@@ -56,8 +56,10 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated())
-                .securityMatcher("/api/**", "/h2-console/**", "/docs/**", "/swagger-ui/**", "/v3/api-docs/**",
+                .securityMatcher("/api/v1/**", "/h2-console/**", "/docs/**", "/swagger-ui/**", "/v3/api-docs/**",
                         "/actuator/**")
+                .anonymous(anonymous -> anonymous
+                        .requestMatchers("/api/v1/health", "/api/v1/health/**").disable())
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(configurer -> configurer
                         .userInfoEndpoint(endpointConfig -> endpointConfig.userService(customOAuth2UserService))
