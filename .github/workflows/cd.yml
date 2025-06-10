@@ -25,8 +25,6 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > ./src/main/resources/application.yml
-          # 디버깅을 위해 파일 내용 확인
-          cat ./src/main/resources/application.yml
 
       - name: Build with Gradle
         run: chmod +x ./gradlew && ./gradlew build -x test
