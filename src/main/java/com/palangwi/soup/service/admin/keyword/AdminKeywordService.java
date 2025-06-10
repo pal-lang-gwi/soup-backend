@@ -78,7 +78,7 @@ public class AdminKeywordService {
 
         userKeywordRepository.saveAll(newUserKeywords);
 
-        adminKeywordRepository.deleteAll(keyword.getPendingKeywordRequests());
+        adminKeywordRepository.deleteByKeywordId(keyword.getId());
 
         return ApproveKeywordResponseDto.of(keyword.getName(), newUserKeywords.size());
     }
