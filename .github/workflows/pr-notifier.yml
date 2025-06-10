@@ -22,7 +22,7 @@ jobs:
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
-              "content": "🔔 New PR **${{ github.event.pull_request.title }}** by `${{ github.actor }}`\n${{ github.event.pull_request.html_url }}"
+              "content": "🔔 New PR **${{ github.event.pull_request.title }}** by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}>"
             }
 
       - name: Send PR review notification
@@ -34,7 +34,7 @@ jobs:
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
-              "content": "👀 PR **${{ github.event.pull_request.title }}** was ${{ github.event.review.state }} by `${{ github.actor }}`\n${{ github.event.pull_request.html_url }}"
+              "content": "👀 PR **${{ github.event.pull_request.title }}** was ${{ github.event.review.state }} by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}>"
             }
 
       - name: Send PR merged notification
@@ -46,7 +46,7 @@ jobs:
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
-              "content": "✅ PR **${{ github.event.pull_request.title }}** was merged by `${{ github.actor }}`\n${{ github.event.pull_request.html_url }}"
+              "content": "✅ PR **${{ github.event.pull_request.title }}** was merged by `${{ github.actor }}`\n<${{ github.event.pull_request.html_url }}>"
             }
 
       - name: Send PR comment notification (issue comment)
@@ -58,7 +58,7 @@ jobs:
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
-              "content": "💬 New comment on PR **${{ github.event.issue.title }}** by `${{ github.actor }}`\n${{ github.event.comment.html_url }}"
+              "content": "💬 New comment on PR **${{ github.event.issue.title }}** by `${{ github.actor }}`\n<${{ github.event.comment.html_url }}>"
             }
 
       - name: Send PR comment notification (review comment)
@@ -70,5 +70,5 @@ jobs:
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
-              "content": "💬 New review comment on PR **${{ github.event.pull_request.title }}** by `${{ github.actor }}`\n${{ github.event.comment.html_url }}"
+              "content": "💬 New review comment on PR **${{ github.event.pull_request.title }}** by `${{ github.actor }}`\n<${{ github.event.comment.html_url }}>"
             }
