@@ -65,7 +65,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -s -f "https://${{ secrets.EC2_HOST }}/api/v1/health" > /dev/null; then
+            if curl -s -f "https://soupspoon.kr/api/v1/health" > /dev/null; then
               echo "Application is healthy!"
               exit 0
             fi
@@ -75,54 +75,54 @@ jobs:
           echo "Health check failed after 30 attempts"
           exit 1
 
-      - name: Notify Mattermost on Health Check Success
+      - name: Notify Discord on Health Check Success
         if: success() && steps.health-check.conclusion == 'success'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
-          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
           data: |
             {
-              "text": ":green_heart: 헬스 체크 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "content": "✅ 헬스 체크 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
-      - name: Notify Mattermost on Health Check Failure
+      - name: Notify Discord on Health Check Failure
         if: failure() && steps.health-check.conclusion == 'failure'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
-          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
           data: |
             {
-              "text": ":broken_heart: 헬스 체크 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "content": "❌ 헬스 체크 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
-      - name: Notify Mattermost on Deploy Success
+      - name: Notify Discord on Deploy Success
         if: success() && steps.deploy-ec2.conclusion == 'success'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
-          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
           data: |
             {
-              "text": ":rocket: 배포 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "content": "🚀 배포 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
 
-      - name: Notify Mattermost on Deploy Failure
+      - name: Notify Discord on Deploy Failure
         if: failure() && steps.deploy-ec2.conclusion == 'failure'
         uses: fjogeleit/http-request-action@v1.14.0
         with:
-          url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
           data: |
             {
-              "text": ":fire: 배포 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "content": "🔥 배포 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
             }
