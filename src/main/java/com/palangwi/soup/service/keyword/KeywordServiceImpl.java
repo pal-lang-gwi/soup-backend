@@ -64,13 +64,18 @@ public class KeywordServiceImpl implements KeywordService {
 
     }
 
+    @Transactional(readOnly = true)
     public KeywordListResponseDto getKeywordList(Pageable pageable) {
         Page<Keyword> keywordsPage = keywordRepository.findAllByStatus(Status.ACTIVE, pageable);
 
         List<KeywordResponseDto> result = keywordsPage.getContent().stream()
                 .map(KeywordResponseDto::from)
                 .toList();
-        return new KeywordListResponseDto(result,  keywordsPage.getTotalElements(), keywordsPage.getTotalPages(), keywordsPage.getNumber() + 1);
+        return new KeywordListResponseDto(
+                result,
+                keywordsPage.getTotalElements(),
+                keywordsPage.getTotalPages(),
+                keywordsPage.getNumber() + 1);
     }
 
     @Transactional(readOnly = true)
