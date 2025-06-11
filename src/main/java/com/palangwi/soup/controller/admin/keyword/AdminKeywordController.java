@@ -33,20 +33,20 @@ public class AdminKeywordController {
     @GetMapping
     public ApiResult<AdminKeywordResponseListDto> getRequestedKeyword(
             @AuthenticationPrincipal JwtAuthentication userInfo,
-            @Valid @RequestParam String status,
-            @PageableDefault(size = 10, sort = "requestedAt", direction = Direction.DESC) Pageable pageable) {
+            @Valid @RequestParam(name = "status") String status,
+            @PageableDefault(size = 10, sort = "createdDate", direction = Direction.DESC) Pageable pageable) {
         return success(adminKeywordService.getRequestedKeywords(status, pageable));
     }
 
     @PostMapping("/{requestId}/approve")
     public ApiResult<ApproveKeywordResponseDto> approveRequestedKeyword(@AuthenticationPrincipal JwtAuthentication userInfo,
-                                                                        @PathVariable Long requestId) {
+                                                                        @PathVariable(name = "requestId") Long requestId) {
         return success(adminKeywordService.approveKeyword(requestId));
     }
 
     @PostMapping("/{requestId}/reject")
     public ApiResult<RejectKeywordResponseDto> rejectRequestedKeyword(@AuthenticationPrincipal JwtAuthentication userInfo,
-                                                                      @PathVariable Long requestId, @Valid @RequestBody RejectKeywordRequestDto request) {
+                                                                      @PathVariable(name = "requestId") Long requestId, @Valid @RequestBody RejectKeywordRequestDto request) {
         return success(adminKeywordService.rejectKeyword(requestId, request.rejectReason()));
     }
 }

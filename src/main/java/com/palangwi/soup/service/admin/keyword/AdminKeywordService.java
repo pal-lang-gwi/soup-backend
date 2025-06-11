@@ -10,6 +10,7 @@ import com.palangwi.soup.dto.admin.keyword.AdminKeywordResponseDto;
 import com.palangwi.soup.dto.admin.keyword.AdminKeywordResponseListDto;
 import com.palangwi.soup.dto.admin.keyword.ApproveKeywordResponseDto;
 import com.palangwi.soup.dto.admin.keyword.RejectKeywordResponseDto;
+import com.palangwi.soup.exception.keyword.AlreadyRejectedKeywordException;
 import com.palangwi.soup.exception.keyword.KeywordNotFoundException;
 import com.palangwi.soup.repository.admin.keyword.AdminKeywordRepository;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
@@ -77,7 +78,7 @@ public class AdminKeywordService {
 
         userKeywordRepository.saveAll(newUserKeywords);
 
-        adminKeywordRepository.deleteAll(keyword.getPendingKeywordRequests());
+        adminKeywordRepository.deleteByKeywordId(keyword.getId());
 
         return ApproveKeywordResponseDto.of(keyword.getName(), newUserKeywords.size());
     }
@@ -109,9 +110,15 @@ public class AdminKeywordService {
 
         Keyword keyword = request.getKeyword();
 
+        if (keyword.getStatus() == Status.REJECTED) {
+            throw new AlreadyRejectedKeywordException();
+        }
+
         keyword.reject(rejectReason, rejectedAt);
 
-        adminKeywordRepository.deleteAll(keyword.getPendingKeywordRequests());
+        adminKeywordRepository.deleteByKeywordId(keyword.getId());
+
+        keyword.getPendingKeywordRequests().clear();
 
         return RejectKeywordResponseDto.of(keyword, rejectReason);
     }

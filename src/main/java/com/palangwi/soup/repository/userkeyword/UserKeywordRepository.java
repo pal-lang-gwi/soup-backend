@@ -17,8 +17,8 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
     @Query("SELECT uk FROM UserKeyword uk JOIN FETCH uk.user JOIN FETCH uk.keyword WHERE uk.subscribed = true")
     List<UserKeyword> findAllSubscribedUserKeywords();
 
-    @Query("SELECT DISTINCT uk.user FROM UserKeyword uk WHERE uk.subscribed = true")
-    List<UserKeyword> findAllSubscribedUserKeywordsDistinct();
+    @Query("SELECT COUNT(DISTINCT uk.user) FROM UserKeyword uk WHERE uk.subscribed = true")
+    int countDistinctSubscribedUsers();
 
     @Query("SELECT uk FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id = :keywordId AND uk.subscribed = true")
     Optional<UserKeyword> findSubscribedByUserIdAndKeywordId(@Param("userId") Long userId, @Param("keywordId") Long keywordId);
