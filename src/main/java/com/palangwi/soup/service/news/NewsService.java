@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 public class NewsService {
 
     private final NewsRepository newsRepository;
-    private final NewsAIService openAIService;
+    private final NewsAIService newsAIService;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
         Page<News> resultPage = getNews(request.keyword(), request.startDate(), request.endDate(), pageable);
@@ -65,7 +65,7 @@ public class NewsService {
     }
 
     public void collectAndSaveNews(String keyword) {
-        openAIService.searchAndSummarizeAsync(keyword)
+        newsAIService.searchAndSummarizeAsync(keyword)
                 .thenAccept(result -> {
                     try {
                         News news = result.toNews();
