@@ -59,8 +59,9 @@ public class User extends BaseEntity {
     private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
 
 
-    public static User createFirstLoginUser(String username, String nickname, String providerId) {
+    public static User createFirstLoginUser(String email, String username, String nickname, String providerId) {
         return User.builder()
+                .email(email)
                 .username(username)
                 .nickname(nickname)
                 .providerId(providerId)

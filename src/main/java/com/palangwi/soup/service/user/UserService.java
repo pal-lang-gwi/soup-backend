@@ -34,6 +34,7 @@ public class UserService {
 
         User firstLoginUser = createFirstLoginUser(
                 userInfo.email(),
+                userInfo.name(),
                 userInfo.nickname(),
                 userInfo.providerId()
         );

@@ -8,13 +8,16 @@ public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
     private final Map<String, Object> attributes;
     private final String registrationId;
     private final String username;
+// Kakao does not provide email by default, so we use the email from kakao_account
+    private final String email;
 
     public KakaoOAuth2UserInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
         this.registrationId = "kakao";
 
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        this.username = (String) kakaoAccount.get("email");
+        this.username = (String) kakaoAccount.get("profile_nickname");
+        this.email = (String) kakaoAccount.get("email");
     }
 
     @Override
@@ -36,5 +39,13 @@ public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
     public String getNickname() {
         LinkedHashMap<String, String> properties = (LinkedHashMap) attributes.get("properties");
         return properties.get("nickname");
+    }
+
+    @Override
+    public String getEmail() {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email not provided by Kakao account");
+        }
+        return email;
     }
 }
