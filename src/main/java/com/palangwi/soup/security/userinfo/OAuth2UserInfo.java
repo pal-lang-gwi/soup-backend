@@ -11,4 +11,6 @@ public interface OAuth2UserInfo {
     String getUsername();
 
     String getNickname();
+
+    String getEmail();
 }
