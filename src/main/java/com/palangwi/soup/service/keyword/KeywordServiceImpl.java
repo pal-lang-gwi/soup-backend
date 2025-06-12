@@ -4,6 +4,7 @@ import static com.palangwi.soup.utils.KeywordNormalizer.*;
 
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
+import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.MyKeywordDto;
 import com.palangwi.soup.dto.keyword.MyKeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
@@ -61,6 +62,20 @@ public class KeywordServiceImpl implements KeywordService {
 
     public void deleteKeyword(Long id) {
 
+    }
+
+    @Transactional(readOnly = true)
+    public KeywordListResponseDto getKeywordList(Pageable pageable) {
+        Page<Keyword> keywordsPage = keywordRepository.findAllByStatus(Status.ACTIVE, pageable);
+
+        List<KeywordResponseDto> result = keywordsPage.getContent().stream()
+                .map(KeywordResponseDto::from)
+                .toList();
+        return new KeywordListResponseDto(
+                result,
+                keywordsPage.getTotalElements(),
+                keywordsPage.getTotalPages(),
+                keywordsPage.getNumber() + 1);
     }
 
     @Transactional(readOnly = true)
