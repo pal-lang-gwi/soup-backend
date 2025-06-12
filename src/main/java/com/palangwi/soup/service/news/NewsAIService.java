@@ -1,14 +1,17 @@
 package com.palangwi.soup.service.news;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.dto.news.NewsResult;
 import com.palangwi.soup.dto.news.NewsSummary;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,6 +53,7 @@ public class NewsAIService {
                 ))
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(30))
                 .map(this::parseToNewsResult)
                 .toFuture();
     }
