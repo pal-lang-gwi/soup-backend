@@ -1,5 +1,6 @@
 package com.palangwi.soup.service.keyword;
 
+import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.KeywordResponseDto;
 import com.palangwi.soup.dto.keyword.MyKeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
@@ -30,4 +31,5 @@ public interface KeywordService {
 
     SearchKeywordsResponseDto searchKeywords(Long userId, String keyword);
 
+    KeywordListResponseDto getKeywordList(Pageable pageable);
 }

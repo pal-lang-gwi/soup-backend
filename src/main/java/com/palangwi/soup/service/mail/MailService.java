@@ -151,7 +151,7 @@ public class MailService {
         String lastExecutionTime = lastEventLog.map(e -> e.getSentAt().toString()).orElseThrow(MailNotFoundException::new);
 
         String nextExecutionTime = calculateNextExecutionTime();
-        int activeTasks = userKeywordRepository.findAllSubscribedUserKeywordsDistinct().size();
+        int activeTasks = userKeywordRepository.countDistinctSubscribedUsers();
 
         return EmailScheduleResponseDto.of(lastStatus, lastExecutionTime, nextExecutionTime, activeTasks);
     }

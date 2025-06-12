@@ -37,7 +37,7 @@ public class NewsController {
 
     @GetMapping("/{newsId}")
     public ApiResult<NewsDto> getNewsInfo(@AuthenticationPrincipal JwtAuthentication userInfo,
-                                          @PathVariable String newsId) {
+                                          @PathVariable(name = "newsId") String newsId) {
         return success(newsService.getNewsDetailInfo(newsId));
     }
 }

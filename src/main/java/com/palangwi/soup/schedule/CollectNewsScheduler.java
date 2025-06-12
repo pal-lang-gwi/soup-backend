@@ -19,7 +19,7 @@ public class CollectNewsScheduler {
     private final KeywordRepository keywordRepository;
     private final NewsService newsService;
 
-    @Scheduled(cron = "0 0 7 * * *")
+    @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Seoul")
     private void collectNews() {
         List<Keyword> keywords = keywordRepository.findAll();
         log.info("수집 시작 - 키워드의 갯수 : {}", keywords.size());
