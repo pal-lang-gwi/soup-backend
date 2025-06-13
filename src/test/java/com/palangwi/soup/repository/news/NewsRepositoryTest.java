@@ -23,7 +23,6 @@ class NewsRepositoryTest extends IntegrationTestSupport {
     @Autowired
     private NewsRepository newsRepository;
 
-    private final LocalDateTime now = LocalDateTime.of(2025, 6, 1, 0, 0);
     private Pageable pageable;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
@@ -36,9 +35,22 @@ class NewsRepositoryTest extends IntegrationTestSupport {
 
         newsRepository.saveAll(List.of(news1, news2, news3));
 
+        List<News> savedNews = newsRepository.findAll();
+
+        LocalDateTime minDate = savedNews.stream()
+                .map(News::getCreatedDate)
+                .min(LocalDateTime::compareTo)
+                .orElseThrow();
+
+        LocalDateTime maxDate = savedNews.stream()
+                .map(News::getCreatedDate)
+                .max(LocalDateTime::compareTo)
+                .orElseThrow();
+
+        startDate = minDate.minusMinutes(1);
+        endDate = maxDate.plusDays(1);
+
         pageable = PageRequest.of(0, 20);
-        startDate = now.minusMinutes(1);
-        endDate = now.plusDays(1);
     }
 
     @AfterEach
