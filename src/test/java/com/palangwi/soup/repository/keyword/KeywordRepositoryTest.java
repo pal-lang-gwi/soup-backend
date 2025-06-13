@@ -1,4 +1,4 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.keyword;
 
 import static com.palangwi.soup.domain.keyword.Status.PENDING;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.keyword.Source;
-import com.palangwi.soup.repository.keyword.KeywordRepository;
 import jakarta.transaction.Transactional;
 
 import java.util.Arrays;
