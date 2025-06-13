@@ -33,7 +33,7 @@ public class PerplexityAIServiceImpl implements NewsAIService{
     private String completionsPath;
 
     private final WebClient webClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public CompletableFuture<NewsResult> searchAndSummarizeAsync(String keyword) {
             String today = getTodayString();
@@ -58,7 +58,7 @@ public class PerplexityAIServiceImpl implements NewsAIService{
 
     private NewsResult parseToNewsResult(String content) {
         try {
-            log.warn("🔎 Perplexity 원시 응답:\n{}", content);
+            log.debug("🔎 Perplexity 원시 응답:\n{}", content);
 
             int tokens = objectMapper.readTree(content)
                     .path("usage")
@@ -78,7 +78,7 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                     .replaceAll("```\\s*$", "")
                     .trim();
 
-            log.warn("📝 클린된 요약 JSON:\n{}", cleanedJson);
+            log.debug("📝 클린된 요약 JSON:\n{}", cleanedJson);
 
             NewsSummary summary = objectMapper.readValue(cleanedJson, NewsSummary.class);
             return new NewsResult(summary.keyword(), summary.summary(), summary.articles(), tokens); // tokens는 미지원 시 -1
