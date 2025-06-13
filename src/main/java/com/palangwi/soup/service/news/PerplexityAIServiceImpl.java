@@ -26,6 +26,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class PerplexityAIServiceImpl implements NewsAIService{
 
+    private static final DateTimeFormatter TODAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
+    private static final String PROMPT_PATH = "prompts/news-prompt.txt";
+
     @Value("${perplexity.model}")
     private String model;
 
@@ -88,16 +91,14 @@ public class PerplexityAIServiceImpl implements NewsAIService{
     }
 
     private static String getTodayString() {
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
-        return today.format(formatter);
+        return LocalDate.now().format(TODAY_FORMATTER);
     }
 
     private String loadPrompt() {
-        try (InputStream is = new ClassPathResource("prompts/news-prompt.txt").getInputStream()) {
+        try (InputStream is = new ClassPathResource(PROMPT_PATH).getInputStream()) {
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException("프롬프트 파일 로딩 실패: " + "prompts/news-prompt.txt", e);
+            throw new RuntimeException("프롬프트 파일 로딩 실패: " + PROMPT_PATH, e);
         }
     }
 }
