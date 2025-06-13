@@ -50,6 +50,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private UserInfo createUserInfo(Authentication authentication) {
         CustomOAuth2User principal = (CustomOAuth2User) authentication.getPrincipal();
         return new UserInfo(
+                principal.getEmail(),
                 principal.getName(),
                 principal.getNickname(),
                 principal.getProviderId()
