@@ -32,6 +32,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'        // JPA (Hibernate)
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'    // MongoDB 연동
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'      // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'         // webflux
+
 
     // 🔐 JWT 토큰 처리
     implementation 'com.auth0:java-jwt:4.4.0'
@@ -66,9 +68,6 @@ dependencies {
 
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // HTTP 통신 라이브러리 - OK http
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 }
 
 tasks.named('test') {
