@@ -23,7 +23,7 @@ class NewsRepositoryTest extends IntegrationTestSupport {
     @Autowired
     private NewsRepository newsRepository;
 
-    private LocalDateTime now = LocalDateTime.now();
+    private final LocalDateTime now = LocalDateTime.of(2025, 6, 1, 0, 0);
     private Pageable pageable;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

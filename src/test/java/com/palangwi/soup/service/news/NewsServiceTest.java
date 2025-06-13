@@ -1,15 +1,12 @@
 package com.palangwi.soup.service.news;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.news.Article;
 import com.palangwi.soup.domain.news.News;
-import com.palangwi.soup.dto.news.ArticleDto;
 import com.palangwi.soup.dto.news.NewsResult;
 import com.palangwi.soup.dto.news.NewsSummary;
 import com.palangwi.soup.repository.news.NewsRepository;
@@ -19,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -52,9 +50,19 @@ class NewsServiceTest extends IntegrationTestSupport {
         newsService.collectAndSaveNews(keyword);
 
         // then
+        ArgumentCaptor<News> captor = ArgumentCaptor.forClass(News.class);
+
         await().atMost(Duration.ofSeconds(1))
                 .untilAsserted(() ->
-                        verify(newsRepository).save(any(News.class))
+                        verify(newsRepository).save(captor.capture())
                 );
+
+        News savedNews = captor.getValue();
+        assertThat(savedNews.getKeyword()).isEqualTo("인공지능");
+        assertThat(savedNews.getTokens()).isEqualTo(123);
+        assertThat(savedNews.getSummary().getShortSummary()).isEqualTo("짧은 요약");
+        assertThat(savedNews.getSummary().getLongSummary()).isEqualTo("긴 요약");
+        assertThat(savedNews.getArticles()).hasSize(1);
+        assertThat(savedNews.getArticles().getFirst().getTitle()).isEqualTo("제목");
     }
 }

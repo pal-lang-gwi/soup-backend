@@ -1,7 +1,6 @@
 package com.palangwi.soup.service.news;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.IntegrationTestSupport;
@@ -58,7 +57,7 @@ class PerplexityAIServiceImplTest extends IntegrationTestSupport {
                   ]
                 }
                 """;
-        
+
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockJson)
                 .addHeader("Content-Type", "application/json"));

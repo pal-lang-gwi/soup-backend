@@ -88,7 +88,7 @@ class NewsControllerTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.newsDtos[0].articles[0].summary").value("AI 요약 1"))
                 .andExpect(jsonPath("$.data.totalElements").value(1))
                 .andExpect(jsonPath("$.data.totalPages").value(1))
-                .andExpect(jsonPath("$.data.currentPages").value(0));
+                .andExpect(jsonPath("$.data.currentPage").value(0));
 
         verify(newsService).getDailyNews(DailyNewsRequestDto.from(request), pageable);
     }
