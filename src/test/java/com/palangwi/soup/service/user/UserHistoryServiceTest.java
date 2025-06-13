@@ -1,4 +1,4 @@
-package com.palangwi.soup.service;
+package com.palangwi.soup.service.user;
 
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
