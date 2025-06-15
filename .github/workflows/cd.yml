@@ -53,7 +53,7 @@ jobs:
           script: |
             cd /home/ubuntu
             echo "${{ secrets.DOCKER_COMPOSE_YML }}" | base64 -d > docker-compose.yml
-            sudo docker-compose down -v
+            sudo docker-compose down
             sudo docker-compose up -d
 
       # 헬스 체크 추가
