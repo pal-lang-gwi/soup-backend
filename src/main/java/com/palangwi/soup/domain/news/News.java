@@ -1,7 +1,7 @@
 package com.palangwi.soup.domain.news;
 
 import com.palangwi.soup.domain.BaseEntity;
-import com.palangwi.soup.domain.keyword.Keyword;
+
 import org.springframework.data.annotation.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
