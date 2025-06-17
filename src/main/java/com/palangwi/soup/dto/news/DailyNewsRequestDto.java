@@ -1,6 +1,5 @@
 package com.palangwi.soup.dto.news;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 
 public record DailyNewsRequestDto(

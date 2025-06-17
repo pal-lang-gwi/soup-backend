@@ -1,4 +1,4 @@
-package com.palangwi.soup.service;
+package com.palangwi.soup.service.user;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -15,7 +15,6 @@ import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.repository.user.UserHistoryRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
-import com.palangwi.soup.service.user.UserService;
 import java.time.LocalDate;
 import java.util.Optional;
 

@@ -6,6 +6,6 @@ public record DailyNewsResponseDto(
         List<NewsDto> newsDtos,
         long totalElements,
         int totalPages,
-        int currentPages
+        int currentPage
 ) {
 }

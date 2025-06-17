@@ -1,10 +1,9 @@
-package com.palangwi.soup.repository;
+package com.palangwi.soup.repository.user;
 
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.userlog.ChangeType;
 import com.palangwi.soup.domain.userlog.UserHistory;
-import com.palangwi.soup.repository.user.UserHistoryRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
