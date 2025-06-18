@@ -267,6 +267,9 @@ def main():
         code_summaries.append(code_summary)
         # 라인별 GPT 리뷰 요청 및 인라인 코멘트
         linewise_issues = generate_gpt_comment_linewise(added_lines, pr_title, filename)
+        # reviews 키가 있으면 그걸 사용
+        if isinstance(linewise_issues, dict) and "reviews" in linewise_issues:
+            linewise_issues = linewise_issues["reviews"]
         if not isinstance(linewise_issues, list):
             print(f"[ERROR] Unexpected GPT response for {filename}: {linewise_issues}")
             continue
