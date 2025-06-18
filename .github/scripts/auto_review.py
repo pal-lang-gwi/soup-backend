@@ -267,8 +267,11 @@ def main():
         code_summaries.append(code_summary)
         # 라인별 GPT 리뷰 요청 및 인라인 코멘트
         linewise_issues = generate_gpt_comment_linewise(added_lines, pr_title, filename)
+        if not isinstance(linewise_issues, list):
+            print(f"[ERROR] Unexpected GPT response for {filename}: {linewise_issues}")
+            continue
         for item in linewise_issues:
-            if item.get("issue"):
+            if isinstance(item, dict) and item.get("issue"):
                 body = f"⚠️ {item['issue']}\n"
                 if item.get("suggestion"):
                     body += f"💡 {item['suggestion']}"
