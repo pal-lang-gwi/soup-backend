@@ -56,23 +56,28 @@ def extract_added_lines(patch):
 def generate_gpt_comment_linewise(code_lines, pr_title, filename):
     # code_lines: [(line_num, code), ...]
     code_block = "\n".join([f"{line_num}: {code}" for line_num, code in code_lines])
-    prompt = f"""아래는 PR의 변경 코드입니다. 각 라인별로 실제로 리뷰가 필요한 이슈가 있는지 판단해서, 아래 JSON 배열 형식으로 답변하세요.
+    prompt = f"""
+아래는 PR의 변경 코드입니다. 각 라인별로 실제로 리뷰가 필요한 이슈가 있는지 판단해서, 반드시 아래 JSON 형식으로만 응답하세요.
+
+{{
+  "reviews": [
+    {{ "line": 24, "issue": "User 객체가 null일 때 NPE 발생 가능성", "suggestion": "null 체크를 추가하세요.", "refactor": "if (user == null) {{ return null; }}\\nreturn new UserDto(user.getId(), user.getEmail());" }},
+    {{ "line": 30, "issue": null, "suggestion": null, "refactor": null }}
+  ]
+}}
+
+- 반드시 reviews 키의 리스트로만 응답
+- 각 객체는 line, issue, suggestion, refactor 필드를 모두 포함(값은 null 가능)
+- 이슈가 없는 라인도 반드시 issue: null, suggestion: null, refactor: null로 포함
+- refactor는 리팩토링 예시 코드(있으면), 없으면 null
+- suggestion은 없으면 null로 명시
+- 다른 키, 텍스트, 설명, 예시는 절대 포함하지 마세요
 
 PR 제목: {pr_title}
 파일명: {filename}
 
 변경 코드:
 {code_block}
-
-응답 예시:
-[
-  {{ "line": 24, "issue": "userInfo.getRole()이 null일 수 있음", "suggestion": "Role.GUEST로 대체" }},
-  {{ "line": 30, "issue": null }}
-]
-
-- 이슈가 없는 라인은 반드시 issue: null로 명시
-- 사소한 변경, 의미 없는 수정, 문제 없는 라인은 반드시 issue: null로 명시
-- suggestion은 있을 때만 작성
 """
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
@@ -277,7 +282,10 @@ def main():
             if isinstance(item, dict) and item.get("issue"):
                 body = f"⚠️ {item['issue']}\n"
                 if item.get("suggestion"):
-                    body += f"💡 {item['suggestion']}"
+                    body += f"💡 {item['suggestion']}\n"
+                if item.get("refactor"):
+                    # 언어별 코드블록 지정 (여기선 java로 가정)
+                    body += f"\n```java\n{item['refactor']}\n```"
                 post_inline_comment(REPO, PR_NUMBER, commit_id, filename, body, item["line"], GITHUB_TOKEN)
                 print(f"[SUCCESS] Inline comment for {filename} line {item['line']}")
 
