@@ -3,7 +3,6 @@ import re
 import requests
 from openai import OpenAI
 import json
-import subprocess
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -53,58 +52,6 @@ def extract_added_lines(patch):
             if line_number is not None:
                 line_number += 1
     return added_lines
-
-def run_code_quality_checks(file_path):
-    """코드 품질 검사를 실행합니다."""
-    issues = []
-    
-    # pylint 검사
-    reporter = JSONReporter()
-    pylint.lint.Run([file_path], reporter=reporter, do_exit=False)
-    for issue in reporter.messages:
-        issues.append({
-            "type": "style",
-            "severity": issue.type,
-            "message": issue.msg,
-            "line": issue.line
-        })
-    
-    # bandit 보안 검사
-    bandit_manager = bandit.core.manager.BanditManager()
-    bandit_manager.discover_files([file_path])
-    bandit_manager.run_tests()
-    for issue in bandit_manager.get_issue_list():
-        issues.append({
-            "type": "security",
-            "severity": issue.severity,
-            "message": issue.text,
-            "line": issue.lineno
-        })
-    
-    return issues
-
-def analyze_test_coverage():
-    """테스트 커버리지를 분석합니다."""
-    cov = coverage.Coverage()
-    cov.start()
-    # 테스트 실행
-    subprocess.run(["pytest"], check=True)
-    cov.stop()
-    cov.save()
-    
-    return {
-        "total_coverage": cov.report(),
-        "missing_lines": cov.get_missing()
-    }
-
-def analyze_code_complexity(code):
-    """코드 복잡도를 분석합니다."""
-    visitor = ComplexityVisitor.from_code(code)
-    return [{
-        "name": block.name,
-        "complexity": block.complexity,
-        "line": block.lineno
-    } for block in visitor.blocks]
 
 def generate_gpt_comment_linewise(code_lines, pr_title, filename):
     # code_lines: [(line_num, code), ...]
@@ -230,11 +177,11 @@ def post_pr_comment(repo, pr_number, body, github_token):
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
-def generate_pr_description(pr_title, changed_files, code_changes):
+def generate_pr_description(pr_title, changed_files, code_summary):
     prompt = f"""PR 제목: {pr_title}
 변경된 파일들: {changed_files}
 변경된 코드 요약:
-{code_changes}
+{code_summary}
 
 위 내용을 참고하여 다음 PR에 대한 설명을 작성해주세요:
 
@@ -280,6 +227,7 @@ def post_inline_comment(repo, pr_number, commit_id, path, body, line, github_tok
 def main():
     pr_files = get_pr_files(REPO, PR_NUMBER, GITHUB_TOKEN)
     changed_filenames = []
+    code_summaries = []
 
     # 리뷰가 필요한 파일 확장자
     REVIEWABLE_EXTENSIONS = {
@@ -297,32 +245,27 @@ def main():
     }
 
     pr_title = os.getenv("PR_TITLE", "")
-    all_descriptions = []
-    file_reviews = []
-
     commit_id = get_pr_commit_sha(REPO, PR_NUMBER, GITHUB_TOKEN)
+
     for file in pr_files:
         filename = file["filename"]
-        
         # 무시할 파일인지 확인
         if any(filename.endswith(pattern) for pattern in IGNORE_PATTERNS):
             continue
-            
         # 리뷰가 필요한 파일인지 확인
         if not any(filename.endswith(ext) for ext in REVIEWABLE_EXTENSIONS):
             continue
-
         changed_filenames.append(filename)
         patch = file.get("patch")
-        
         if not patch:
             continue
-
         added_lines = extract_added_lines(patch)
         if not added_lines:
             continue
-
-        # 라인별 GPT 리뷰 요청
+        # 주요 변경 코드 요약용
+        code_summary = f"### {filename}\n" + "\n".join([f"Line {line_num}: {code}" for line_num, code in added_lines])
+        code_summaries.append(code_summary)
+        # 라인별 GPT 리뷰 요청 및 인라인 코멘트
         linewise_issues = generate_gpt_comment_linewise(added_lines, pr_title, filename)
         for item in linewise_issues:
             if item.get("issue"):
@@ -332,17 +275,17 @@ def main():
                 post_inline_comment(REPO, PR_NUMBER, commit_id, filename, body, item["line"], GITHUB_TOKEN)
                 print(f"[SUCCESS] Inline comment for {filename} line {item['line']}")
 
-    if all_descriptions:
+    # PR 본문 자동 요약/설명 생성 및 업데이트
+    if changed_filenames and code_summaries:
         try:
-            # 전체 PR 설명 생성 (요약 위주)
-            pr_description = f"""## 변경 사항 요약\n{pr_title}\n\n## 주요 변경 내용\n{chr(10).join(all_descriptions)}"""
+            code_summary_text = "\n\n".join(code_summaries)
+            pr_description = generate_pr_description(pr_title, changed_filenames, code_summary_text)
             update_pr_description(REPO, PR_NUMBER, pr_description, GITHUB_TOKEN)
             print(f"[SUCCESS] PR 본문이 성공적으로 업데이트되었습니다.")
         except Exception as e:
             print(f"[ERROR] Failed to update PR description: {e}")
-    
-    if not all_descriptions:
-        print("[INFO] 리뷰가 필요한 변경사항이 없습니다.")
+    else:
+        print("[INFO] PR 본문에 반영할 변경사항이 없습니다.")
 
 if __name__ == "__main__":
     main()
