@@ -5,7 +5,7 @@ public enum Role {
     USER("ROLE_USER"),
     ADMIN("ROLE_ADMIN"),
     GUEST("ROLE_GUEST"),
-    PREMIUN("ROLE_PREMIUN");
+    PREMIUM("ROLE_PREMIUM");
 
     private final String value;
 

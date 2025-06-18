@@ -1,7 +1,7 @@
 package com.palangwi.soup.security.userinfo;
 
+import com.palangwi.soup.security.Role;
 import java.util.Map;
-import lombok.Getter;
 
 public class GoogleOAuth2UserInfo implements OAuth2UserInfo {
 
@@ -9,12 +9,14 @@ public class GoogleOAuth2UserInfo implements OAuth2UserInfo {
     private final String registrationId;
     private final String username;
     private final String email;
+    private final Role role;
 
     public GoogleOAuth2UserInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
         this.registrationId = "google";
         this.username = (String) attributes.get("email");
         this.email = (String) attributes.get("email");
+        this.role = Role.of((String) attributes.get("role"));
     }
 
     @Override
@@ -40,6 +42,11 @@ public class GoogleOAuth2UserInfo implements OAuth2UserInfo {
     @Override
     public String getEmail() {
         return email;
+    }
+
+    @Override
+    public Role getRole() {
+        return role;
     }
 
 }
