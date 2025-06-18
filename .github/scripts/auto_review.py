@@ -54,9 +54,17 @@ def extract_added_lines(patch):
     return added_lines
 
 def generate_gpt_comment(code_snippet, pr_title, changed_files):
-    prompt = f"""다음 PR의 코드 변경사항을 분석하고, 아래 필드를 포함하는 JSON 형식으로 응답해주세요:
-- "description": {{ "summary": "요약", "details": "상세 설명", "sequence_diagram": "Mermaid 다이어그램 (없으면 null)" }}
-- "review": {{ "critical_issues": ["문제점 목록 (없으면 빈 배열)"], "has_issues": true 또는 false }}
+    prompt = f"""다음 PR의 코드 변경사항을 분석하고, 모든 설명을 개괄식(bullet points) 목록으로 제공하는 JSON으로 응답해주세요.
+
+- "description": {{
+    "summary": ["- 요약 1", "- 요약 2"],
+    "details": ["- 상세 내용 1 (파일: a.java)", "- 상세 내용 2 (파일: b.java)"],
+    "sequence_diagram": "Mermaid 다이어그램 (없으면 null)"
+  }}
+- "review": {{
+    "critical_issues": ["- 문제점 1 (파일: a.java)", "- 문제점 2"],
+    "has_issues": true 또는 false
+  }}
 
 PR 제목: {pr_title}
 변경된 파일들: {changed_files}
@@ -75,12 +83,15 @@ PR 제목: {pr_title}
     try:
         result = json.loads(content)
         
-        # PR Description 생성
+        # PR Description 생성 (개괄식)
+        summary_points = "\n".join(result['description'].get('summary', []))
+        details_points = "\n".join(result['description'].get('details', []))
+        
         description = f"""## 변경 사항 요약
-{result['description']['summary']}
+{summary_points}
 
 ## 주요 변경 내용
-{result['description']['details']}"""
+{details_points}"""
 
         # 시퀀스 다이어그램이 있는 경우 추가
         if result['description'].get('sequence_diagram'):
@@ -91,15 +102,16 @@ PR 제목: {pr_title}
 {result['description']['sequence_diagram']}
 ```"""
         
-        # 코드 리뷰 생성
-        if result['review']['has_issues'] and result['review']['critical_issues']:
-            review = "## 치명적인 문제점\n" + "\n".join([f"- {issue}" for issue in result['review']['critical_issues']])
+        # 코드 리뷰 생성 (개괄식)
+        if result['review'].get('has_issues') and result['review'].get('critical_issues'):
+            issues_points = "\n".join(result['review']['critical_issues'])
+            review = f"## 치명적인 문제점\n{issues_points}"
         else:
             review = "발견된 치명적인 문제점이 없습니다."
         
         return description, review
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] Failed to parse GPT response as JSON: {e}")
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"[ERROR] Failed to parse GPT response as JSON or key missing: {e}")
         return content, "발견된 치명적인 문제점이 없습니다."
 
 def post_pr_comment(repo, pr_number, body, github_token):
