@@ -130,20 +130,26 @@ def post_inline_comment(
 
 def main() -> None:
     """Main workflow: fetch PR, extract diffs, call GPT, and post comments."""
+    logger.info("Fetching PR files and commit SHA...")
     pr_files = get_pr_files(REPO, PR_NUMBER, GITHUB_TOKEN)
     commit_id = get_pr_commit_sha(REPO, PR_NUMBER, GITHUB_TOKEN)
 
+    logger.info(f"Processing {len(pr_files)} changed files in PR #{PR_NUMBER}")
     for file in pr_files:
         filename = file.get('filename', '')
         patch = file.get('patch') or ''
         if not patch:
+            logger.info(f"Skipping {filename}: no patch found.")
             continue
         added = extract_added_lines_with_position(patch)
         if not added:
+            logger.info(f"Skipping {filename}: no added lines found.")
             continue
 
         code_lines = [(ln, code) for ln, code, _ in added]
+        logger.info(f"Requesting GPT review for {filename} ({len(code_lines)} added lines)...")
         reviews = generate_gpt_comment_linewise(code_lines, os.getenv("PR_TITLE", ""), filename)
+        logger.info(f"Received {len(reviews)} review items for {filename}")
         for idx, item in enumerate(reviews):
             issue = item.get('issue')
             if issue:
@@ -155,7 +161,12 @@ def main() -> None:
                 if refactor:
                     body += f"```java\n{refactor}\n```"
                 position = added[idx][2]
-                post_inline_comment(REPO, PR_NUMBER, commit_id, filename, body, position, GITHUB_TOKEN)
+                logger.info(f"Posting inline comment for {filename} at diff position {position} (line {added[idx][0]})...")
+                try:
+                    post_inline_comment(REPO, PR_NUMBER, commit_id, filename, body, position, GITHUB_TOKEN)
+                except Exception as e:
+                    logger.error(f"Failed to post inline comment for {filename} at position {position}: {e}")
+    logger.info("Auto review script completed.")
 
 if __name__ == "__main__":
     main()
