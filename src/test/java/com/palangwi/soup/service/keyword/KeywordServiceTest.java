@@ -27,6 +27,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
@@ -105,8 +107,9 @@ class KeywordServiceTest extends IntegrationTestSupport {
         String searchKeyword = "자바";
         keyword1.approve(user);
         keyword2.approve(user);
+        Pageable pageable = PageRequest.of(0, 20);
         // when
-        SearchKeywordsResponseDto response = keywordService.searchKeywords(user.getId(), searchKeyword);
+        SearchKeywordsResponseDto response = keywordService.searchKeywords(user.getId(), searchKeyword, pageable);
 
         // then
         assertThat(response.keywords()).hasSize(2);
@@ -118,6 +121,9 @@ class KeywordServiceTest extends IntegrationTestSupport {
         assertThat(response.keywords().get(1).name()).isEqualTo("자바스크립트");
         assertThat(response.keywords().get(1).normalizedName()).isEqualTo("javascript");
         assertThat(response.keywords().get(1).isSubscribed()).isFalse();
+        assertThat(response.totalElements()).isEqualTo(2);
+        assertThat(response.totalPages()).isEqualTo(1);
+        assertThat(response.currentPages()).isEqualTo(1);
     }
 
     @Test
@@ -134,13 +140,16 @@ class KeywordServiceTest extends IntegrationTestSupport {
         keyword2.approve(user);
 
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2, keyword3));
-
+        Pageable pageable = PageRequest.of(0, 20);
         // when
-        SearchKeywordsResponseDto response = keywordService.searchKeywords(user.getId(), searchKeyword);
+        SearchKeywordsResponseDto response = keywordService.searchKeywords(user.getId(), searchKeyword, pageable);
 
         // then
         assertThat(response.keywords()).hasSize(2);
         assertThat(response.keywords().stream().map(SearchKeywordDto::name).toList())
                 .containsExactly("자바", "자바스크립트");
+        assertThat(response.totalElements()).isEqualTo(2);
+        assertThat(response.totalPages()).isEqualTo(1);
+        assertThat(response.currentPages()).isEqualTo(1);
     }
 }

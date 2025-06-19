@@ -79,18 +79,20 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional(readOnly = true)
-    public SearchKeywordsResponseDto searchKeywords(Long userId, String keyword) {
-        List<Object[]> results = keywordRepository.findKeywordsWithSubscriptionStatus(userId, keyword, Status.ACTIVE);
+    public SearchKeywordsResponseDto searchKeywords(Long userId, String keyword, Pageable pageable) {
+        Page<Keyword> keywords = keywordRepository.findByNameContainingIgnoreCaseAndStatus(keyword, Status.ACTIVE,
+                pageable);
 
-        List<SearchKeywordDto> keywords = results.stream()
-                .map(result -> {
-                    Keyword foundKeyword = (Keyword) result[0];
-                    boolean isSubscribed = (boolean) result[1];
-                    return SearchKeywordDto.from(foundKeyword, isSubscribed);
+        // 키워드 당 구독 여부 확인
+        List<SearchKeywordDto> searchKeywordDtos = keywords.getContent().stream()
+                .map(k -> {
+                    boolean isSubscribed = userKeywordRepository.existsByUserAndKeyword(userId, k.getId());
+                    return SearchKeywordDto.from(k, isSubscribed);
                 })
                 .toList();
 
-        return SearchKeywordsResponseDto.from(keywords);
+        return SearchKeywordsResponseDto.from(searchKeywordDtos, (int) keywords.getTotalElements(),
+                keywords.getTotalPages(), keywords.getNumber() + 1);
     }
 
     @Transactional

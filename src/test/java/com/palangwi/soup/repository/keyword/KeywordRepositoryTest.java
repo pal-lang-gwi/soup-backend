@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Transactional
@@ -34,12 +36,9 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
     @Autowired
     private UserRepository userRepository;
 
-    private Long userId;
-
     @BeforeEach
     void setUp() {
         User user = createUser("테스트 닉네임");
-        userId = user.getId();
         Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user);
         Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.MANUAL, user);
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
@@ -82,20 +81,15 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
         assertThat(result).extracting("name").containsExactlyInAnyOrder("키워드1", "키워드2");
     }
 
-    @DisplayName("사용자의 구독 상태와 함께 키워드를 조회한다.")
+    @DisplayName("키워드 이름과 상태로 키워드를 조회한다.")
     @Test
-    void findKeywordsWithSubscriptionStatus() {
+    void findByNameContainingIgnoreCaseAndStatus() {
 
-        List<Object[]> results = keywordRepository.findKeywordsWithSubscriptionStatus(userId, "키워드", PENDING);
-        List<SearchKeywordDto> keywords = results.stream()
-                .map(result -> {
-                    Keyword foundKeyword = (Keyword) result[0];
-                    boolean isSubscribed = (boolean) result[1];
-                    return SearchKeywordDto.from(foundKeyword, isSubscribed);
-                })
-                .toList();
-        assertThat(keywords).hasSize(2);
-        assertThat(keywords).extracting("name").containsExactlyInAnyOrder("키워드1", "키워드2");
+        Page<Keyword> results = keywordRepository.findByNameContainingIgnoreCaseAndStatus("키워드", PENDING,
+                PageRequest.of(0, 20));
+
+        assertThat(results.getContent()).hasSize(2);
+        assertThat(results.getContent()).extracting("name").containsExactlyInAnyOrder("키워드1", "키워드2");
     }
 
     private User createUser(String nickname) {

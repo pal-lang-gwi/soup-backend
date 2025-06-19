@@ -21,7 +21,11 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
     int countDistinctSubscribedUsers();
 
     @Query("SELECT uk FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id = :keywordId AND uk.subscribed = true")
-    Optional<UserKeyword> findSubscribedByUserIdAndKeywordId(@Param("userId") Long userId, @Param("keywordId") Long keywordId);
+    Optional<UserKeyword> findSubscribedByUserIdAndKeywordId(@Param("userId") Long userId,
+            @Param("keywordId") Long keywordId);
 
     Page<UserKeyword> findAllByUser_IdAndSubscribedTrue(Long userId, Pageable pageable);
+
+    @Query("SELECT COUNT(uk) > 0 FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id = :keywordId")
+    boolean existsByUserAndKeyword(@Param("userId") Long userId, @Param("keywordId") Long keywordId);
 }
