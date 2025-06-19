@@ -35,7 +35,6 @@ public class UserService {
         User firstLoginUser = createFirstLoginUser(
                 userInfo.email(),
                 userInfo.name(),
-                userInfo.nickname(),
                 userInfo.providerId()
         );
 
@@ -48,7 +47,7 @@ public class UserService {
         User user = getUser(userId);
         Gender gender = Gender.valueOf(request.gender().toUpperCase());
 
-        user.initializeAdditionalInfo(request.email(), gender, request.birthDate());
+        user.initializeAdditionalInfo(request.nickname(), gender, request.birthDate());
 
         userHistoryService.saveCreateHistory(user);
 

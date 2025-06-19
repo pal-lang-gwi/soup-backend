@@ -7,14 +7,14 @@ public class GoogleOAuth2UserInfo implements OAuth2UserInfo {
 
     private final Map<String, Object> attributes;
     private final String registrationId;
-    private final String username;
+//    private final String username;
     private final String email;
     private final Role role;
 
     public GoogleOAuth2UserInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
         this.registrationId = "google";
-        this.username = (String) attributes.get("email");
+//        this.username = (String) attributes.get("email");
         this.email = (String) attributes.get("email");
         this.role = Role.of((String) attributes.get("role"));
     }
@@ -31,11 +31,6 @@ public class GoogleOAuth2UserInfo implements OAuth2UserInfo {
 
     @Override
     public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getNickname() {
         return (String) attributes.get("name");
     }
 

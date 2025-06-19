@@ -37,12 +37,6 @@ public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
     }
 
     @Override
-    public String getNickname() {
-        LinkedHashMap<String, String> properties = (LinkedHashMap) attributes.get("properties");
-        return properties.get("nickname");
-    }
-
-    @Override
     public String getEmail() {
         if (email == null || email.isEmpty()) {
             throw new IllegalArgumentException("Email not provided by Kakao account");
