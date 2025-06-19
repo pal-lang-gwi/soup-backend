@@ -22,7 +22,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(userInfo.getRole().value()));
+        return List.of(new SimpleGrantedAuthority(userInfo.getRole().value() == null ? "ROLE_GUEST" : userInfo.getRole().value()));
     }
 
     @Override

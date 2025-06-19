@@ -63,6 +63,7 @@ public class User extends BaseEntity {
         return User.builder()
                 .email(email)
                 .username(username)
+                .role(Role.USER)
                 .providerId(providerId)
                 .profileImageUrl("https://sample.png")
                 .build();
@@ -81,9 +82,8 @@ public class User extends BaseEntity {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public void initializeAdditionalInfo(String email, Gender gender, LocalDate birthDate) {
-        this.email = email;
-        this.role = Role.USER;
+    public void initializeAdditionalInfo(String nickname, Gender gender, LocalDate birthDate) {
+        this.nickname = nickname;
         this.gender = gender;
         this.birthDate = birthDate;
     }
