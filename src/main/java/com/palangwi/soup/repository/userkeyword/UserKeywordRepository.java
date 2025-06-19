@@ -1,5 +1,7 @@
 package com.palangwi.soup.repository.userkeyword;
 
+import com.palangwi.soup.domain.keyword.Keyword;
+import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,5 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
 
     Page<UserKeyword> findAllByUser_IdAndSubscribedTrue(Long userId, Pageable pageable);
 
-    @Query("SELECT COUNT(uk) > 0 FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id = :keywordId")
-    boolean existsByUserAndKeyword(@Param("userId") Long userId, @Param("keywordId") Long keywordId);
+    boolean existsByUserAndKeyword(User user, Keyword keyword);
 }
