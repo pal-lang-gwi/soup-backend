@@ -30,7 +30,7 @@ public class UserControllerTest extends IntegrationTestSupport {
     public void additionalInfo_success() throws Exception {
         // given
         UserAdditionalInfoRequestDto request = UserAdditionalInfoRequestDto.builder()
-                .email("init@test.com")
+                .nickname("ExampleNickname")
                 .gender("MALE")
                 .birthDate(LocalDate.of(1996, 12, 2))
                 .build();
@@ -49,7 +49,7 @@ public class UserControllerTest extends IntegrationTestSupport {
     public void additionalInfo_fail() throws Exception {
         // given
         UserAdditionalInfoRequestDto request = UserAdditionalInfoRequestDto.builder()
-                .email("init@test.com")
+                .nickname("ExampleNickname")
                 .gender("WRONG_GENDER")
                 .birthDate(LocalDate.of(1996, 12, 2))
                 .build();
