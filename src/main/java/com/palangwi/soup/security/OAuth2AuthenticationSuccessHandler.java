@@ -91,8 +91,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         response.addHeader("Set-Cookie", accessCookie.toString());
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        String encodedNickname = URLEncoder.encode(user.getNickname(), "UTF-8");
-        String redirectUrl = String.format("%s/signup?nickname=%s&userId=%d", frontDomain, encodedNickname, user.getId());
+        String encodedEmail = URLEncoder.encode(user.getEmail(), "UTF-8");
+        String redirectUrl = String.format("%s/signup?email=%s&userId=%d", frontDomain, encodedEmail, user.getId());
 
         response.sendRedirect(redirectUrl);
     }
