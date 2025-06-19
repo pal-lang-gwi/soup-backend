@@ -13,7 +13,6 @@ import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
@@ -123,7 +122,7 @@ class KeywordServiceTest extends IntegrationTestSupport {
         assertThat(response.keywords().get(1).isSubscribed()).isFalse();
         assertThat(response.totalElements()).isEqualTo(2);
         assertThat(response.totalPages()).isEqualTo(1);
-        assertThat(response.currentPages()).isEqualTo(1);
+        assertThat(response.currentPage()).isEqualTo(1);
     }
 
     @Test
@@ -150,6 +149,6 @@ class KeywordServiceTest extends IntegrationTestSupport {
                 .containsExactly("자바", "자바스크립트");
         assertThat(response.totalElements()).isEqualTo(2);
         assertThat(response.totalPages()).isEqualTo(1);
-        assertThat(response.currentPages()).isEqualTo(1);
+        assertThat(response.currentPage()).isEqualTo(1);
     }
 }

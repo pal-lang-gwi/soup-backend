@@ -6,10 +6,10 @@ public record SearchKeywordsResponseDto(
         List<SearchKeywordDto> keywords,
         long totalElements,
         int totalPages,
-        int currentPages) {
+        int currentPage) {
 
-    public static SearchKeywordsResponseDto from(List<SearchKeywordDto> keywords, long totalElements, int totalPages,
-            int currentPages) {
-        return new SearchKeywordsResponseDto(keywords, totalElements, totalPages, currentPages);
+    public static SearchKeywordsResponseDto from(List<SearchKeywordDto> keywords, long totalElements, int totalPage,
+            int currentPage) {
+        return new SearchKeywordsResponseDto(keywords, totalElements, totalPage, currentPage);
     }
 }

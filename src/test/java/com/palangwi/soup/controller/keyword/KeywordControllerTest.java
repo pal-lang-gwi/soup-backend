@@ -67,7 +67,7 @@ class KeywordControllerTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.keywords[1].isSubscribed").value(false))
                 .andExpect(jsonPath("$.data.totalElements").value(2))
                 .andExpect(jsonPath("$.data.totalPages").value(1))
-                .andExpect(jsonPath("$.data.currentPages").value(1));
+                .andExpect(jsonPath("$.data.currentPage").value(1));
 
         verify(keywordService).searchKeywords(any(Long.class), any(String.class), any(Pageable.class));
     }
