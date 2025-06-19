@@ -1,5 +1,6 @@
 package com.palangwi.soup.security.userinfo;
 
+import com.palangwi.soup.security.Role;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -47,5 +48,10 @@ public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
             throw new IllegalArgumentException("Email not provided by Kakao account");
         }
         return email;
+    }
+
+    @Override
+    public Role getRole() {
+        return null;
     }
 }
