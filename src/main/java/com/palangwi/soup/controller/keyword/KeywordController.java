@@ -51,7 +51,7 @@ public class KeywordController {
     @GetMapping("/search")
     public ApiResult<SearchKeywordsResponseDto> searchKeywords(
             @AuthenticationPrincipal JwtAuthentication userDetails,
-            @RequestParam @NotBlank @Size(min = 1, max = 100) String keyword,
+            @Valid @RequestParam @NotBlank @Size(min = 1, max = 100) String keyword,
             @PageableDefault(size = 20, direction = Direction.DESC) Pageable pageable
     ) {
         return success(keywordService.searchKeywords(userDetails.id(), keyword, pageable));
