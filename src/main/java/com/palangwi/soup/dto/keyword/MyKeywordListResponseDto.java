@@ -9,7 +9,7 @@ public record MyKeywordListResponseDto(
         List<MyKeywordDto> myKeywordDtos,
         long totalElements,
         int totalPages,
-        int currentPages
+        int currentPage
 ) {
     public static MyKeywordListResponseDto of(List<MyKeywordDto> myKeywordDtos, Page<UserKeyword> userKeywordPage) {
         return new MyKeywordListResponseDto(

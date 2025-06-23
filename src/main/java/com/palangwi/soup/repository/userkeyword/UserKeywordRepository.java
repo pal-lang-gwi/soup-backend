@@ -3,7 +3,6 @@ package com.palangwi.soup.repository.userkeyword;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +20,12 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
     int countDistinctSubscribedUsers();
 
     @Query("SELECT uk FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id = :keywordId AND uk.subscribed = true")
-    Optional<UserKeyword> findSubscribedByUserIdAndKeywordId(@Param("userId") Long userId, @Param("keywordId") Long keywordId);
+    Optional<UserKeyword> findSubscribedByUserIdAndKeywordId(@Param("userId") Long userId,
+            @Param("keywordId") Long keywordId);
 
     Page<UserKeyword> findAllByUser_IdAndSubscribedTrue(Long userId, Pageable pageable);
+
+    @Query("SELECT uk.keyword.id FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id IN :keywordIds")
+    List<Long> findSubscribedKeywordIds(@Param("userId") Long userId, @Param("keywordIds") List<Long> keywordIds);
+
 }

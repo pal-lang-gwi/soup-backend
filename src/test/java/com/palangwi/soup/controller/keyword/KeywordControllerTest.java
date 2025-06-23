@@ -1,5 +1,6 @@
 package com.palangwi.soup.controller.keyword;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -17,6 +18,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -35,17 +38,21 @@ class KeywordControllerTest extends IntegrationTestSupport {
     void searchKeywords_success() throws Exception {
         // given
         String searchKeyword = "자바";
+        Pageable pageable = PageRequest.of(0, 20);
+
         List<SearchKeywordDto> keywords = Arrays.asList(
                 new SearchKeywordDto(1L, "자바", "java", true),
                 new SearchKeywordDto(2L, "자바스크립트", "javascript", false));
-        SearchKeywordsResponseDto response = new SearchKeywordsResponseDto(keywords);
+        SearchKeywordsResponseDto response = SearchKeywordsResponseDto.from(keywords, 2, 1, 1);
 
-        given(keywordService.searchKeywords(1L, searchKeyword))
+        given(keywordService.searchKeywords(any(Long.class), any(String.class), any(Pageable.class)))
                 .willReturn(response);
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/keywords/search")
                 .param("keyword", searchKeyword)
+                .param("page", "0")
+                .param("size", "20")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -57,9 +64,12 @@ class KeywordControllerTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.keywords[1].id").value(2))
                 .andExpect(jsonPath("$.data.keywords[1].name").value("자바스크립트"))
                 .andExpect(jsonPath("$.data.keywords[1].normalizedName").value("javascript"))
-                .andExpect(jsonPath("$.data.keywords[1].isSubscribed").value(false));
+                .andExpect(jsonPath("$.data.keywords[1].isSubscribed").value(false))
+                .andExpect(jsonPath("$.data.totalElements").value(2))
+                .andExpect(jsonPath("$.data.totalPages").value(1))
+                .andExpect(jsonPath("$.data.currentPage").value(1));
 
-        verify(keywordService).searchKeywords(1L, searchKeyword);
+        verify(keywordService).searchKeywords(any(Long.class), any(String.class), any(Pageable.class));
     }
 
     @Test

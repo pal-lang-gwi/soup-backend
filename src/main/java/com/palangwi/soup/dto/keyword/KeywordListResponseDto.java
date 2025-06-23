@@ -6,6 +6,6 @@ public record KeywordListResponseDto(
         List<KeywordResponseDto> keywordResponseDtos,
         long totalElements,
         int totalPages,
-        int currentPages
+        int currentPage
 ) {
 }
