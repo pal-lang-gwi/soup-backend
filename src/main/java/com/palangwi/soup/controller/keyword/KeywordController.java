@@ -18,7 +18,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.palangwi.soup.dto.keyword.KeywordResponseDto;
 import com.palangwi.soup.security.JwtAuthentication;
 import com.palangwi.soup.service.keyword.KeywordService;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
