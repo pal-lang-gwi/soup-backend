@@ -85,10 +85,16 @@ public class KeywordServiceImpl implements KeywordService {
 
         User user = findUserById(userId);
 
-        // 키워드 당 구독 여부 확인
-        List<SearchKeywordDto> searchKeywordDtos = keywords.getContent().stream()
+        List<Keyword> keywordsList = keywords.getContent();
+        List<Long> keywordIds = keywordsList.stream()
+                .map(Keyword::getId)
+                .toList();
+
+        Set<Long> subscribedKeywordIds = userKeywordRepository.findSubscribedKeywordIds(userId, keywordIds);
+
+        List<SearchKeywordDto> searchKeywordDtos = keywordsList.stream()
                 .map(k -> {
-                    boolean isSubscribed = userKeywordRepository.existsByUserAndKeyword(user, k);
+                    boolean isSubscribed = subscribedKeywordIds.contains(k.getId());
                     return SearchKeywordDto.from(k, isSubscribed);
                 })
                 .toList();
