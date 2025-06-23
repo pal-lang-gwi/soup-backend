@@ -1,10 +1,15 @@
 package com.palangwi.soup.service.keyword;
 
-import static com.palangwi.soup.utils.KeywordNormalizer.*;
+import static com.palangwi.soup.utils.KeywordNormalizer.normalize;
 
+import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
+import com.palangwi.soup.domain.keyword.Source;
 import com.palangwi.soup.domain.keyword.Status;
+import com.palangwi.soup.domain.user.User;
+import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
+import com.palangwi.soup.dto.keyword.KeywordResponseDto;
 import com.palangwi.soup.dto.keyword.MyKeywordDto;
 import com.palangwi.soup.dto.keyword.MyKeywordListResponseDto;
 import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
@@ -14,29 +19,25 @@ import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.exception.keyword.*;
+import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
+import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
+import com.palangwi.soup.exception.keyword.KeywordNotExistException;
+import com.palangwi.soup.exception.keyword.NotSubscribedException;
+import com.palangwi.soup.exception.user.UserNotFoundException;
+import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
-
-import java.util.*;
+import com.palangwi.soup.repository.user.UserRepository;
+import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.domain.keyword.Source;
-import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.domain.userkeyword.UserKeyword;
-import com.palangwi.soup.dto.keyword.KeywordResponseDto;
-import com.palangwi.soup.exception.user.UserNotFoundException;
-import com.palangwi.soup.repository.keyword.KeywordRepository;
-import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
-import com.palangwi.soup.repository.user.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @Slf4j
@@ -79,18 +80,28 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional(readOnly = true)
-    public SearchKeywordsResponseDto searchKeywords(Long userId, String keyword) {
-        List<Object[]> results = keywordRepository.findKeywordsWithSubscriptionStatus(userId, keyword, Status.ACTIVE);
+    public SearchKeywordsResponseDto searchKeywords(Long userId, String keyword, Pageable pageable) {
+        Page<Keyword> keywords = keywordRepository.findByNameContainingIgnoreCaseAndStatus(keyword, Status.ACTIVE,
+                pageable);
 
-        List<SearchKeywordDto> keywords = results.stream()
-                .map(result -> {
-                    Keyword foundKeyword = (Keyword) result[0];
-                    boolean isSubscribed = (boolean) result[1];
-                    return SearchKeywordDto.from(foundKeyword, isSubscribed);
+        User user = findUserById(userId);
+
+        List<Keyword> keywordsList = keywords.getContent();
+        List<Long> keywordIds = keywordsList.stream()
+                .map(Keyword::getId)
+                .toList();
+
+        List<Long> subscribedKeywordIds = userKeywordRepository.findSubscribedKeywordIds(userId, keywordIds);
+
+        List<SearchKeywordDto> searchKeywordDtos = keywordsList.stream()
+                .map(k -> {
+                    boolean isSubscribed = subscribedKeywordIds.contains(k.getId());
+                    return SearchKeywordDto.from(k, isSubscribed);
                 })
                 .toList();
 
-        return SearchKeywordsResponseDto.from(keywords);
+        return SearchKeywordsResponseDto.from(searchKeywordDtos, keywords.getTotalElements(),
+                keywords.getTotalPages(), keywords.getNumber() + 1);
     }
 
     @Transactional

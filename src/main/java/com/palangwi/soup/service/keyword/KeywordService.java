@@ -29,7 +29,7 @@ public interface KeywordService {
 
     MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable);
 
-    SearchKeywordsResponseDto searchKeywords(Long userId, String keyword);
+    SearchKeywordsResponseDto searchKeywords(Long userId, String keyword, Pageable pageable);
 
     KeywordListResponseDto getKeywordList(Pageable pageable);
 }

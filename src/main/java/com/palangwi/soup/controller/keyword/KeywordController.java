@@ -51,8 +51,10 @@ public class KeywordController {
     @GetMapping("/search")
     public ApiResult<SearchKeywordsResponseDto> searchKeywords(
             @AuthenticationPrincipal JwtAuthentication userDetails,
-            @RequestParam @NotBlank @Size(min = 1, max = 100) String keyword) {
-        return success(keywordService.searchKeywords(userDetails.id(), keyword));
+            @Valid @RequestParam @NotBlank @Size(min = 1, max = 100) String keyword,
+            @PageableDefault(size = 20, direction = Direction.DESC) Pageable pageable
+    ) {
+        return success(keywordService.searchKeywords(userDetails.id(), keyword, pageable));
     }
 
     @Operation(summary = "키워드 구독", description = "새로운 키워드를 구독합니다.")
