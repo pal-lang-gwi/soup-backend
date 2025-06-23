@@ -1,12 +1,8 @@
 package com.palangwi.soup.repository.userkeyword;
 
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.domain.userkeyword.UserKeyword;
 import java.util.List;
 import java.util.Optional;
-
-import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,5 +25,7 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
 
     Page<UserKeyword> findAllByUser_IdAndSubscribedTrue(Long userId, Pageable pageable);
 
-    Set<Long> findSubscribedKeywordIds(Long userId, List<Long> keywordIds);
+    @Query("SELECT uk.keyword.id FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.keyword.id IN :keywordIds")
+    List<Long> findSubscribedKeywordIds(@Param("userId") Long userId, @Param("keywordIds") List<Long> keywordIds);
+
 }
