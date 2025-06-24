@@ -46,6 +46,7 @@ jobs:
       - name: Push to Docker Hub
         run: |
           docker tag soup-backend ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+          docker rmi soup-backend
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
 
       - name: Deploy to EC2
