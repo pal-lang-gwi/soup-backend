@@ -36,6 +36,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
         String requestURI = request.getRequestURI();
+        log.info("[JwtFilter] 요청 URI: {}", requestURI);
 
         if (requestURI.equals("/api/v1/health") || requestURI.startsWith("/api/v1/health/")) {
             SecurityContextHolder.clearContext();
