@@ -13,32 +13,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4 # 최신 버전으로 업데이트
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4 # 최신 버전으로 업데이트
         with:
           java-version: "21"
           distribution: "temurin"
+          cache: "gradle" # Gradle 캐시 활성화
 
       - name: Create application.yml from secret
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > ./src/main/resources/application.yml
+        env:
+          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
 
       - name: Create news-summary.txt from secret
         run: |
           mkdir -p ./src/main/resources/prompts
           echo "${{ secrets.NEWS_SUMMARY_PROMPT }}" | base64 -d > ./src/main/resources/prompts/news-summary.txt
+        env:
+          NEWS_SUMMARY_PROMPT: ${{ secrets.NEWS_SUMMARY_PROMPT }}
 
       - name: Build with Gradle
-        run: chmod +x ./gradlew && ./gradlew build -x test
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build -x test --info  # 더 자세한 로그 출력
+        env:
+          GRADLE_OPTS: -Dorg.gradle.daemon=false
 
       - name: Build Docker image
-        run: docker build -t soup-backend .
+        run: |
+          docker build -t soup-backend . --no-cache  # 캐시 무효화로 최신 빌드 보장
+        env:
+          DOCKER_BUILDKIT: 1 # 빌드 성능 향상
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3 # 최신 버전으로 업데이트
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -46,57 +59,93 @@ jobs:
       - name: Push to Docker Hub
         run: |
           docker tag soup-backend ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+          docker tag soup-backend ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:${{ github.sha }}  # 커밋 해시로 태그 추가
           docker rmi soup-backend
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:${{ github.sha }}
 
       - name: Deploy to EC2
         id: deploy-ec2
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3 # 버전 명시
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 60s # SSH 타임아웃 설정
           script: |
+            set -e  # 에러 발생 시 스크립트 중단
             cd /home/ubuntu
-            echo "${{ secrets.DOCKER_COMPOSE_YML }}" | base64 -d > docker-compose.yml
-            sudo docker-compose down
 
-            // 사용하지 않는 컨테이너 및 이미지 정리
+            # 백업 생성
+            if [ -f docker-compose.yml ]; then
+              cp docker-compose.yml docker-compose.yml.backup.$(date +%Y%m%d_%H%M%S)
+            fi
+
+            echo "${{ secrets.DOCKER_COMPOSE_YML }}" | base64 -d > docker-compose.yml
+
+            # 기존 컨테이너 정리
+            sudo docker-compose down --remove-orphans || true
+
+            # 사용하지 않는 리소스 정리
+            sudo docker system prune -f
             sudo docker image prune -f
 
+            # Docker Hub 로그인 (필요한 경우)
+            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | sudo docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+            # 새 이미지 풀
+            echo "🔄 Pulling latest Docker image..."
+            sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+
+            # 컨테이너 시작
+            echo "🚀 Starting containers..."
             sudo docker-compose up -d
 
-      # 헬스 체크 추가
+            # 컨테이너 상태 확인
+            sleep 10
+            echo "📊 Container status:"
+            sudo docker-compose ps
+
       - name: Health Check
         id: health-check
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -s -f "https://soupspoon.kr/api/v1/health" > /dev/null; then
-              echo "Application is healthy!"
+            echo "Attempt $i/30: Checking application health..."
+            if curl -s -f -m 30 "https://soupspoon.kr/api/v1/health" > /dev/null; then
+              echo "✅ Application is healthy!"
               exit 0
             fi
-            echo "Attempt $i: Application not ready yet..."
+            echo "⏳ Application not ready yet... waiting 10 seconds"
             sleep 10
           done
-          echo "Health check failed after 30 attempts"
+          echo "❌ Health check failed after 30 attempts"
           exit 1
 
-      - name: Notify Discord on Health Check Success
-        if: success() && steps.health-check.conclusion == 'success'
-        uses: fjogeleit/http-request-action@v1.14.0
-        with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          method: "POST"
-          customHeaders: |
-            Content-Type: application/json
-          data: |
-            {
-              "content": "✅ 헬스 체크 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
-            }
-
-      - name: Notify Discord on Health Check Failure
+      - name: Rollback on Health Check Failure
         if: failure() && steps.health-check.conclusion == 'failure'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "🔄 Rolling back to previous version..."
+            cd /home/ubuntu
+
+            # 백업 파일이 있으면 복원
+            if ls docker-compose.yml.backup.* 1> /dev/null 2>&1; then
+              LATEST_BACKUP=$(ls docker-compose.yml.backup.* | tail -1)
+              cp "$LATEST_BACKUP" docker-compose.yml
+              sudo docker-compose down
+              sudo docker-compose up -d
+              echo "✅ Rollback completed"
+            else
+              echo "⚠️ No backup found for rollback"
+            fi
+
+      - name: Notify Discord on Success
+        if: success()
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -105,11 +154,33 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "content": "❌ 헬스 체크 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "embeds": [{
+                "title": "🚀 배포 성공",
+                "description": "애플리케이션이 성공적으로 배포되었습니다.",
+                "fields": [
+                  {
+                    "name": "Repository",
+                    "value": "`${{ github.repository }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Branch",
+                    "value": "`${{ github.ref_name }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Commit",
+                    "value": "`${{ github.sha }}`",
+                    "inline": true
+                  }
+                ],
+                "color": 3066993,
+                "timestamp": "${{ github.event.head_commit.timestamp }}"
+              }]
             }
 
-      - name: Notify Discord on Deploy Success
-        if: success() && steps.deploy-ec2.conclusion == 'success'
+      - name: Notify Discord on Failure
+        if: failure()
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -118,18 +189,27 @@ jobs:
             Content-Type: application/json
           data: |
             {
-              "content": "🚀 배포 성공 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
-            }
-
-      - name: Notify Discord on Deploy Failure
-        if: failure() && steps.deploy-ec2.conclusion == 'failure'
-        uses: fjogeleit/http-request-action@v1.14.0
-        with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          method: "POST"
-          customHeaders: |
-            Content-Type: application/json
-          data: |
-            {
-              "content": "🔥 배포 실패 - `${{ github.repository }}` 브랜치 `${{ github.ref_name }}`"
+              "embeds": [{
+                "title": "🔥 배포 실패",
+                "description": "배포 중 오류가 발생했습니다.",
+                "fields": [
+                  {
+                    "name": "Repository",
+                    "value": "`${{ github.repository }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Branch",
+                    "value": "`${{ github.ref_name }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Commit",
+                    "value": "`${{ github.sha }}`",
+                    "inline": true
+                  }
+                ],
+                "color": 15158332,
+                "timestamp": "${{ github.event.head_commit.timestamp }}"
+              }]
             }
