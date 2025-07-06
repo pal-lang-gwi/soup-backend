@@ -74,7 +74,13 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                     .get(0)
                     .path("message")
                     .path("content")
-                    .asText();
+                    .asText()
+                    .trim();
+
+            // JSON 여부 확인
+            if (!(rawJson.startsWith("{") || rawJson.startsWith("```json{"))) {
+                throw new RuntimeException("❌ Perplexity 응답이 JSON 형식이 아님:\n" + rawJson);
+            }
 
             String cleanedJson = rawJson
                     .replaceAll("^```json\\s*", "")
@@ -84,11 +90,12 @@ public class PerplexityAIServiceImpl implements NewsAIService{
             log.debug("📝 클린된 요약 JSON:\n{}", cleanedJson);
 
             NewsSummary summary = objectMapper.readValue(cleanedJson, NewsSummary.class);
-            return new NewsResult(summary.keyword(), summary.summary(), summary.articles(), tokens); // tokens는 미지원 시 -1
+            return new NewsResult(summary.keyword(), summary.summary(), summary.articles(), tokens);
         } catch (IOException e) {
             throw new RuntimeException("응답 파싱 실패", e);
         }
     }
+
 
     private static String getTodayString() {
         return LocalDate.now().format(TODAY_FORMATTER);
