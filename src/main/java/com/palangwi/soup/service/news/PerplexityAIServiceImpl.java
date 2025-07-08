@@ -77,25 +77,27 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                     .asText()
                     .trim();
 
-            // JSON 여부 확인
-            if (!(rawJson.startsWith("{") || rawJson.startsWith("```json{"))) {
-                throw new RuntimeException("❌ Perplexity 응답이 JSON 형식이 아님:\n" + rawJson);
-            }
-
+            // 코드블럭 제거: 백틱 시작/끝 제거
             String cleanedJson = rawJson
                     .replaceAll("^```json\\s*", "")
+                    .replaceAll("^```\\s*", "") // 혹시 ```만 붙어있을 때도 제거
                     .replaceAll("```\\s*$", "")
                     .trim();
 
             log.debug("📝 클린된 요약 JSON:\n{}", cleanedJson);
 
+            // 파싱 시도
             NewsSummary summary = objectMapper.readValue(cleanedJson, NewsSummary.class);
             return new NewsResult(summary.keyword(), summary.summary(), summary.articles(), tokens);
+
         } catch (IOException e) {
-            throw new RuntimeException("응답 파싱 실패", e);
+            log.error("❌ JSON 파싱 실패: {}", e.getMessage());
+            throw new RuntimeException("❌ Perplexity 응답 파싱 실패", e);
+        } catch (Exception e) {
+            log.error("❌ 예기치 않은 파싱 오류 발생", e);
+            throw new RuntimeException("❌ Perplexity 응답 처리 중 오류 발생", e);
         }
     }
-
 
     private static String getTodayString() {
         return LocalDate.now().format(TODAY_FORMATTER);
