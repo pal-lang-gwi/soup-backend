@@ -33,7 +33,7 @@ jobs:
       - name: Create news-summary.txt from secret
         run: |
           mkdir -p ./src/main/resources/prompts
-          echo "${{ secrets.NEWS_SUMMARY_PROMPT }}" | base64 -d > ./src/main/resources/prompts/news-summary.txt
+          echo "${{ secrets.NEWS_SUMMARY_PROMPT }}" | base64 -d > ./src/main/resources/prompts/news-prompt.txt
         env:
           NEWS_SUMMARY_PROMPT: ${{ secrets.NEWS_SUMMARY_PROMPT }}
 
