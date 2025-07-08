@@ -31,7 +31,8 @@ public class NewsService {
                 .map(NewsDto::from)
                 .toList();
 
-        return new DailyNewsResponseDto(newsDtos, resultPage.getTotalElements(), resultPage.getTotalPages(), resultPage.getNumber() + 1);
+        return new DailyNewsResponseDto(newsDtos, resultPage.getTotalElements(), resultPage.getTotalPages(),
+                resultPage.getNumber() + 1);
     }
 
     private Page<News> getNews(String keyword, String startDate, String endDate, Pageable pageable) {
@@ -49,8 +50,9 @@ public class NewsService {
         return resultPage;
     }
 
-    private Page<News> findNewsByCondition(String keyword, Pageable pageable, boolean hasKeyword, boolean hasStart, boolean hasEnd,
-                               LocalDateTime from, LocalDateTime to) {
+    private Page<News> findNewsByCondition(String keyword, Pageable pageable, boolean hasKeyword, boolean hasStart,
+            boolean hasEnd,
+            LocalDateTime from, LocalDateTime to) {
         Page<News> resultPage;
         if (hasKeyword && hasStart && hasEnd) {
             resultPage = newsRepository.findByCreatedDateBetweenAndKeyword(from, to, keyword, pageable);
@@ -69,6 +71,7 @@ public class NewsService {
                 .thenAccept(result -> {
                     try {
                         News news = result.toNews();
+                        log.info(news.toString());
                         newsRepository.save(news);
                     } catch (Exception e) {
                         log.error("❌ 뉴스 파싱 실패 - {}", keyword, e);

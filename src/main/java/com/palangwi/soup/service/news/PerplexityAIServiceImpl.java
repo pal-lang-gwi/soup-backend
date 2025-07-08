@@ -43,7 +43,7 @@ public class PerplexityAIServiceImpl implements NewsAIService{
             String prompt = loadPrompt()
                     .replace("{keyword}", keyword)
                     .replace("{today}", today);
-
+        log.info(prompt);
         return webClient.post()
                 .uri(completionsPath)
                 .bodyValue(Map.of(

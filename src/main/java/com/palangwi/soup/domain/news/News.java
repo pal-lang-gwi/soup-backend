@@ -2,6 +2,7 @@ package com.palangwi.soup.domain.news;
 
 import com.palangwi.soup.domain.BaseEntity;
 
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.util.List;
 @Document(collection = "news")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 public class News extends BaseEntity {
 
     @Id
