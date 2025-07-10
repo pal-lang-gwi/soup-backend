@@ -39,5 +39,4 @@ out/
 ### properties ###
 /src/main/resources/application.properties
 /src/main/resources/application.yml
-/src/main/resources/templates/mail/daily-news.html
 /src/test/resources/application-test.yml
