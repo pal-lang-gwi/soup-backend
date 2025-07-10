@@ -132,10 +132,14 @@ public class MailService {
 
     private List<SummaryForMailTemplateDto> convertToMailTemplateDtos(Map<String, Summary> summaryMap) {
         return summaryMap.entrySet().stream()
-                .map(entry -> new SummaryForMailTemplateDto(
-                        entry.getKey(),
-                        entry.getValue().getShortSummary()
-                ))
+                .map(entry -> {
+                    Summary summary = entry.getValue();
+                    return new SummaryForMailTemplateDto(
+                            entry.getKey(),
+                            summary.getLongSummary(),
+                            summary.getCreatedDate().toLocalDate()
+                    );
+                })
                 .toList();
     }
 
