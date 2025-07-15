@@ -70,13 +70,13 @@
     <div th:each="summary : ${summaries}" class="summary-card">
         <div class="summary-keyword" th:text="${summary.keyword}">키워드</div>
         <div class="summary-content" th:text="${summary.shortSummary}">요약 내용</div>
-        <a th:href="@{'https://soupspoon.kr/news'(keyword=${summary.keyword}, date=${summary.createdDate})}" class="read-more-btn">
+        <a th:href="@{'https://soupspoon.kr/news'(keyword=${summary.keyword}, date=${summary.createdDay})}" class="read-more-btn">
             자세히 보기 →
         </a>
     </div>
 
     <div class="footer">
-        이 메일은 <a th:href="${trackingUrl}" style="color: #aaaaaa;">열람 추적 링크</a>를 포함하고 있습니다.
+        <img th:src="@{${trackingUrl}}" width="1" height="1" style="display:none;" alt=""/>
     </div>
 </div>
 </body>
