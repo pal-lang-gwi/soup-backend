@@ -47,6 +47,10 @@ public class UserService {
         User user = getUser(userId);
         Gender gender = Gender.valueOf(request.gender().toUpperCase());
 
+        if(userRepository.existsByNickname(request.nickname())) {
+            throw new DuplicateNicknameException();
+        }
+
         user.initializeAdditionalInfo(request.nickname(), gender, request.birthDate());
 
         userHistoryService.saveCreateHistory(user);
