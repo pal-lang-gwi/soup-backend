@@ -7,11 +7,11 @@ import lombok.Getter;
 public class SummaryForMailTemplateDto {
     private final String keyword;
     private final String shortSummary;
-    private final LocalDate createdDay;
+    private final LocalDate createdDate;
 
-    public SummaryForMailTemplateDto(String keyword, String shortSummary, LocalDate createdDay) {
+    public SummaryForMailTemplateDto(String keyword, String shortSummary, LocalDate createdDate) {
         this.keyword = keyword;
         this.shortSummary = shortSummary;
-        this.createdDay = createdDay;
+        this.createdDate = createdDate;
     }
 }
