@@ -20,5 +20,6 @@ public class Summary {
     public Summary(String shortSummary, String longSummary) {
         this.shortSummary = shortSummary;
         this.longSummary = longSummary;
+        this.createdDate = LocalDateTime.now();
     }
 }
