@@ -84,8 +84,6 @@ public class KeywordServiceImpl implements KeywordService {
         Page<Keyword> keywords = keywordRepository.findByNameContainingIgnoreCaseAndStatus(keyword, Status.ACTIVE,
                 pageable);
 
-        User user = findUserById(userId);
-
         List<Keyword> keywordsList = keywords.getContent();
         List<Long> keywordIds = keywordsList.stream()
                 .map(Keyword::getId)
