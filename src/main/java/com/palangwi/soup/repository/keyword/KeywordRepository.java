@@ -24,6 +24,8 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
 
     Optional<Keyword> findByNameAndStatus(String name, Status status);
 
+    List<Keyword> findAllByStatus(Status status);
+
     Page<Keyword> findByNameContainingIgnoreCaseAndStatus(String name, Status status, Pageable pageable);
 
     Page<Keyword> findAllByStatus(Status status, Pageable pageable);
