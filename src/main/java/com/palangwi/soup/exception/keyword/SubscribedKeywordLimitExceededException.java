@@ -6,10 +6,10 @@ import org.springframework.http.HttpStatus;
 public class SubscribedKeywordLimitExceededException extends BaseCustomException {
   @Override
   public String getMessage() {
-    return KeywordExceptionMessage.NOT_SUBSCRIBED_KEYWORD.getMessage();
+    return KeywordExceptionMessage.SUBSCRIBED_KEYWORD_LIMIT_EXCEEDED.getMessage();
   }
 
   public HttpStatus getStatus() {
-    return KeywordExceptionMessage.NOT_SUBSCRIBED_KEYWORD.getStatus();
+    return KeywordExceptionMessage.SUBSCRIBED_KEYWORD_LIMIT_EXCEEDED.getStatus();
   }
 }

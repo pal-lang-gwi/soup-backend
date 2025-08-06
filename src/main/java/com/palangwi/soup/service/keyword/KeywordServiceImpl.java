@@ -46,6 +46,8 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserKeywordRepository userKeywordRepository;
     private final PendingKeywordRequestRepository pendingKeywordRequestRepository;
 
+    private static final int MAXIMUM_KEYWORD_COUNT = 10;
+
     public KeywordResponseDto findKeywordByName(String name) {
         return null;
     }
@@ -149,7 +151,7 @@ public class KeywordServiceImpl implements KeywordService {
             SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         User user = findUserById(userId);
 
-        if (userKeywordRepository.countSubscribedKeywordsByUserId(userId) > 10) {
+        if (userKeywordRepository.countSubscribedKeywordsByUserId(userId) > MAXIMUM_KEYWORD_COUNT) {
             throw new SubscribedKeywordLimitExceededException();
         }
 
