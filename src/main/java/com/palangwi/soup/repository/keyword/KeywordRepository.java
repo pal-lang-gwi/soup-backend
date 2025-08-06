@@ -1,5 +1,6 @@
 package com.palangwi.soup.repository.keyword;
 
+import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
 import java.util.List;
 import java.util.Optional;
@@ -29,5 +30,8 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     Page<Keyword> findByNameContainingIgnoreCaseAndStatus(String name, Status status, Pageable pageable);
 
     Page<Keyword> findAllByStatus(Status status, Pageable pageable);
+
+    @Query("SELECT k FROM Keyword k WHERE k.status = :status")
+    Page<Keyword> findByStatus(@Param("status") Status status, Pageable pageable);
 
 }

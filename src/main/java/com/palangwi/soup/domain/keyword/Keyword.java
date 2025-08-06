@@ -100,6 +100,12 @@
             this.rejectedAt = rejectedAt;
         }
 
+        public void remove(String removeReason, LocalDateTime removedAt) {
+            this.status = Status.DELETED;
+            this.rejectReason = removeReason;
+            this.rejectedAt = removedAt;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {

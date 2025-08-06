@@ -1,4 +1,8 @@
 package com.palangwi.soup.dto.keyword;
 
-public record RequestKeywordRequestDto(String keyword) {
+import jakarta.validation.constraints.NotEmpty;
+
+public record RequestKeywordRequestDto(
+        @NotEmpty
+        String keyword) {
 }
