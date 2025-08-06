@@ -27,6 +27,9 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
 
     Page<UserKeyword> findAllByUser_IdAndSubscribedTrue(Long userId, Pageable pageable);
 
+    @Query("SELECT COUNT(*) FROM UserKeyword uk WHERE uk.user.id = :userId AND uk.subscribed = true")
+    Integer countSubscribedKeywordsByUserId(@Param("userId") Long userId);
+
     @Query("""
               SELECT uk.keyword.id
               FROM UserKeyword uk
