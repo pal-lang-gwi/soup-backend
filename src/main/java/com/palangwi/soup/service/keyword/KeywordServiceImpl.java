@@ -19,10 +19,7 @@ import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
-import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
-import com.palangwi.soup.exception.keyword.KeywordNotExistException;
-import com.palangwi.soup.exception.keyword.NotSubscribedException;
+import com.palangwi.soup.exception.keyword.*;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
@@ -48,6 +45,8 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserRepository userRepository;
     private final UserKeywordRepository userKeywordRepository;
     private final PendingKeywordRequestRepository pendingKeywordRequestRepository;
+
+    private static final int MAXIMUM_KEYWORD_COUNT = 10;
 
     public KeywordResponseDto findKeywordByName(String name) {
         return null;
@@ -151,6 +150,11 @@ public class KeywordServiceImpl implements KeywordService {
     public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
             SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         User user = findUserById(userId);
+
+        if (userKeywordRepository.countSubscribedKeywordsByUserId(userId) > MAXIMUM_KEYWORD_COUNT) {
+            throw new SubscribedKeywordLimitExceededException();
+        }
+
         List<String> keywordNames = subscribeKeywordRequestDto.subscribeKeywords();
 
         List<UserKeyword> userKeywords = createUserKeywords(user, keywordNames);

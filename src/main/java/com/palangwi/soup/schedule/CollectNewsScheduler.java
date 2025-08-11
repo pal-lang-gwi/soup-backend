@@ -1,6 +1,7 @@
 package com.palangwi.soup.schedule;
 
 import com.palangwi.soup.domain.keyword.Keyword;
+import com.palangwi.soup.domain.keyword.Status;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.service.news.NewsService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class CollectNewsScheduler {
 
     @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Seoul")
     private void collectNews() {
-        List<Keyword> keywords = keywordRepository.findAll();
+        List<Keyword> keywords = keywordRepository.findAllByStatus(Status.ACTIVE);
         log.info("수집 시작 - 키워드의 갯수 : {}", keywords.size());
 
         for (Keyword keyword : keywords) {

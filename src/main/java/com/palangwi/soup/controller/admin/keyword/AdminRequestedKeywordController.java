@@ -2,19 +2,13 @@ package com.palangwi.soup.controller.admin.keyword;
 
 import static com.palangwi.soup.utils.ApiUtils.success;
 
-import com.palangwi.soup.dto.admin.keyword.AddKeywordResponseDto;
 import com.palangwi.soup.dto.admin.keyword.AdminKeywordResponseListDto;
 import com.palangwi.soup.dto.admin.keyword.ApproveKeywordResponseDto;
 import com.palangwi.soup.dto.admin.keyword.RejectKeywordRequestDto;
 import com.palangwi.soup.dto.admin.keyword.RejectKeywordResponseDto;
-import com.palangwi.soup.dto.admin.keyword.RemoveKeywordRequestDto;
-import com.palangwi.soup.dto.admin.keyword.RemoveKeywordResponseDto;
-import com.palangwi.soup.dto.keyword.KeywordListResponseDto;
-import com.palangwi.soup.dto.keyword.KeywordResponseDto;
-import com.palangwi.soup.dto.keyword.RequestKeywordRequestDto;
 import com.palangwi.soup.security.JwtAuthentication;
-import com.palangwi.soup.service.admin.keyword.AdminKeywordService;
-import com.palangwi.soup.service.keyword.KeywordService;
+import com.palangwi.soup.service.admin.keyword.AdminKeywordRequestService;
+import com.palangwi.soup.service.admin.keyword.AdminKeywordServiceImpl;
 import com.palangwi.soup.utils.ApiUtils.ApiResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,28 +26,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/admin/keyword")
-public class AdminKeywordController {
+@RequestMapping("/api/v1/admin/keyword-requests")
+public class AdminRequestedKeywordController {
 
-    private final AdminKeywordService adminKeywordService;
+    private final AdminKeywordRequestService adminKeywordService;
 
     @GetMapping
-    public ApiResult<KeywordListResponseDto> getAllKeywords(
+    public ApiResult<AdminKeywordResponseListDto> getRequestedKeyword(
             @AuthenticationPrincipal JwtAuthentication userInfo,
             @Valid @RequestParam(name = "status") String status,
             @PageableDefault(size = 10, sort = "createdDate", direction = Direction.DESC) Pageable pageable) {
-        return success(adminKeywordService.getAllKeywordList(status, pageable));
+        return success(adminKeywordService.getRequestedKeywords(status, pageable));
     }
 
-    @PostMapping("/add")
-    public ApiResult<AddKeywordResponseDto> approveRequestedKeyword(@AuthenticationPrincipal JwtAuthentication userInfo,
-                                                                    @Valid @RequestBody RequestKeywordRequestDto requestKeywordRequestDto) {
-        return success(adminKeywordService.addKeyword(requestKeywordRequestDto.keyword()));
+    @PostMapping("/{requestId}/approve")
+    public ApiResult<ApproveKeywordResponseDto> approveRequestedKeyword(@AuthenticationPrincipal JwtAuthentication userInfo,
+                                                                        @PathVariable(name = "requestId") Long requestId) {
+        return success(adminKeywordService.approveKeyword(requestId));
     }
 
-    @PostMapping("/remove")
-    public ApiResult<RemoveKeywordResponseDto> rejectRequestedKeyword(@AuthenticationPrincipal JwtAuthentication userInfo,
-                                                                      @Valid @RequestBody RemoveKeywordRequestDto request) {
-        return success(adminKeywordService.removeKeyword(request.keywordId(), request.removeReason()));
+    @PostMapping("/{requestId}/reject")
+    public ApiResult<RejectKeywordResponseDto> rejectRequestedKeyword(@AuthenticationPrincipal JwtAuthentication userInfo,
+                                                                      @PathVariable(name = "requestId") Long requestId, @Valid @RequestBody RejectKeywordRequestDto request) {
+        return success(adminKeywordService.rejectKeyword(requestId, request.rejectReason()));
     }
 }
