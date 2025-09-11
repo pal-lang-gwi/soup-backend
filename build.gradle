@@ -56,12 +56,14 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'                         // JUnit5 기반 테스트컨테이너
     testImplementation 'org.testcontainers:mongodb'                               // MongoDB 테스트 컨테이너
     testImplementation 'org.testcontainers:mysql'                                 // MySQL 테스트 컨테이너
+    testImplementation 'org.testcontainers:postgresql'                            // PostgreSQL 테스트 컨테이너
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                  // JUnit 플랫폼 런처
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")               // Mock Web Server
 
     // 🧱 DB 드라이버
     runtimeOnly 'com.h2database:h2'                                               // 인메모리 DB (개발/테스트용)
     runtimeOnly 'com.mysql:mysql-connector-j'                                     // MySQL JDBC 드라이버
+    runtimeOnly 'org.postgresql:postgresql'                                       // PostgreSQL JDBC 드라이버
 
     // 🛠 롬복 (컴파일 타임 전용)
     compileOnly 'org.projectlombok:lombok'                                        // 롬복 - 컴파일 타임 전용
