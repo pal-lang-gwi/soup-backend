@@ -19,7 +19,7 @@ public interface KeywordService {
 
     KeywordResponseDto updateKeywordName(Long id, String name);
 
-    SubscribeKeywordResponseDto subscribeKeywords(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
+    SubscribeKeywordResponseDto subscribeKeyword(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
 
     void deleteKeyword(Long id);
 

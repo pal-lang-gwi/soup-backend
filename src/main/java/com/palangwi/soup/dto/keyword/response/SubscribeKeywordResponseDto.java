@@ -1,9 +1,7 @@
 package com.palangwi.soup.dto.keyword.response;
 
-import java.util.List;
-
-public record SubscribeKeywordResponseDto(List<String> registeredKeywords) {
-    public static SubscribeKeywordResponseDto of(List<String> registeredKeywords) {
-        return new SubscribeKeywordResponseDto(registeredKeywords);
+public record SubscribeKeywordResponseDto(Long keywordId, String registeredKeyword) {
+    public static SubscribeKeywordResponseDto of(Long keywordId, String registeredKeyword) {
+        return new SubscribeKeywordResponseDto(keywordId, registeredKeyword);
     }
 }

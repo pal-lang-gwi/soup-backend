@@ -77,10 +77,10 @@ class KeywordControllerTest extends IntegrationTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_success() throws Exception {
         // given
-        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
-        SubscribeKeywordResponseDto response = new SubscribeKeywordResponseDto(Arrays.asList("키워드1", "키워드2"));
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(1L);
+        SubscribeKeywordResponseDto response = new SubscribeKeywordResponseDto(1L, "AI");
 
-        given(keywordService.subscribeKeywords(1L, request))
+        given(keywordService.subscribeKeyword(1L, request))
                 .willReturn(response);
 
         // when // then
@@ -93,7 +93,7 @@ class KeywordControllerTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.registeredKeywords[0]").value("키워드1"))
                 .andExpect(jsonPath("$.data.registeredKeywords[1]").value("키워드2"));
 
-        verify(keywordService).subscribeKeywords(1L, request);
+        verify(keywordService).subscribeKeyword(1L, request);
     }
 
     @Test
@@ -101,8 +101,8 @@ class KeywordControllerTest extends IntegrationTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_alreadySubscribed() throws Exception {
         // given
-        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1"));
-        given(keywordService.subscribeKeywords(1L, request))
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(1L);
+        given(keywordService.subscribeKeyword(1L, request))
                 .willThrow(new AlreadySubscribedKeywordException(List.of("키워드1")));
 
         // when // then

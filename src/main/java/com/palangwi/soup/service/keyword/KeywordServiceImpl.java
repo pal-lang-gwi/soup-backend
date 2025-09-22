@@ -147,23 +147,22 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional
-    public SubscribeKeywordResponseDto subscribeKeywords(Long userId,
-            SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
+    public SubscribeKeywordResponseDto subscribeKeyword(Long userId,
+                                                        SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
         User user = findUserById(userId);
 
         if (userKeywordRepository.countSubscribedKeywordsByUserId(userId) > MAXIMUM_KEYWORD_COUNT) {
             throw new SubscribedKeywordLimitExceededException();
         }
 
-        List<String> keywordNames = subscribeKeywordRequestDto.subscribeKeywords();
+        Long keywordId = subscribeKeywordRequestDto.subscribeKeywordId();
 
-        List<UserKeyword> userKeywords = createUserKeywords(user, keywordNames);
-        userKeywordRepository.saveAll(userKeywords);
+        UserKeyword userKeyword = createUserKeyword(user, keywordId);
+        userKeywordRepository.save(userKeyword);
 
-        return SubscribeKeywordResponseDto.of(
-                userKeywords.stream()
-                        .map(userKeyword -> userKeyword.getKeyword().getName())
-                        .toList());
+        Keyword keyword = userKeyword.getKeyword();
+
+        return SubscribeKeywordResponseDto.of(keywordId, keyword);
     }
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {
@@ -180,27 +179,19 @@ public class KeywordServiceImpl implements KeywordService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private List<UserKeyword> createUserKeywords(User user, List<String> keywordNames) {
-        Map<String, Keyword> keywordMap = validateKeywordNames(user, keywordNames);
-        return filterAndBuildUserKeywords(user, keywordNames, keywordMap);
+    private UserKeyword createUserKeyword(User user, Long keywordId) {
+        Keyword keyword = validateKeywordId(user, keywordId);
+        return UserKeyword.create(user, keyword);
     }
 
-    private Map<String, Keyword> validateKeywordNames(User user, List<String> keywordNames) {
-        List<Keyword> existingKeywords = keywordRepository.findAllByNameIn(keywordNames);
-        Map<String, Keyword> keywordMap = existingKeywords.stream()
-                .collect(Collectors.toMap(Keyword::getName, k -> k));
-
-        List<String> notFound = keywordNames.stream()
-                .filter(name -> !keywordMap.containsKey(name))
-                .toList();
-
-        if (!notFound.isEmpty()) {
-            log.warn("{} 사용자가 요청한 다음 키워드들을 찾을 수 없습니다: {}", user.getId(), notFound);
-            throw new KeywordNotExistException(notFound);
-        }
-
-        return keywordMap;
+    private Keyword validateKeywordId(User user, Long keywordId) {
+        return keywordRepository.findById(keywordId)
+                .orElseThrow(() -> {
+                    log.warn("{} 사용자가 요청한 키워드를 찾을 수 없습니다: {}", user.getId(), keywordId);
+                    return new KeywordNotFoundException();
+                });
     }
+
 
     private List<UserKeyword> filterAndBuildUserKeywords(User user, List<String> keywordNames,
             Map<String, Keyword> keywordMap) {

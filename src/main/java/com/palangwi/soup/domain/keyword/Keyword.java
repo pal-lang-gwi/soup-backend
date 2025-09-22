@@ -36,6 +36,8 @@
 
         private String normalizedName;
 
+        private Integer subscribeUserCnt;
+
         @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<UserKeyword> userKeywords = new ArrayList<>();
 
@@ -64,6 +66,7 @@
             return Keyword.builder()
                     .name(name)
                     .normalizedName(normalizedName)
+                    .subscribeUserCnt(0)
                     .source(source)
                     .firstRequestUser(firstRequestUser)
                     .status(Status.PENDING)
@@ -71,9 +74,10 @@
         }
 
         @Builder
-        private Keyword(String name, String normalizedName, Source source, Status status, User firstRequestUser) {
+        private Keyword(String name, String normalizedName, Integer subscribeUserCnt, Source source, Status status, User firstRequestUser) {
             this.name = name;
             this.normalizedName = normalizedName;
+            this.subscribeUserCnt = subscribeUserCnt;
             this.source = source;
             this.status = status;
             this.firstRequestUser = firstRequestUser;
@@ -84,6 +88,14 @@
             return (int) userKeywords.stream()
                     .filter(UserKeyword::isSubscribed)
                     .count();
+        }
+
+        public void increaseSubscribedCount() {
+            this.subscribeUserCnt++;
+        }
+
+        public void decreaseSubscribedCount() {
+            this.subscribeUserCnt--;
         }
 
         public void approve(User firstRequestUser) {

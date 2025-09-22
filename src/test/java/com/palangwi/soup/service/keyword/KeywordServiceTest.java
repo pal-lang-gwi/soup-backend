@@ -83,7 +83,7 @@ class KeywordServiceTest extends IntegrationTestSupport {
         SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
 
         // when
-        SubscribeKeywordResponseDto result = keywordService.subscribeKeywords(user.getId(), requestDto);
+        SubscribeKeywordResponseDto result = keywordService.subscribeKeyword(user.getId(), requestDto);
 
         // then
         assertThat(result.registeredKeywords()).hasSize(2);

@@ -136,7 +136,7 @@ public class MailService {
                     Summary summary = entry.getValue();
                     return new SummaryForMailTemplateDto(
                             entry.getKey(),
-                            summary.getLongSummary(),
+                            summary.getShortSummary(),
                             summary.getCreatedDate().toLocalDate()
                     );
                 })
