@@ -6,13 +6,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.domain.userlog.ChangeType;
-import com.palangwi.soup.domain.userlog.UserHistory;
 import com.palangwi.soup.dto.user.UserDeleteRequestDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
-import com.palangwi.soup.repository.user.UserHistoryRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import java.time.LocalDate;
@@ -30,9 +27,6 @@ class UserServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private UserHistoryRepository userHistoryRepository;
 
     @AfterEach
     void tearDown() {
@@ -109,19 +103,14 @@ class UserServiceTest extends IntegrationTestSupport {
                 .build();
 
         // when
-        userService.deleteAccount(user.getId(), request);
-        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc(
-                user.getEmail(),
-                ChangeType.DELETE);
+        userService.deleteAccount(user.getId());
 
         // then
         Optional<User> withdrawnUser = userRepository.findByEmail(user.getEmail());
 
         assertThat(withdrawnUser).isEmpty();
-        assertThat(userHistory.isPresent()).isTrue();
-        assertThat(userHistory.get().getEmail()).isEqualTo(user.getEmail());
-        assertThat(userHistory.get().getLeaveReason()).isEqualTo(request.reason());
-        assertThat(userHistory.get().getChangeType()).isEqualTo(ChangeType.DELETE);
+        assertThat(withdrawnUser.isPresent()).isTrue();
+        assertThat(withdrawnUser.get().getEmail()).isEqualTo(user.getEmail());
     }
 
     private User createUser(String nickname) {

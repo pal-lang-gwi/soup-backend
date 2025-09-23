@@ -3,16 +3,13 @@ package com.palangwi.soup.service.user;
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.domain.userlog.ChangeType;
-import com.palangwi.soup.domain.userlog.UserHistory;
-import com.palangwi.soup.repository.user.UserHistoryRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -21,9 +18,6 @@ class UserHistoryServiceTest extends IntegrationTestSupport {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserHistoryRepository userHistoryRepository;
-
     private static final String TEST_EMAIL = "test@test.com";
 
     @Test
@@ -31,17 +25,13 @@ class UserHistoryServiceTest extends IntegrationTestSupport {
     void saveCreateHistory() {
         // given
         User user = createUser("가입 닉네임");
-        UserHistory history = UserHistory.ofCreate(user.getEmail(), user.getGender(), user.getBirthDate());
 
         // when
-        userHistoryRepository.save(history);
-        Optional<UserHistory> result = userHistoryRepository
-                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc(TEST_EMAIL, ChangeType.CREATE);
+        User result = userRepository.save(user);
 
         // then
-        assertThat(result).isPresent();
-        assertThat(result.get().getEmail()).isEqualTo(TEST_EMAIL);
-        assertThat(result.get().getChangeType()).isEqualTo(ChangeType.CREATE);
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(TEST_EMAIL);
     }
 
     @Test
@@ -49,32 +39,17 @@ class UserHistoryServiceTest extends IntegrationTestSupport {
     void saveDeleteHistory() {
         // given
         User user = createUser("탈퇴 닉네임");
-        UserHistory history = UserHistory.ofDelete(user.getEmail(), user.getGender(), user.getBirthDate(), "탈퇴 사유");
 
         // when
-        userHistoryRepository.save(history);
-        Optional<UserHistory> result = userHistoryRepository
-                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc(TEST_EMAIL, ChangeType.DELETE);
+        User result = userRepository.save(user);
+
+        LocalDateTime now = LocalDateTime.now();
+        user.deleteUser(now);
 
         // then
-        assertThat(result).isPresent();
-        assertThat(result.get().getChangeType()).isEqualTo(ChangeType.DELETE);
-        assertThat(result.get().getLeaveReason()).isEqualTo("탈퇴 사유");
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 이메일/타입 조합 조회 시 빈 값을 반환한다.")
-    void findNonExistingHistory() {
-        // given
-        User user = createUser("가입 닉네임");
-        UserHistory history = UserHistory.ofCreate(user.getEmail(), user.getGender(), user.getBirthDate());
-
-        // when
-        Optional<UserHistory> result = userHistoryRepository
-                .findTopByEmailAndChangeTypeOrderByCreatedDateDesc("nonexistent@email.com", ChangeType.CREATE);
-
-        // then
-        assertThat(result).isNotPresent();
+        assertThat(result).isNotNull();
+        assertThat(result.getDeleted()).isEqualTo(true);
+        assertThat(result.getDeletedAt()).isEqualTo(now);
     }
 
     private User createUser(String nickname) {

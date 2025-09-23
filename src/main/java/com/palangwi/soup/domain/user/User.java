@@ -47,6 +47,10 @@ public class User extends BaseEntity {
 
     private String profileImageUrl;
 
+    private Boolean deleted;
+
+    private LocalDateTime deletedAt;
+
     @Embedded
     private UserKeywords userKeywords = new UserKeywords();
 
@@ -71,7 +75,7 @@ public class User extends BaseEntity {
 
     @Builder
     private User(String email, String username, String nickname, Role role, Gender gender, LocalDate birthDate,
-                 String providerId, String profileImageUrl) {
+                 String providerId, String profileImageUrl, Boolean deleted, LocalDateTime deletedAt) {
         this.email = email;
         this.username = username;
         this.nickname = nickname;
@@ -80,6 +84,8 @@ public class User extends BaseEntity {
         this.birthDate = birthDate;
         this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
+        this.deleted = deleted;
+        this.deletedAt = deletedAt;
     }
 
     public void initializeAdditionalInfo(String nickname, Gender gender, LocalDate birthDate) {
@@ -96,5 +102,10 @@ public class User extends BaseEntity {
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;
         }
+    }
+
+    public void deleteUser(LocalDateTime now) {
+        this.deleted = true;
+        this.deletedAt = now;
     }
 }

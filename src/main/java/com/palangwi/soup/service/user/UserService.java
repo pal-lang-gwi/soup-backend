@@ -10,6 +10,8 @@ import com.palangwi.soup.exception.user.DuplicateNicknameException;
 import com.palangwi.soup.exception.user.InvalidFormatNicknameException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.user.UserRepository;
+
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserHistoryService userHistoryService;
 
     public User loginOAuth(UserInfo userInfo) {
         Optional<User> userOpt = userRepository.findByEmail(userInfo.email());
@@ -53,8 +54,6 @@ public class UserService {
 
         user.initializeAdditionalInfo(request.nickname(), gender, request.birthDate());
 
-        userHistoryService.saveCreateHistory(user);
-
         return UserInitSettingResponseDto.of(user);
     }
 
@@ -80,11 +79,11 @@ public class UserService {
         return !isNicknameDuplicate(nickname);
     }
 
-    public void deleteAccount(Long userId, UserDeleteRequestDto request) {
+    public void deleteAccount(Long userId) {
+        LocalDateTime now =  LocalDateTime.now();
         User user = getUser(userId);
 
-        userHistoryService.saveDeleteHistory(user, request);
-        userRepository.delete(user);
+        user.deleteUser(now);
     }
 
     @Transactional(readOnly = true)
