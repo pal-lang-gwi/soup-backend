@@ -4,7 +4,6 @@
     import com.palangwi.soup.domain.BaseEntity;
     import com.palangwi.soup.domain.user.User;
     import com.palangwi.soup.domain.userkeyword.UserKeyword;
-    import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
     import com.palangwi.soup.exception.keyword.KeywordInvalidStatusException;
     import jakarta.annotation.Nullable;
     import jakarta.persistence.*;
