@@ -37,7 +37,7 @@ public class MailScheduler {
         log.info("뉴스 메일 발송 시작");
         LocalDateTime now = LocalDateTime.now();
 
-        Map<User, List<String>> userKeywordMap = getSubscribedUsersGroupedByUser();
+        Map<User, List<Long>> userKeywordMap = getSubscribedUsersGroupedByUser();
 
         userKeywordMap.forEach((user, keywords) -> {
             try {
@@ -49,14 +49,14 @@ public class MailScheduler {
         });
     }
 
-    private Map<User, List<String>> getSubscribedUsersGroupedByUser() {
+    private Map<User, List<Long>> getSubscribedUsersGroupedByUser() {
         List<UserKeyword> userKeywords = userKeywordRepository.findAllSubscribedUserKeywords();
 
         log.info("userKeywords 갯수 : {}", userKeywords.size());
 
         return userKeywords.stream()
                 .collect(Collectors.groupingBy(UserKeyword::getUser,
-                        Collectors.mapping(uk -> uk.getKeyword().getName(), Collectors.toList())));
+                        Collectors.mapping(uk -> uk.getKeyword().getId(), Collectors.toList())));
     }
 
 

@@ -35,19 +35,22 @@ class NewsServiceTest extends IntegrationTestSupport {
     @DisplayName("AI 뉴스 요약 결과를 저장한다.")
     void collectAndSaveNews() {
         // given
-        String keyword = "인공지능";
+        Long keywordId = 1L;
+        String keywordName = "인공지능";
+
         NewsResult mockResult = new NewsResult(
-                keyword,
+                keywordId,
+                keywordName,
                 new NewsSummary.Summary("짧은 요약", "긴 요약"),
                 List.of(new NewsSummary.Article("제목", "https://link", "요약")),
                 123
         );
 
-        given(perplexityAIService.searchAndSummarizeAsync(keyword))
+        given(perplexityAIService.searchAndSummarizeAsync(keywordId, keywordName))
                 .willReturn(CompletableFuture.completedFuture(mockResult));
 
         // when
-        newsService.collectAndSaveNews(keyword);
+        newsService.collectAndSaveNews(keywordId);
 
         // then
         ArgumentCaptor<News> captor = ArgumentCaptor.forClass(News.class);
@@ -58,7 +61,8 @@ class NewsServiceTest extends IntegrationTestSupport {
                 );
 
         News savedNews = captor.getValue();
-        assertThat(savedNews.getKeyword()).isEqualTo("인공지능");
+        assertThat(savedNews.getKeywordId()).isEqualTo(keywordId);
+        assertThat(savedNews.getKeywordName()).isEqualTo(keywordName);
         assertThat(savedNews.getTokens()).isEqualTo(123);
         assertThat(savedNews.getSummary().getShortSummary()).isEqualTo("짧은 요약");
         assertThat(savedNews.getSummary().getLongSummary()).isEqualTo("긴 요약");

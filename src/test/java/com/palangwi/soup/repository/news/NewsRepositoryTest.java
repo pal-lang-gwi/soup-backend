@@ -61,17 +61,17 @@ class NewsRepositoryTest extends IntegrationTestSupport {
     @Test
     @DisplayName("날짜와 키워드 리스트로 News 목록을 조회한다.")
     void findByCreatedDateBetweenAndKeywordIn() {
-        List<News> result = newsRepository.findByCreatedDateBetweenAndKeywordIn(startDate, endDate, List.of("인공지능", "클라우드"));
+        List<News> result = newsRepository.findByCreatedDateBetweenAndKeywordIdIn(startDate, endDate, List.of(1L, 2L));
 
         assertThat(result).hasSize(2);
-        assertThat(result).extracting(News::getKeyword)
-                .containsExactlyInAnyOrder("인공지능", "클라우드");
+        assertThat(result).extracting(News::getKeywordId)
+                .containsExactlyInAnyOrder(1L, 2L);
     }
 
     @Test
     @DisplayName("빈 리스트로 검색 시 빈 값을 반환한다.")
     void findByCreatedDateBetweenAndKeywordIn_withEmptyKeywordList() {
-        List<News> result = newsRepository.findByCreatedDateBetweenAndKeywordIn(startDate, endDate, List.of());
+        List<News> result = newsRepository.findByCreatedDateBetweenAndKeywordIdIn(startDate, endDate, List.of());
 
         assertThat(result).isEmpty();
     }
@@ -79,7 +79,7 @@ class NewsRepositoryTest extends IntegrationTestSupport {
     @Test
     @DisplayName("존재하지 않는 키워드 검색 시 빈 값을 반환한다.")
     void findByCreatedDateBetweenAndKeywordIn_withNonExistingKeyword_returnsEmpty() {
-        List<News> result = newsRepository.findByCreatedDateBetweenAndKeywordIn(startDate, endDate, List.of("없는키워드"));
+        List<News> result = newsRepository.findByCreatedDateBetweenAndKeywordIdIn(startDate, endDate, List.of(-1L));
 
         assertThat(result).isEmpty();
     }

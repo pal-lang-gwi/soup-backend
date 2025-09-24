@@ -1,7 +1,7 @@
 package com.palangwi.soup.domain.mail.policy;
 
 import com.palangwi.soup.domain.news.News;
-import com.palangwi.soup.domain.news.Summary;
+import com.palangwi.soup.dto.news.NewsForMailDto;
 import com.palangwi.soup.repository.news.NewsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -21,18 +19,16 @@ public class NewsSelectionPolicy {
      */
     private final NewsRepository newsRepository;
 
-    public Map<String, Summary> select (List<String> keywords) {
+    public List<NewsForMailDto> select(List<Long> keywordIds) {
         LocalDate today = LocalDate.now();
         LocalDateTime from = today.atStartOfDay();
         LocalDateTime to = from.plusDays(1);
 
-        List<News> newsList = newsRepository.findByCreatedDateBetweenAndKeywordIn(from, to, keywords);
+        List<News> newsList = newsRepository.findByCreatedDateBetweenAndKeywordIdIn(from, to, keywordIds);
 
         return newsList.stream()
-                .collect(Collectors.toMap(
-                        News::getKeyword,
-                        News::getSummary,
-                        (existing, replacement) ->existing
-                ));
+                .map(NewsForMailDto::from)   // DTO 변환
+                .toList();
     }
+
 }

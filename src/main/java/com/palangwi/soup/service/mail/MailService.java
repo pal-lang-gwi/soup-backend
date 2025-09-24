@@ -3,12 +3,14 @@ package com.palangwi.soup.service.mail;
 import com.palangwi.soup.domain.mail.MailEvent;
 import com.palangwi.soup.domain.mail.MailType;
 import com.palangwi.soup.domain.mail.policy.NewsSelectionPolicy;
+import com.palangwi.soup.domain.news.News;
 import com.palangwi.soup.domain.news.Summary;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.admin.email.EmailScheduleResponseDto;
 import com.palangwi.soup.dto.admin.email.EmailTestResponseDto;
 import com.palangwi.soup.dto.mail.MailMessage;
 import com.palangwi.soup.dto.news.DailyNewsMailRequestDto;
+import com.palangwi.soup.dto.news.NewsForMailDto;
 import com.palangwi.soup.dto.news.SummaryForMailTemplateDto;
 import com.palangwi.soup.exception.mail.MailNotFoundException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
@@ -52,12 +54,12 @@ public class MailService {
     @Transactional
     public void sendDailyNews(DailyNewsMailRequestDto request) {
         User user = request.user();
-        List<String> keywords = request.keywords();
+        List<Long> keywords = request.keywordIds();
         LocalDateTime now = request.now();
 
         log.info("메일 전송 처리 시작: userId={}, keywords={}", user.getId(), keywords);
 
-        Map<String, Summary> summaryMap = newsSelectionPolicy.select(request.keywords());
+        List<NewsForMailDto> summaryMap = newsSelectionPolicy.select(request.keywordIds());
         if (summaryMap.isEmpty()) return;
 
         MailEvent mailEvent = createMailEvent(user, now);
@@ -106,16 +108,21 @@ public class MailService {
         User user = findUserById(id);
         LocalDateTime sentAt = LocalDateTime.now();
 
-        List<String> fixedKeywords = List.of("AI");
-        Map<String, Summary> summaryMap = newsSelectionPolicy.select(fixedKeywords);
+        List<Long> fixedKeywordIds = List.of(1L);
 
-        if (summaryMap.isEmpty()) {
+        List<NewsForMailDto> newsDtos = newsSelectionPolicy.select(fixedKeywordIds);
+
+        if (newsDtos.isEmpty()) {
             throw new MailNotFoundException();
         }
 
-        List<SummaryForMailTemplateDto> summaryForMail = convertToMailTemplateDtos(summaryMap);
+        List<SummaryForMailTemplateDto> summaryForMail = convertToMailTemplateDtos(newsDtos);
 
-        String html = mailViewRenderer.renderDailyNews(user.getUsername(), summaryForMail, TEST_MAIL_EVENT_ID);
+        String html = mailViewRenderer.renderDailyNews(
+                user.getUsername(),
+                summaryForMail,
+                TEST_MAIL_EVENT_ID
+        );
 
         MailMessage message = MailMessage.of(
                 user,
@@ -130,16 +137,14 @@ public class MailService {
         return EmailTestResponseDto.of(user, sentAt);
     }
 
-    private List<SummaryForMailTemplateDto> convertToMailTemplateDtos(Map<String, Summary> summaryMap) {
-        return summaryMap.entrySet().stream()
-                .map(entry -> {
-                    Summary summary = entry.getValue();
-                    return new SummaryForMailTemplateDto(
-                            entry.getKey(),
-                            summary.getLongSummary(),
-                            summary.getCreatedDate().toLocalDate()
-                    );
-                })
+    private List<SummaryForMailTemplateDto> convertToMailTemplateDtos(List<NewsForMailDto> newsDtos) {
+        return newsDtos.stream()
+                .map(dto -> new SummaryForMailTemplateDto(
+                        dto.keywordId(),
+                        dto.keywordName(),
+                        dto.shortSummary(),
+                        dto.createdDate()
+                ))
                 .toList();
     }
 
