@@ -14,7 +14,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
@@ -41,7 +41,7 @@ public abstract class IntegrationTestSupport {
     @MockitoBean
     protected JavaMailSender javaMailSender;
 
-    static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
+    static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");
@@ -49,16 +49,16 @@ public abstract class IntegrationTestSupport {
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 
     static {
-        mysqlContainer.start();
+        postgresContainer.start();
         mongoContainer.start();
     }
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", mysqlContainer::getUsername);
-        registry.add("spring.datasource.password", mysqlContainer::getPassword);
-        registry.add("spring.datasource.driver-class-name", mysqlContainer::getDriverClassName);
+        registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgresContainer::getUsername);
+        registry.add("spring.datasource.password", postgresContainer::getPassword);
+        registry.add("spring.datasource.driver-class-name", postgresContainer::getDriverClassName);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
 
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);

@@ -31,7 +31,7 @@
 | 영역       | 사용 기술 |
 |------------|-----------|
 | LLM        | Perplexity |
-| 백엔드     | Spring Boot, MySQL, MongoDB, Redis |
+| 백엔드     | Spring Boot, PostgreSQL, MongoDB, Redis |
 | 프론트엔드 | React, Typescript, TailwindCSS |
 | 인프라       | Docker, GitHub Actions |
 
