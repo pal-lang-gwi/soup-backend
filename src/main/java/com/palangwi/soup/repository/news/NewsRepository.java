@@ -14,7 +14,7 @@ import java.util.List;
 public interface NewsRepository extends MongoRepository<News, ObjectId> {
     List<News> findByCreatedDateBetweenAndKeywordIdIn(LocalDateTime from, LocalDateTime to, List<Long> keywordIds);
 
-    Page<News> findByCreatedDateBetweenAndKeyword(LocalDateTime from, LocalDateTime to, Long keywordId, Pageable pageable);
+    Page<News> findByCreatedDateBetweenAndKeywordId(LocalDateTime from, LocalDateTime to, Long keywordId, Pageable pageable);
 
     Page<News> findByCreatedDateBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
 

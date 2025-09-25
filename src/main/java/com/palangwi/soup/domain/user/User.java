@@ -70,6 +70,7 @@ public class User extends BaseEntity {
                 .role(Role.USER)
                 .providerId(providerId)
                 .profileImageUrl("https://sample.png")
+                .deleted(false)
                 .build();
     }
 

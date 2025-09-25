@@ -29,9 +29,9 @@ class NewsRepositoryTest extends IntegrationTestSupport {
 
     @BeforeEach
     void setUp() {
-        News news1 = createNews("인공지능", 500);
-        News news2 = createNews("클라우드", 700);
-        News news3 = createNews("빅데이터", 800);
+        News news1 = createNews(1L, "인공지능", 500);
+        News news2 = createNews(2L, "클라우드", 700);
+        News news3 = createNews(3L, "빅데이터", 800);
 
         newsRepository.saveAll(List.of(news1, news2, news3));
 
@@ -87,11 +87,11 @@ class NewsRepositoryTest extends IntegrationTestSupport {
     @Test
     @DisplayName("날짜와 단일 키워드로 News 페이지를 조회한다.")
     void findByCreatedDateBetweenAndKeyword() {
-        Page<News> result = newsRepository.findByCreatedDateBetweenAndKeyword(startDate, endDate, "인공지능", pageable);
+        Page<News> result = newsRepository.findByCreatedDateBetweenAndKeywordId(startDate, endDate, 1L, pageable);
 
         assertThat(result).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result.getContent()).allMatch(n -> n.getKeyword().equals("인공지능"));
+        assertThat(result.getContent()).allMatch(n -> n.getKeywordId().equals(1L));
     }
 
     @Test
@@ -101,19 +101,19 @@ class NewsRepositoryTest extends IntegrationTestSupport {
 
         assertThat(result).hasSize(3);
         assertThat(result.getTotalElements()).isEqualTo(3);
-        assertThat(result).extracting(News::getKeyword)
-                .containsExactlyInAnyOrder("인공지능", "클라우드", "빅데이터");
+        assertThat(result).extracting(News::getKeywordId)
+                .containsExactlyInAnyOrder(1L, 2L, 3L);
     }
 
     @Test
     @DisplayName("키워드로 News 페이지를 조회한다.")
     void findByKeyword() {
-        Page<News> result = newsRepository.findByKeyword("인공지능", pageable);
+        Page<News> result = newsRepository.findByKeywordId(1L, pageable);
 
         assertThat(result).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result).extracting(News::getKeyword)
-                .containsExactlyInAnyOrder("인공지능");
+        assertThat(result).extracting(News::getKeywordId)
+                .containsExactlyInAnyOrder(1L);
     }
 
     @Test
@@ -127,13 +127,13 @@ class NewsRepositoryTest extends IntegrationTestSupport {
         assertThat(result.getTotalPages()).isEqualTo(3);
     }
 
-    private News createNews(String keyword, int tokens) {
+    private News createNews(Long keywordId, String keyword, int tokens) {
         Summary summary = new Summary("짧은 요약", "긴 요약");
         List<Article> articles = List.of(
                 new Article("기사 제목 1", "https://news.com/1", "기사 요약 1"),
                 new Article("기사 제목 2", "https://news.com/2", "기사 요약 2")
         );
 
-        return new News(keyword, summary, articles, tokens);
+        return new News(keywordId, keyword, summary, articles, tokens);
     }
 }

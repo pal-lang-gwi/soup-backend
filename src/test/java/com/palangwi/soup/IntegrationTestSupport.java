@@ -59,8 +59,7 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.datasource.username", postgresContainer::getUsername);
         registry.add("spring.datasource.password", postgresContainer::getPassword);
         registry.add("spring.datasource.driver-class-name", postgresContainer::getDriverClassName);
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
-
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
     }
 

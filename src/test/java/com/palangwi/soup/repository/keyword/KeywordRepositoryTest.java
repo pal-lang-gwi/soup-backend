@@ -18,6 +18,8 @@ import jakarta.transaction.Transactional;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,11 @@ class KeywordRepositoryTest extends IntegrationTestSupport {
         Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user);
         Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.MANUAL, user);
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
+    }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
     }
 
     @DisplayName("키워드 이름으로 존재 여부를 확인한다.")

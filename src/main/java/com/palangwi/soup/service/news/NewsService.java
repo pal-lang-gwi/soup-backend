@@ -61,7 +61,7 @@ public class NewsService {
             LocalDateTime from, LocalDateTime to) {
         Page<News> resultPage;
         if (hasKeyword && hasStart && hasEnd) {
-            resultPage = newsRepository.findByCreatedDateBetweenAndKeyword(from, to, keywordId, pageable);
+            resultPage = newsRepository.findByCreatedDateBetweenAndKeywordId(from, to, keywordId, pageable);
         } else if (hasStart && hasEnd) {
             resultPage = newsRepository.findByCreatedDateBetween(from, to, pageable);
         } else if (hasKeyword) {
