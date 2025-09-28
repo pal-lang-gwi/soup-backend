@@ -35,13 +35,15 @@ class NewsControllerTest extends IntegrationTestSupport {
     private NewsDto newsDto;
     private Pageable pageable;
     private List<ArticleDto> articles;
-    private String keyword;
+    private Long keywordId;
+    private String keywordName;
     private String startDate;
     private String endDate;
 
     @BeforeEach
     void setUp() {
-        keyword = "인공지능";
+        keywordId = 1L;
+        keywordName = "인공지능";
         startDate = "2025-06-01";
         endDate = "2025-06-02";
 
@@ -51,13 +53,14 @@ class NewsControllerTest extends IntegrationTestSupport {
         );
 
         newsDto = new NewsDto(
-                keyword,
+                keywordId,
+                keywordName,
                 "긴 요약",
                 articles,
                 LocalDateTime.of(2025, 6, 1, 6, 0)
         );
 
-        request = new DailyNewsRequestDto(keyword, startDate, endDate);
+        request = new DailyNewsRequestDto(keywordId, startDate, endDate);
         response = new DailyNewsResponseDto(List.of(newsDto), 1L, 1, 0);
         pageable = PageRequest.of(0, 20, Direction.DESC, "createdDate");
     }
@@ -71,7 +74,7 @@ class NewsControllerTest extends IntegrationTestSupport {
 
         //when && then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/news")
-                .param("keyword", keyword)
+                .param("keywordId", String.valueOf(keywordId))
                 .param("startDate", startDate)
                 .param("endDate", endDate)
                 .param("page", "0")
@@ -81,7 +84,7 @@ class NewsControllerTest extends IntegrationTestSupport {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.newsDtos[0].keyword").value("인공지능"))
+                .andExpect(jsonPath("$.data.newsDtos[0].keywordName").value("인공지능"))
                 .andExpect(jsonPath("$.data.newsDtos[0].longSummary").value("긴 요약"))
                 .andExpect(jsonPath("$.data.newsDtos[0].articles[0].title").value("인공지능 뉴스 1"))
                 .andExpect(jsonPath("$.data.newsDtos[0].articles[0].url").value("https://news.com/1"))
@@ -108,7 +111,7 @@ class NewsControllerTest extends IntegrationTestSupport {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.keyword").value("인공지능"))
+                .andExpect(jsonPath("$.data.keywordName").value("인공지능"))
                 .andExpect(jsonPath("$.data.longSummary").value("긴 요약"))
                 .andExpect(jsonPath("$.data.articles[0].title").value("인공지능 뉴스 1"))
                 .andExpect(jsonPath("$.data.articles[0].url").value("https://news.com/1"))

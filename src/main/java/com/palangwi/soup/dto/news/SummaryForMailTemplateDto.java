@@ -5,12 +5,14 @@ import lombok.Getter;
 
 @Getter
 public class SummaryForMailTemplateDto {
-    private final String keyword;
+    private final Long keywordId;
+    private final String keywordName;
     private final String shortSummary;
     private final LocalDate createdDate;
 
-    public SummaryForMailTemplateDto(String keyword, String shortSummary, LocalDate createdDate) {
-        this.keyword = keyword;
+    public SummaryForMailTemplateDto(Long keywordId, String keywordName, String shortSummary, LocalDate createdDate) {
+        this.keywordId = keywordId;
+        this.keywordName = keywordName;
         this.shortSummary = shortSummary;
         this.createdDate = createdDate;
     }

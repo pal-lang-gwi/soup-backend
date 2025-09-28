@@ -44,31 +44,36 @@ class PerplexityAIServiceImplTest extends IntegrationTestSupport {
     void searchAndSummarizeAsync_returnsNewsResult() {
         // given
         String mockJson = """
+            {
+              "usage": {
+                "total_tokens": 321
+              },
+              "choices": [
                 {
-                  "usage": {
-                    "total_tokens": 321
-                  },
-                  "choices": [
-                    {
-                      "message": {
-                        "content": "```json\\n{ \\"keyword\\": \\"인공지능\\", \\"summary\\": { \\"short_summary\\": \\"짧은 요약\\", \\"long_summary\\": \\"긴 요약\\" }, \\"articles\\": [ { \\"title\\": \\"제목\\", \\"link\\": \\"https://link\\", \\"summary\\": \\"기사요약\\" } ] }\\n```"
-                      }
-                    }
-                  ]
+                  "message": {
+                    "content": "```json\\n{ \\"keyword\\": \\"인공지능\\", \\"summary\\": { \\"short_summary\\": \\"짧은 요약\\", \\"long_summary\\": \\"긴 요약\\" }, \\"articles\\": [ { \\"title\\": \\"제목\\", \\"link\\": \\"https://link\\", \\"summary\\": \\"기사요약\\" } ] }\\n```"
+                  }
                 }
-                """;
+              ]
+            }
+            """;
 
         mockWebServer.enqueue(new MockResponse()
                 .setBody(mockJson)
                 .addHeader("Content-Type", "application/json"));
 
+        Long keywordId = 1L;
+        String keywordName = "인공지능";
+
         // when
-        CompletableFuture<NewsResult> future = perplexityAIService.searchAndSummarizeAsync("인공지능");
+        CompletableFuture<NewsResult> future = perplexityAIService.searchAndSummarizeAsync(keywordId, keywordName);
         NewsResult result = future.join();
 
         // then
-        assertThat(result.keyword()).isEqualTo("인공지능");
+        assertThat(result.keywordId()).isEqualTo(keywordId);
+        assertThat(result.keywordName()).isEqualTo(keywordName);
         assertThat(result.summary().short_summary()).isEqualTo("짧은 요약");
+        assertThat(result.summary().long_summary()).isEqualTo("긴 요약");
         assertThat(result.articles()).hasSize(1);
         assertThat(result.tokens()).isEqualTo(321);
     }

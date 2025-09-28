@@ -1,14 +1,19 @@
 package com.palangwi.soup.service.news;
 
+import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.news.News;
 import com.palangwi.soup.dto.news.DailyNewsRequestDto;
 import com.palangwi.soup.dto.news.DailyNewsResponseDto;
 import com.palangwi.soup.dto.news.NewsDto;
+import com.palangwi.soup.exception.keyword.KeywordNotFoundException;
 import com.palangwi.soup.exception.news.NewsNotFoundException;
+import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.news.NewsRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -23,9 +28,10 @@ public class NewsService {
 
     private final NewsRepository newsRepository;
     private final NewsAIService newsAIService;
+    private final KeywordRepository keywordRepository;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
-        Page<News> resultPage = getNews(request.keyword(), request.startDate(), request.endDate(), pageable);
+        Page<News> resultPage = getNews(request.keywordId(), request.startDate(), request.endDate(), pageable);
 
         List<NewsDto> newsDtos = resultPage.getContent().stream()
                 .map(NewsDto::from)
@@ -35,50 +41,57 @@ public class NewsService {
                 resultPage.getNumber() + 1);
     }
 
-    private Page<News> getNews(String keyword, String startDate, String endDate, Pageable pageable) {
+    private Page<News> getNews(Long keywordId, String startDate, String endDate, Pageable pageable) {
         boolean hasStart = startDate != null && !startDate.isBlank();
         boolean hasEnd = endDate != null && !endDate.isBlank();
-        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        boolean hasKeyword = keywordId != null;
 
         LocalDateTime from = hasStart ? LocalDate.parse(startDate).atStartOfDay() : null;
         LocalDateTime to = hasEnd ? LocalDate.parse(endDate).plusDays(1).atStartOfDay() : null;
 
         Page<News> resultPage;
 
-        resultPage = findNewsByCondition(keyword, pageable, hasKeyword, hasStart, hasEnd, from, to);
+        resultPage = findNewsByCondition(keywordId, pageable, hasKeyword, hasStart, hasEnd, from, to);
 
         return resultPage;
     }
 
-    private Page<News> findNewsByCondition(String keyword, Pageable pageable, boolean hasKeyword, boolean hasStart,
+    private Page<News> findNewsByCondition(Long keywordId, Pageable pageable, boolean hasKeyword, boolean hasStart,
             boolean hasEnd,
             LocalDateTime from, LocalDateTime to) {
         Page<News> resultPage;
         if (hasKeyword && hasStart && hasEnd) {
-            resultPage = newsRepository.findByCreatedDateBetweenAndKeyword(from, to, keyword, pageable);
+            resultPage = newsRepository.findByCreatedDateBetweenAndKeywordId(from, to, keywordId, pageable);
         } else if (hasStart && hasEnd) {
             resultPage = newsRepository.findByCreatedDateBetween(from, to, pageable);
         } else if (hasKeyword) {
-            resultPage = newsRepository.findByKeyword(keyword, pageable);
+            resultPage = newsRepository.findByKeywordId(keywordId, pageable);
         } else {
             resultPage = newsRepository.findAll(pageable);
         }
         return resultPage;
     }
 
-    public void collectAndSaveNews(String keyword) {
-        newsAIService.searchAndSummarizeAsync(keyword)
+    public void collectAndSaveNews(Long keywordId) {
+        Optional<Keyword> keyword = keywordRepository.findById(keywordId);
+
+        if (keyword.isEmpty()) {
+            throw new KeywordNotFoundException();
+        }
+
+        String keywordName =  keyword.get().getName();
+        newsAIService.searchAndSummarizeAsync(keywordId, keywordName)
                 .thenAccept(result -> {
                     try {
                         News news = result.toNews();
                         log.info(news.toString());
                         newsRepository.save(news);
                     } catch (Exception e) {
-                        log.error("❌ 뉴스 파싱 실패 - {}", keyword, e);
+                        log.error("❌ 뉴스 파싱 실패 - {}", keywordName, e);
                     }
                 })
                 .exceptionally(ex -> {
-                    log.error("❌ OpenAI 응답 실패 - {}", keyword, ex);
+                    log.error("❌ OpenAI 응답 실패 - {}", keywordName, ex);
                     return null;
                 });
     }

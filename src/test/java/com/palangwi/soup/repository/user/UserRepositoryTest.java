@@ -5,6 +5,7 @@ import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.security.Role;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -24,10 +26,15 @@ class UserRepositoryTest extends IntegrationTestSupport {
 
     @BeforeEach
     void beforeEach() {
-        User user1 = createUser("123@gmail.com", "김여준", "테스트닉네임1");
-        User user2 = createUser("321@gmail.com", "유재광", "테스트닉네임2");
+        User user1 = createUser("김여준", "테스트닉네임1");
+        User user2 = createUser("유재광", "테스트닉네임2");
 
         userRepository.saveAll(List.of(user1, user2));
+    }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
     }
 
     @DisplayName("사용자의 실명으로 조회하여 사용자가 존재하면 true를 반환한다.")
@@ -90,7 +97,6 @@ class UserRepositoryTest extends IntegrationTestSupport {
         assertThat(result).isPresent()
                 .get()
                 .satisfies(user -> {
-                    assertThat(user.getEmail()).isEqualTo("123@gmail.com");
                     assertThat(user.getUsername()).isEqualTo("김여준");
                     assertThat(user.getNickname()).isEqualTo("테스트닉네임1");
                 });
@@ -108,9 +114,9 @@ class UserRepositoryTest extends IntegrationTestSupport {
         assertThat(result).isEmpty();
     }
 
-    private static User createUser(String email, String username, String nickname) {
+    private static User createUser(String username, String nickname) {
         return User.builder()
-                .email(email)
+                .email("test_" + UUID.randomUUID() + "@test.com")
                 .username(username)
                 .nickname(nickname)
                 .role(Role.USER)

@@ -21,6 +21,9 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,9 +57,14 @@ class KeywordServiceTest extends IntegrationTestSupport {
         userKeywordRepository.deleteAll();
     }
 
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
+    }
+
     private User createUser(String nickname) {
         User user = User.builder()
-                .email("asdf1234@naver.com")
+                .email("test_" + UUID.randomUUID() + "@test.com")
                 .username("테스트")
                 .nickname(nickname)
                 .role(Role.USER)

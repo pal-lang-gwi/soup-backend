@@ -166,6 +166,6 @@ public class UserControllerTest extends IntegrationTestSupport {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(userService).deleteAccount(1L, request);
+        verify(userService).deleteAccount(1L);
     }
 }

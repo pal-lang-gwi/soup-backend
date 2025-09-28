@@ -21,7 +21,9 @@ public class News extends BaseEntity {
     @Id
     private ObjectId id;
 
-    private String keyword;
+    private Long keywordId;
+
+    private String keywordName;
 
     private Summary summary;
 
@@ -29,8 +31,9 @@ public class News extends BaseEntity {
 
     private int tokens;
 
-    public News(String keyword, Summary summary, List<Article> articles, int tokens) {
-        this.keyword = keyword;
+    public News(Long keywordId, String keywordName, Summary summary, List<Article> articles, int tokens) {
+        this.keywordId = keywordId;
+        this.keywordName = keywordName;
         this.summary = summary;
         this.articles = articles;
         this.tokens = tokens;

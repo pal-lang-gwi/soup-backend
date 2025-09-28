@@ -38,12 +38,12 @@ public class PerplexityAIServiceImpl implements NewsAIService{
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    public CompletableFuture<NewsResult> searchAndSummarizeAsync(String keyword) {
-            String today = getTodayString();
-            String prompt = loadPrompt()
-                    .replace("{keyword}", keyword)
-                    .replace("{today}", today);
-        log.info(prompt);
+    public CompletableFuture<NewsResult> searchAndSummarizeAsync(Long keywordId, String keywordName) {
+        String today = getTodayString();
+        String prompt = loadPrompt()
+                .replace("{keyword}", keywordName)
+                .replace("{today}", today);
+
         return webClient.post()
                 .uri(completionsPath)
                 .bodyValue(Map.of(
@@ -55,11 +55,12 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                 .retrieve()
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(30))
-                .map(this::parseToNewsResult)
+                .map(content -> parseToNewsResult(content, keywordId, keywordName))
                 .toFuture();
     }
 
-    private NewsResult parseToNewsResult(String content) {
+
+    private NewsResult parseToNewsResult(String content, Long keywordId, String keywordName) {
         try {
             log.debug("🔎 Perplexity 원시 응답:\n{}", content);
 
@@ -68,7 +69,6 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                     .path("total_tokens")
                     .asInt(-1);
 
-            // message.content 파싱
             String rawJson = objectMapper.readTree(content)
                     .path("choices")
                     .get(0)
@@ -77,24 +77,26 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                     .asText()
                     .trim();
 
-            // 코드블럭 제거: 백틱 시작/끝 제거
             String cleanedJson = rawJson
                     .replaceAll("^```json\\s*", "")
-                    .replaceAll("^```\\s*", "") // 혹시 ```만 붙어있을 때도 제거
+                    .replaceAll("^```\\s*", "")
                     .replaceAll("```\\s*$", "")
                     .trim();
 
             log.debug("📝 클린된 요약 JSON:\n{}", cleanedJson);
 
-            // 파싱 시도
             NewsSummary summary = objectMapper.readValue(cleanedJson, NewsSummary.class);
-            return new NewsResult(summary.keyword(), summary.summary(), summary.articles(), tokens);
 
-        } catch (IOException e) {
-            log.error("❌ JSON 파싱 실패: {}", e.getMessage());
-            throw new RuntimeException("❌ Perplexity 응답 파싱 실패", e);
+            return new NewsResult(
+                    keywordId,
+                    keywordName,
+                    summary.summary(),
+                    summary.articles(),
+                    tokens
+            );
+
         } catch (Exception e) {
-            log.error("❌ 예기치 않은 파싱 오류 발생", e);
+            log.error("❌ JSON 파싱 실패", e);
             throw new RuntimeException("❌ Perplexity 응답 처리 중 오류 발생", e);
         }
     }

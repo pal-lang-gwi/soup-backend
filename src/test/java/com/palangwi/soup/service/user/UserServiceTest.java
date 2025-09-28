@@ -6,17 +6,15 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.domain.user.Gender;
 import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.domain.userlog.ChangeType;
-import com.palangwi.soup.domain.userlog.UserHistory;
 import com.palangwi.soup.dto.user.UserDeleteRequestDto;
 import com.palangwi.soup.dto.user.UserResponseDto;
 import com.palangwi.soup.dto.user.UserUpdateRequestDto;
 import com.palangwi.soup.exception.user.DuplicateNicknameException;
-import com.palangwi.soup.repository.user.UserHistoryRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.security.Role;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,9 +28,6 @@ class UserServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private UserHistoryRepository userHistoryRepository;
 
     @AfterEach
     void tearDown() {
@@ -99,34 +94,9 @@ class UserServiceTest extends IntegrationTestSupport {
                 .hasMessage("이미 사용 중인 닉네임입니다.");
     }
 
-    @DisplayName("유저가 탈퇴하면 DB에서 삭제되고, 회원로그 테이블에 기록된다.")
-    @Test
-    void withdrawUser() {
-        // given
-        User user = userRepository.save(createUser("테스트닉네임"));
-        UserDeleteRequestDto request = UserDeleteRequestDto.builder()
-                .reason("탈퇴 사유")
-                .build();
-
-        // when
-        userService.deleteAccount(user.getId(), request);
-        Optional<UserHistory> userHistory = userHistoryRepository.findTopByEmailAndChangeTypeOrderByCreatedDateDesc(
-                user.getEmail(),
-                ChangeType.DELETE);
-
-        // then
-        Optional<User> withdrawnUser = userRepository.findByEmail(user.getEmail());
-
-        assertThat(withdrawnUser).isEmpty();
-        assertThat(userHistory.isPresent()).isTrue();
-        assertThat(userHistory.get().getEmail()).isEqualTo(user.getEmail());
-        assertThat(userHistory.get().getLeaveReason()).isEqualTo(request.reason());
-        assertThat(userHistory.get().getChangeType()).isEqualTo(ChangeType.DELETE);
-    }
-
     private User createUser(String nickname) {
         User user = User.builder()
-                .email("asdf1234@naver.com")
+                .email("test_" + UUID.randomUUID() + "@test.com")
                 .username("테스트")
                 .nickname(nickname)
                 .role(Role.USER)

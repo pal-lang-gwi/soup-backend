@@ -17,9 +17,9 @@ public class AdminNewsController {
 
     @GetMapping("/collect")
     public ApiResult<Void> collectNews(
-            @RequestParam(name = "keyword", required = false) String keyword
+            @RequestParam(name = "keyword", required = false) Long keywordId
     ) {
-        newsService.collectAndSaveNews(keyword);
+        newsService.collectAndSaveNews(keywordId);
         return null;
     }
 }

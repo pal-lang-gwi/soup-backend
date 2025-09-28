@@ -12,11 +12,11 @@ import java.util.List;
 
 @Repository
 public interface NewsRepository extends MongoRepository<News, ObjectId> {
-    List<News> findByCreatedDateBetweenAndKeywordIn(LocalDateTime from, LocalDateTime to, List<String> keywords);
+    List<News> findByCreatedDateBetweenAndKeywordIdIn(LocalDateTime from, LocalDateTime to, List<Long> keywordIds);
 
-    Page<News> findByCreatedDateBetweenAndKeyword(LocalDateTime from, LocalDateTime to, String keyword, Pageable pageable);
+    Page<News> findByCreatedDateBetweenAndKeywordId(LocalDateTime from, LocalDateTime to, Long keywordId, Pageable pageable);
 
     Page<News> findByCreatedDateBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
 
-    Page<News> findByKeyword(String keyword, Pageable pageable);
+    Page<News> findByKeywordId(Long keywordId, Pageable pageable);
 }
