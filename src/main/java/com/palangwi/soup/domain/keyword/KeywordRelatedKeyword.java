@@ -3,6 +3,7 @@ package com.palangwi.soup.domain.keyword;
 import com.palangwi.soup.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +33,15 @@ public class KeywordRelatedKeyword extends BaseEntity {
     private Keyword relatedKeyword;
 
     public static KeywordRelatedKeyword of(Keyword keyword, Keyword relatedKeyword) {
-        KeywordRelatedKeyword relation = new KeywordRelatedKeyword();
-        relation.keyword = keyword;
-        relation.relatedKeyword = relatedKeyword;
-        return relation;
+        return KeywordRelatedKeyword.builder()
+                .keyword(keyword)
+                .relatedKeyword(relatedKeyword)
+                .build();
+    }
+
+    @Builder
+    public KeywordRelatedKeyword(Keyword keyword, Keyword relatedKeyword) {
+        this.keyword = keyword;
+        this.relatedKeyword = relatedKeyword;
     }
 }
