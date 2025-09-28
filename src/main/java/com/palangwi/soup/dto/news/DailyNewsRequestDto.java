@@ -2,6 +2,9 @@ package com.palangwi.soup.dto.news;
 
 import jakarta.validation.constraints.Pattern;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 public record DailyNewsRequestDto(
         Long keywordId,
 
@@ -12,5 +15,17 @@ public record DailyNewsRequestDto(
         String endDate) {
         public static DailyNewsRequestDto from(DailyNewsRequestDto dto) {
                 return new DailyNewsRequestDto(dto.keywordId(), dto.startDate(), dto.endDate());
+        }
+
+        private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        public DailyNewsRequestDto {
+                LocalDate today = LocalDate.now();
+                if (startDate == null || startDate.isBlank()) {
+                        startDate = today.minusMonths(1).format(FORMATTER);
+                }
+                if (endDate == null || endDate.isBlank()) {
+                        endDate = today.format(FORMATTER);
+                }
         }
 }
