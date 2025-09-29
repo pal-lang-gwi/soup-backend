@@ -62,7 +62,7 @@ public class KeywordController {
     public ApiResult<SubscribeKeywordResponseDto> subscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
-        return success(keywordService.subscribeKeywords(userDetails.id(), subscribeKeywordRequestDto));
+        return success(keywordService.subscribeKeyword(userDetails.id(), subscribeKeywordRequestDto));
     }
 
     @PostMapping("/{keywordId}")
