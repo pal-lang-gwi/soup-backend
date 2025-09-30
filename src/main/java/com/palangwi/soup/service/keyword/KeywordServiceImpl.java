@@ -25,6 +25,7 @@ import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
+import com.palangwi.soup.service.embedding.EmbeddingService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserRepository userRepository;
     private final UserKeywordRepository userKeywordRepository;
     private final PendingKeywordRequestRepository pendingKeywordRequestRepository;
+    private final EmbeddingService embeddingService;
 
     private static final int MAXIMUM_KEYWORD_COUNT = 10;
 
@@ -142,7 +144,22 @@ public class KeywordServiceImpl implements KeywordService {
         return keywordRepository.findByNameAndStatus(requestedKeyword, Status.PENDING)
                 .orElseGet(() -> {
                     Keyword newKeyword = Keyword.of(requestedKeyword, normalizedKeyword, Source.USER_REQUEST, user);
-                    return keywordRepository.save(newKeyword);
+                    // 키워드 저장
+                    Keyword savedKeyword = keywordRepository.save(newKeyword);
+
+                    // 임베딩 생성 (비동기)
+                    embeddingService.generateEmbedding(requestedKeyword)
+                            .thenAccept(embedding -> {
+                                savedKeyword.setEmbedding(embedding);
+                                keywordRepository.save(savedKeyword);
+                                log.info("✅ 키워드 임베딩 생성 완료: {}", requestedKeyword);
+                            })
+                            .exceptionally(ex -> {
+                                log.error("❌ 키워드 임베딩 생성 실패: {}", requestedKeyword, ex);
+                                return null;
+                            });
+
+                    return savedKeyword;
                 });
     }
 
