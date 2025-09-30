@@ -84,14 +84,14 @@ class KeywordControllerTest extends IntegrationTestSupport {
                 .willReturn(response);
 
         // when // then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords/subscriptions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.registeredKeywords[0]").value("키워드1"))
-                .andExpect(jsonPath("$.data.registeredKeywords[1]").value("키워드2"));
+                .andExpect(jsonPath("$.data.keywordId").value(1L))
+                .andExpect(jsonPath("$.data.keywordName").value("AI"));
 
         verify(keywordService).subscribeKeyword(1L, request);
     }
@@ -103,15 +103,15 @@ class KeywordControllerTest extends IntegrationTestSupport {
         // given
         SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(1L);
         given(keywordService.subscribeKeyword(1L, request))
-                .willThrow(new AlreadySubscribedKeywordException(List.of("키워드1")));
+                .willThrow(new AlreadySubscribedKeywordException("AI"));
 
         // when // then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords/subscriptions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.message").value("이미 등록된 키워드입니다.: 키워드1"));
+                .andExpect(jsonPath("$.error.message").value("이미 등록된 키워드입니다.: AI"));
     }
 }

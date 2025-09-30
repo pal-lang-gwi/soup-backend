@@ -86,17 +86,17 @@ class KeywordServiceTest extends IntegrationTestSupport {
         Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.USER_REQUEST, user);
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
 
-        List<String> keywords = Arrays.asList("키워드1", "키워드2");
+        Long keywordId = keyword1.getId();
 
-        SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywords);
+        SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywordId);
 
         // when
         SubscribeKeywordResponseDto result = keywordService.subscribeKeyword(user.getId(), requestDto);
 
         // then
-        assertThat(result.registeredKeywords()).hasSize(2);
-        assertThat(keywordRepository.findAll()).hasSize(2);
-        assertThat(userKeywordRepository.findAll()).hasSize(2);
+        assertThat(result.keywordId()).isEqualTo(keywordId);
+        assertThat(keywordRepository.existsById(keywordId)).isTrue();
+        assertThat(userKeywordRepository.findAll()).hasSize(1);
     }
 
     @Test

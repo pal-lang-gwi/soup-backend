@@ -148,25 +148,43 @@ public class KeywordServiceImpl implements KeywordService {
     @Transactional
     public SubscribeKeywordResponseDto subscribeKeyword(Long userId, SubscribeKeywordRequestDto dto) {
         User user = findUserById(userId);
+        validateSubscriptionLimit(userId);
 
-        if (userKeywordRepository.countSubscribedKeywordsByUserId(userId) >= MAXIMUM_KEYWORD_COUNT) {
-            throw new SubscribedKeywordLimitExceededException();
-        }
-
-        UserKeyword userKeyword = userKeywordRepository
-                .findSubscribedByUserIdAndKeywordId(userId, dto.keywordId())
-                .orElseGet(() -> {
-                    Keyword keyword = keywordRepository.findById(dto.keywordId())
-                            .orElseThrow(KeywordNotFoundException::new);
-                    return UserKeyword.create(user, keyword);
-                });
+        UserKeyword userKeyword = findOrCreateUserKeyword(user, dto.keywordId());
+        validateNotAlreadySubscribed(userKeyword);
 
         userKeyword.subscribe();
         userKeywordRepository.save(userKeyword);
 
+        return toResponseDto(userKeyword);
+    }
+
+    private void validateSubscriptionLimit(Long userId) {
+        if (userKeywordRepository.countSubscribedKeywordsByUserId(userId) >= MAXIMUM_KEYWORD_COUNT) {
+            throw new SubscribedKeywordLimitExceededException();
+        }
+    }
+
+    private UserKeyword findOrCreateUserKeyword(User user, Long keywordId) {
+        return userKeywordRepository.findSubscribedByUserIdAndKeywordId(user.getId(), keywordId)
+                .orElseGet(() -> {
+                    Keyword keyword = keywordRepository.findById(keywordId)
+                            .orElseThrow(KeywordNotFoundException::new);
+                    return UserKeyword.create(user, keyword);
+                });
+    }
+
+    private void validateNotAlreadySubscribed(UserKeyword userKeyword) {
+        if (userKeyword.isSubscribed()) {
+            throw new AlreadySubscribedKeywordException(userKeyword.getKeyword().getName());
+        }
+    }
+
+    private SubscribeKeywordResponseDto toResponseDto(UserKeyword userKeyword) {
         Keyword keyword = userKeyword.getKeyword();
         return SubscribeKeywordResponseDto.of(keyword.getId(), keyword.getName());
     }
+
 
     private void initPendingKeywordRequest(User user, Keyword keyword) {
         if (pendingKeywordRequestRepository.existsByUserAndKeyword(user, keyword)) {

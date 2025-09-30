@@ -1,15 +1,13 @@
 package com.palangwi.soup.exception.keyword;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 
 import com.palangwi.soup.exception.BaseCustomException;
 
 public class AlreadySubscribedKeywordException extends BaseCustomException {
-    private final List<String> alreadySubscribedKeywords;
+    private final String alreadySubscribedKeywords;
 
-    public AlreadySubscribedKeywordException(List<String> alreadySubscribedKeywords) {
+    public AlreadySubscribedKeywordException(String alreadySubscribedKeywords) {
         this.alreadySubscribedKeywords = alreadySubscribedKeywords;
     }
 
