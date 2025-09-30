@@ -55,9 +55,13 @@
         @JoinColumn(name = "requested_user_id", nullable = true)
         private User firstRequestUser;
 
-        @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
-        @JsonIgnore
-        private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
+    @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
+
+    // 키워드 임베딩을 위한 컬럼 추가
+    @Column(columnDefinition = "vector(1536)")
+    private float[] embedding;
 
         public static Keyword of(String name, String normalizedName, Source source, User firstRequestUser) {
             return Keyword.builder()
