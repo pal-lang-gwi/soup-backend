@@ -25,7 +25,7 @@ public interface KeywordService {
 
     RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto);
 
-    KeywordUnsubscribeResponseDto unsubscribeKeyword(Long id, Long keywordId);
+    KeywordUnsubscribeResponseDto unsubscribeKeyword(Long subscriptionId);
 
     MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable);
 

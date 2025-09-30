@@ -69,7 +69,7 @@ public class KeywordController {
     public ApiResult<KeywordUnsubscribeResponseDto> unsubscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @PathVariable(name = "subscriptionId") Long subscriptionId) {
-        return success(keywordService.unsubscribeKeyword(userDetails.id(), subscriptionId));
+        return success(keywordService.unsubscribeKeyword(subscriptionId));
     }
 
     @PostMapping("/request")

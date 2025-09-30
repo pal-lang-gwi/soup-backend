@@ -115,8 +115,8 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Transactional
-    public KeywordUnsubscribeResponseDto unsubscribeKeyword(Long userId, Long keywordId) {
-        UserKeyword userKeyword = userKeywordRepository.findSubscribedByUserIdAndKeywordId(userId, keywordId)
+    public KeywordUnsubscribeResponseDto unsubscribeKeyword(Long subscriptionId) {
+        UserKeyword userKeyword = userKeywordRepository.findById(subscriptionId)
                 .orElseThrow(NotSubscribedException::new);
         userKeyword.unsubscribe();
         return KeywordUnsubscribeResponseDto.of(userKeyword);
@@ -126,11 +126,9 @@ public class KeywordServiceImpl implements KeywordService {
     public MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable) {
         Page<UserKeyword> userKeywords = userKeywordRepository.findAllByUser_IdAndSubscribedTrue(userId, pageable);
 
-        List<MyKeywordDto> userKeywordList = userKeywords.getContent().stream()
-                .map(MyKeywordDto::of)
-                .toList();
+        List<MyKeywordDto> userKeywordList = userKeywords.map(MyKeywordDto::of).getContent();
 
-        return MyKeywordListResponseDto.of(userKeywordList, userKeywords);
+        return MyKeywordListResponseDto.of(userKeywords, userKeywordList);
     }
 
     private Keyword findOrCreateKeyword(String requestedKeyword, User user) {
