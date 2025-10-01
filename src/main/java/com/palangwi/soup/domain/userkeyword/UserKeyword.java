@@ -49,7 +49,7 @@ public class UserKeyword extends BaseEntity {
         return UserKeyword.builder()
                 .user(user)
                 .keyword(keyword)
-                .subscribed(true)
+                .subscribed(false)
                 .build();
     }
 }

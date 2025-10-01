@@ -59,6 +59,8 @@ class KeywordServiceTest extends IntegrationTestSupport {
 
     @AfterEach
     void tearDown() {
+        userKeywordRepository.deleteAll();
+        keywordRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -81,9 +83,12 @@ class KeywordServiceTest extends IntegrationTestSupport {
     @Test
     void registerKeyword_정상등록() {
         // given
-        User user = createUser("테스트 닉네임");
-        Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user);
-        Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.USER_REQUEST, user);
+        User user1 = createUser("키워드를 등록한 사용자");
+        Keyword keyword1 = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user1);
+        Keyword keyword2 = Keyword.of("키워드2", "키워드2", Source.USER_REQUEST, user1);
+
+        User user2 = createUser("키워드를 등록할 사용자");
+
         keywordRepository.saveAll(Arrays.asList(keyword1, keyword2));
 
         Long keywordId = keyword1.getId();
@@ -91,7 +96,7 @@ class KeywordServiceTest extends IntegrationTestSupport {
         SubscribeKeywordRequestDto requestDto = new SubscribeKeywordRequestDto(keywordId);
 
         // when
-        SubscribeKeywordResponseDto result = keywordService.subscribeKeyword(user.getId(), requestDto);
+        SubscribeKeywordResponseDto result = keywordService.subscribeKeyword(user2.getId(), requestDto);
 
         // then
         assertThat(result.keywordId()).isEqualTo(keywordId);

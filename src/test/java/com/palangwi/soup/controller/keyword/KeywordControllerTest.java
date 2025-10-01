@@ -110,7 +110,7 @@ class KeywordControllerTest extends IntegrationTestSupport {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.message").value("이미 등록된 키워드입니다.: AI"));
     }
