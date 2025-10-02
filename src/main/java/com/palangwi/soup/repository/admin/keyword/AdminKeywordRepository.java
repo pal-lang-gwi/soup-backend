@@ -1,5 +1,6 @@
 package com.palangwi.soup.repository.admin.keyword;
 
+import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
 import com.palangwi.soup.domain.keyword.Status;
 import org.springframework.data.domain.Page;
@@ -15,4 +16,5 @@ public interface AdminKeywordRepository extends JpaRepository<PendingKeywordRequ
     Page<PendingKeywordRequest> findByStatus(@Param("status") Status status, Pageable pageable);
 
     void deleteByKeywordId(Long id);
+    void deleteAllByKeyword(Keyword keyword);
 }

@@ -77,23 +77,23 @@ class KeywordControllerTest extends IntegrationTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_success() throws Exception {
         // given
-        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1", "키워드2"));
-        SubscribeKeywordResponseDto response = new SubscribeKeywordResponseDto(Arrays.asList("키워드1", "키워드2"));
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(1L);
+        SubscribeKeywordResponseDto response = new SubscribeKeywordResponseDto(1L, "AI");
 
-        given(keywordService.subscribeKeywords(1L, request))
+        given(keywordService.subscribeKeyword(1L, request))
                 .willReturn(response);
 
         // when // then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords/subscriptions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.registeredKeywords[0]").value("키워드1"))
-                .andExpect(jsonPath("$.data.registeredKeywords[1]").value("키워드2"));
+                .andExpect(jsonPath("$.data.keywordId").value(1L))
+                .andExpect(jsonPath("$.data.keywordName").value("AI"));
 
-        verify(keywordService).subscribeKeywords(1L, request);
+        verify(keywordService).subscribeKeyword(1L, request);
     }
 
     @Test
@@ -101,17 +101,17 @@ class KeywordControllerTest extends IntegrationTestSupport {
     @WithMockJwtAuthentication(id = 1L)
     void registerKeyword_alreadySubscribed() throws Exception {
         // given
-        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(Arrays.asList("키워드1"));
-        given(keywordService.subscribeKeywords(1L, request))
-                .willThrow(new AlreadySubscribedKeywordException(List.of("키워드1")));
+        SubscribeKeywordRequestDto request = new SubscribeKeywordRequestDto(1L);
+        given(keywordService.subscribeKeyword(1L, request))
+                .willThrow(new AlreadySubscribedKeywordException("AI"));
 
         // when // then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/keywords/subscriptions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.message").value("이미 등록된 키워드입니다.: 키워드1"));
+                .andExpect(jsonPath("$.error.message").value("이미 등록된 키워드입니다.: AI"));
     }
 }

@@ -19,13 +19,13 @@ public interface KeywordService {
 
     KeywordResponseDto updateKeywordName(Long id, String name);
 
-    SubscribeKeywordResponseDto subscribeKeywords(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
+    SubscribeKeywordResponseDto subscribeKeyword(Long userId, SubscribeKeywordRequestDto subscribeKeywordRequestDto);
 
     void deleteKeyword(Long id);
 
     RequestKeywordResponseDto requestKeywords(Long userId, RequestKeywordRequestDto requestKeywordRequestDto);
 
-    KeywordUnsubscribeResponseDto unsubscribeKeyword(Long id, Long keywordId);
+    KeywordUnsubscribeResponseDto unsubscribeKeyword(Long subscriptionId);
 
     MyKeywordListResponseDto getMyKeywords(Long userId, Pageable pageable);
 

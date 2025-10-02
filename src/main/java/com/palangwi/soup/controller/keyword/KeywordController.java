@@ -58,18 +58,18 @@ public class KeywordController {
 
     @Operation(summary = "키워드 구독", description = "새로운 키워드를 구독합니다.")
     @ApiResponse(responseCode = "200", description = "등록 성공")
-    @PostMapping
+    @PostMapping("/subscriptions")
     public ApiResult<SubscribeKeywordResponseDto> subscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
             @Valid @RequestBody SubscribeKeywordRequestDto subscribeKeywordRequestDto) {
-        return success(keywordService.subscribeKeywords(userDetails.id(), subscribeKeywordRequestDto));
+        return success(keywordService.subscribeKeyword(userDetails.id(), subscribeKeywordRequestDto));
     }
 
-    @PostMapping("/{keywordId}")
+    @PostMapping("/subscriptions/{subscriptionId}")
     public ApiResult<KeywordUnsubscribeResponseDto> unsubscribeKeyword(
             @AuthenticationPrincipal JwtAuthentication userDetails,
-            @PathVariable(name = "keywordId") Long keywordId) {
-        return success(keywordService.unsubscribeKeyword(userDetails.id(), keywordId));
+            @PathVariable(name = "subscriptionId") Long subscriptionId) {
+        return success(keywordService.unsubscribeKeyword(subscriptionId));
     }
 
     @PostMapping("/request")

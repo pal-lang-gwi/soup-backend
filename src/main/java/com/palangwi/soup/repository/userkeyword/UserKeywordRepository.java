@@ -44,4 +44,6 @@ public interface UserKeywordRepository extends JpaRepository<UserKeyword, Long> 
             @Param("userId") Long userId,
             @Param("keywordIds") List<Long> keywordIds
     );
+
+    boolean existsByUser_IdAndKeyword_Id(Long userId, Long keywordId);
 }

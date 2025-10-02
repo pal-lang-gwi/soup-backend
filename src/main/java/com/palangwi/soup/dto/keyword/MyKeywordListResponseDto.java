@@ -11,12 +11,12 @@ public record MyKeywordListResponseDto(
         int totalPages,
         int currentPage
 ) {
-    public static MyKeywordListResponseDto of(List<MyKeywordDto> myKeywordDtos, Page<UserKeyword> userKeywordPage) {
+    public static MyKeywordListResponseDto of(Page<UserKeyword> userKeywordPage, List<MyKeywordDto> myKeywordDtos) {
         return new MyKeywordListResponseDto(
                 myKeywordDtos,
                 userKeywordPage.getTotalElements(),
                 userKeywordPage.getTotalPages(),
-                userKeywordPage.getNumber()
+                userKeywordPage.getNumber() + 1
         );
     }
 }
