@@ -19,10 +19,10 @@ public class EmbeddingService {
     private final WebClient openaiWebClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${openai.api.model}")
+    @Value("${openai.model}")
     private String model;
 
-    @Value("${openai.api.embeddings-path}")
+    @Value("${openai.embeddings-path}")
     private String embeddingsPath;
 
     public EmbeddingService(@Qualifier("openaiWebClient") WebClient openaiWebClient, ObjectMapper objectMapper) {
