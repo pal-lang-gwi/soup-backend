@@ -14,11 +14,26 @@ public class WebClientConfig {
     @Value("${perplexity.base-url}")
     private String baseUrl;
 
+    @Value("${openai.api-key}")
+    private String openaiApiKey;
+
+    @Value("${openai.base-url}")
+    private String openaiBaseUrl;
+
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
+
+    @Bean
+    public WebClient openaiWebClient() {
+        return WebClient.builder()
+                .baseUrl(openaiBaseUrl)
+                .defaultHeader("Authorization", "Bearer " + openaiApiKey)
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
