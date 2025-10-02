@@ -14,10 +14,10 @@ public class WebClientConfig {
     @Value("${perplexity.base-url}")
     private String baseUrl;
 
-    @Value("${openai.api.key}")
+    @Value("${openai.api-key}")
     private String openaiApiKey;
 
-    @Value("${openai.api.url}")
+    @Value("${openai.base-url}")
     private String openaiBaseUrl;
 
     @Bean
