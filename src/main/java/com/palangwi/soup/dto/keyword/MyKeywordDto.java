@@ -18,7 +18,7 @@ public record MyKeywordDto(Long subscriptionId,
         );
     }
 
-    public record KeywordInfo(Long keywordId,
+    private record KeywordInfo(Long keywordId,
                               String keyword,
                               LocalDateTime registeredAt) {}
 }
