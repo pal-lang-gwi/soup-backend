@@ -107,7 +107,11 @@ public class Keyword extends BaseEntity {
     }
 
     public void setEmbedding(float[] embedding) {
-        this.embedding = embedding;
+        this.embedding = embedding != null ? embedding.clone() : null;
+    }
+
+    public float[] getEmbedding() {
+        return embedding != null ? embedding.clone() : null;
     }
 
     @Override
