@@ -149,11 +149,7 @@ public class KeywordServiceImpl implements KeywordService {
 
                     // 임베딩 생성 (비동기)
                     embeddingService.generateEmbedding(requestedKeyword)
-                            .thenAccept(embedding -> {
-                                savedKeyword.setEmbedding(embedding);
-                                keywordRepository.save(savedKeyword);
-                                log.info("✅ 키워드 임베딩 생성 완료: {}", requestedKeyword);
-                            })
+                            .thenAccept(embedding -> updateKeywordEmbedding(savedKeyword.getId(), embedding))
                             .exceptionally(ex -> {
                                 log.error("❌ 키워드 임베딩 생성 실패: {}", requestedKeyword, ex);
                                 return null;
@@ -161,6 +157,14 @@ public class KeywordServiceImpl implements KeywordService {
 
                     return savedKeyword;
                 });
+    }
+
+    @Transactional
+    public void updateKeywordEmbedding(Long keywordId, float[] embedding) {
+        Keyword keyword = keywordRepository.findById(keywordId)
+                .orElseThrow(() -> new KeywordNotFoundException());
+        keyword.setEmbedding(embedding);
+        log.info("✅ 키워드 임베딩 업데이트 완료: keywordId={}, 차원={}", keywordId, embedding.length);
     }
 
     @Transactional

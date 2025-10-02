@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,10 +42,16 @@ public abstract class IntegrationTestSupport {
     @MockitoBean
     protected JavaMailSender javaMailSender;
 
-    static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15")
-            .withDatabaseName("testdb")
-            .withUsername("testuser")
-            .withPassword("testpass");
+
+    static final PostgreSQLContainer<?> postgresContainer =
+            new PostgreSQLContainer<>(
+                    DockerImageName.parse("pgvector/pgvector:pg15")
+                            .asCompatibleSubstituteFor("postgres")
+            )
+                    .withDatabaseName("testdb")
+                    .withUsername("testuser")
+                    .withPassword("testpass")
+                    .withInitScript("init_pgvector.sql");
 
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 

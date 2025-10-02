@@ -1,6 +1,7 @@
 package com.palangwi.soup.service.embedding;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palangwi.soup.exception.embedding.EmbeddingGenerationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +41,7 @@ public class EmbeddingService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(30))
+                .retry(3)
                 .map(this::parseEmbeddingResponse)
                 .toFuture();
     }
@@ -61,7 +63,7 @@ public class EmbeddingService {
 
         } catch (Exception e) {
             log.error("❌ 임베딩 파싱 실패", e);
-            throw new RuntimeException("임베딩 생성 실패", e);
+            throw new EmbeddingGenerationException("임베딩 생성 실패: " + e.getMessage(), e);
         }
     }
 }
