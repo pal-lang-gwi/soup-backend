@@ -2,7 +2,6 @@ package com.palangwi.soup.service.embedding;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.exception.embedding.EmbeddingGenerationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,24 +9,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmbeddingService {
 
-    @Qualifier("openaiWebClient")
     private final WebClient openaiWebClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${openai.model}")
+    @Value("${openai.api.model}")
     private String model;
 
-    @Value("${openai.embeddings-path}")
+    @Value("${openai.api.embeddings-path}")
     private String embeddingsPath;
+
+    public EmbeddingService(@Qualifier("openaiWebClient") WebClient openaiWebClient, ObjectMapper objectMapper) {
+        this.openaiWebClient = openaiWebClient;
+        this.objectMapper = objectMapper;
+    }
 
     public CompletableFuture<float[]> generateEmbedding(String text) {
         log.info("🔮 임베딩 생성 시작: {}", text);
