@@ -61,26 +61,23 @@ public class AdminKeywordRequestServiceImpl implements AdminKeywordRequestServic
                 .orElseThrow(KeywordNotFoundException::new);
 
         Keyword keyword = request.getKeyword();
+        keyword.approve(request.getUser());
 
-        User firstRequestUser = getFirstRequestUser(keyword);
-
-        keyword.approve(firstRequestUser);
-
-        List<UserKeyword> newUserKeywords = keyword.getPendingKeywordRequests().stream()
+        List<UserKeyword> userKeywords = keyword.getPendingKeywordRequests().stream()
                 .map(PendingKeywordRequest::getUser)
-                .filter(user -> !user.getUserKeywords().isAlreadySubscribed(keyword))
+                .filter(user -> !userKeywordRepository.existsByUser_IdAndKeyword_Id(user.getId(), keyword.getId()))
                 .map(user -> {
-                    UserKeyword userKeyword = UserKeyword.create(user, keyword);
-                    userKeyword.subscribe();
-                    return userKeyword;
+                    UserKeyword uk = UserKeyword.create(user, keyword);
+                    uk.subscribe();
+                    return uk;
                 })
                 .toList();
 
-        userKeywordRepository.saveAll(newUserKeywords);
+        userKeywordRepository.saveAll(userKeywords);
 
-        adminKeywordRepository.deleteByKeywordId(keyword.getId());
+        adminKeywordRepository.deleteAllByKeyword(keyword);
 
-        return ApproveKeywordResponseDto.of(keyword.getName(), newUserKeywords.size());
+        return ApproveKeywordResponseDto.of(keyword.getName(), userKeywords.size());
     }
 
     private User getFirstRequestUser(Keyword keyword) {

@@ -3,20 +3,17 @@ package com.palangwi.soup.domain.userkeyword;
 import com.palangwi.soup.domain.BaseEntity;
 import com.palangwi.soup.domain.keyword.Keyword;
 import com.palangwi.soup.domain.user.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "user_keyword",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "keyword_id"}))
 public class UserKeyword extends BaseEntity {
 
     @Id
@@ -33,6 +30,13 @@ public class UserKeyword extends BaseEntity {
 
     private boolean subscribed;
 
+    @Builder
+    private UserKeyword(User user, Keyword keyword, boolean subscribed) {
+        this.user = user;
+        this.keyword = keyword;
+        this.subscribed = subscribed;
+    }
+
     public void subscribe() {
         this.subscribed = true;
     }
@@ -42,10 +46,10 @@ public class UserKeyword extends BaseEntity {
     }
 
     public static UserKeyword create(User user, Keyword keyword) {
-        UserKeyword userKeyword = new UserKeyword();
-        userKeyword.user = user;
-        userKeyword.keyword = keyword;
-        userKeyword.subscribe();
-        return userKeyword;
+        return UserKeyword.builder()
+                .user(user)
+                .keyword(keyword)
+                .subscribed(false)
+                .build();
     }
 }
