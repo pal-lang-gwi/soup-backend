@@ -19,18 +19,17 @@ import com.palangwi.soup.dto.keyword.response.RequestKeywordResponseDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
 import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
 import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.exception.keyword.*;
+import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
+import com.palangwi.soup.exception.keyword.KeywordAlreadyRequestedException;
+import com.palangwi.soup.exception.keyword.KeywordNotFoundException;
+import com.palangwi.soup.exception.keyword.NotSubscribedException;
+import com.palangwi.soup.exception.keyword.SubscribedKeywordLimitExceededException;
 import com.palangwi.soup.exception.user.UserNotFoundException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
 import com.palangwi.soup.repository.keyword.PendingKeywordRequestRepository;
 import com.palangwi.soup.repository.user.UserRepository;
 import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
-import com.palangwi.soup.service.embedding.EmbeddingService;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -47,7 +46,6 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserRepository userRepository;
     private final UserKeywordRepository userKeywordRepository;
     private final PendingKeywordRequestRepository pendingKeywordRequestRepository;
-    private final EmbeddingService embeddingService;
 
     private static final int MAXIMUM_KEYWORD_COUNT = 10;
 
@@ -145,26 +143,10 @@ public class KeywordServiceImpl implements KeywordService {
                     Keyword newKeyword = Keyword.of(requestedKeyword, normalizedKeyword, Source.USER_REQUEST, user);
                     // 키워드 저장
                     Keyword savedKeyword = keywordRepository.save(newKeyword);
-
-                    // 임베딩 생성 (비동기)
-                    embeddingService.generateEmbedding(requestedKeyword)
-                            .thenAccept(embedding -> updateKeywordEmbedding(savedKeyword.getId(), embedding))
-                            .exceptionally(ex -> {
-                                log.error("❌ 키워드 임베딩 생성 실패: {}", requestedKeyword, ex);
-                                return null;
-                            });
-
                     return savedKeyword;
                 });
     }
 
-    @Transactional
-    public void updateKeywordEmbedding(Long keywordId, float[] embedding) {
-        Keyword keyword = keywordRepository.findById(keywordId)
-                .orElseThrow(() -> new KeywordNotFoundException());
-        keyword.setEmbedding(embedding);
-        log.info("✅ 키워드 임베딩 업데이트 완료: keywordId={}, 차원={}", keywordId, embedding.length);
-    }
 
     @Transactional
     public SubscribeKeywordResponseDto subscribeKeyword(Long userId, SubscribeKeywordRequestDto dto) {
