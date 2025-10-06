@@ -88,7 +88,7 @@ class NewsServiceTest extends IntegrationTestSupport {
                 .willReturn(CompletableFuture.completedFuture(mockResult));
 
         // when
-        newsService.collectAndSaveNews(savedKeyword.getId());
+        newsService.collectAndSendNews(savedKeyword.getId());
 
         // then
         ArgumentCaptor<News> captor = ArgumentCaptor.forClass(News.class);
