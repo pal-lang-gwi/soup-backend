@@ -56,10 +56,6 @@ public class Keyword extends BaseEntity {
     @JsonIgnore
     private List<PendingKeywordRequest> pendingKeywordRequests = new ArrayList<>();
 
-    // 키워드 임베딩을 위한 컬럼 추가
-    @Column(columnDefinition = "vector(1536)")
-    private float[] embedding;
-
     public static Keyword of(String name, String normalizedName, Source source, User firstRequestUser) {
         return Keyword.builder()
                 .name(name)
@@ -104,14 +100,6 @@ public class Keyword extends BaseEntity {
         this.status = Status.DELETED;
         this.rejectReason = removeReason;
         this.rejectedAt = removedAt;
-    }
-
-    public void setEmbedding(float[] embedding) {
-        this.embedding = embedding != null ? embedding.clone() : null;
-    }
-
-    public float[] getEmbedding() {
-        return embedding != null ? embedding.clone() : null;
     }
 
     @Override
