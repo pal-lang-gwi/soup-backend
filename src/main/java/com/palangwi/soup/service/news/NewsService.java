@@ -29,6 +29,7 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private final NewsAIService newsAIService;
     private final KeywordRepository keywordRepository;
+    private final SQSSendService sqsSendService;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
         Page<News> resultPage = getNews(request.keywordId(), request.startDate(), request.endDate(), pageable);
@@ -85,6 +86,7 @@ public class NewsService {
                     try {
                         News news = result.toNews();
                         log.info(news.toString());
+                        sqsSendService.sendMessage(news.getKeywordId(), news.getKeywordName());
                         newsRepository.save(news);
                     } catch (Exception e) {
                         log.error("❌ 뉴스 파싱 실패 - {}", keywordName, e);

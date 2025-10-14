@@ -24,12 +24,14 @@ public class SQSSendService {
     @Value("${cloud.aws.sqs.queue-type}")
     private String queueType;
 
-    public SendResult<String> sendMessage(String keywordId, String keywordName) {
+    public SendResult<String> sendMessage(Long keywordId, String keywordName) {
         try {
-            // Body를 JSON 형태로 변환
+            String keywordIdToString = keywordId.toString();
+
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> messageMap = new HashMap<>();
-            messageMap.put("keywordId", keywordId);
+            messageMap.put("keywordId", keywordIdToString);
+            messageMap.put("keywordName", keywordName);
 
             String message = objectMapper.writeValueAsString(messageMap);
 
@@ -41,8 +43,8 @@ public class SQSSendService {
                 //FIFO인 경우 메시지에 groupID와 DeduplicationID 지정
                 return template.send(to -> to
                         .queue(queueName)
-                        .messageGroupId(keywordId)
-                        .messageDeduplicationId(keywordId)
+                        .messageGroupId(keywordIdToString)
+                        .messageDeduplicationId(keywordIdToString)
                         .payload(message));
             }
             else{
