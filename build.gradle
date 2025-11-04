@@ -72,6 +72,7 @@ dependencies {
 
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'                    // 프로메테우스
 
     // AWS SQS
     implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1")
