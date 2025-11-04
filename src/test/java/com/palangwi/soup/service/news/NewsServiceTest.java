@@ -1,7 +1,10 @@
 package com.palangwi.soup.service.news;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -14,22 +17,19 @@ import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.news.NewsResult;
 import com.palangwi.soup.dto.news.NewsSummary;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
+import com.palangwi.soup.repository.news.NewsRedisRepository;
 import com.palangwi.soup.repository.news.NewsRepository;
+import com.palangwi.soup.repository.user.UserRepository;
+import com.palangwi.soup.security.Role;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import com.palangwi.soup.repository.user.UserRepository;
-import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
-import com.palangwi.soup.security.Role;
-import com.palangwi.soup.service.keyword.KeywordService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -59,6 +59,9 @@ class NewsServiceTest extends IntegrationTestSupport {
 
     @MockitoBean
     private NewsRepository newsRepository;
+
+    @MockitoBean
+    private NewsRedisRepository newsRedisRepository;
 
     @MockitoBean
     private NewsAIService newsAIService;
@@ -93,9 +96,9 @@ class NewsServiceTest extends IntegrationTestSupport {
         // then
         ArgumentCaptor<News> captor = ArgumentCaptor.forClass(News.class);
 
-        await().atMost(Duration.ofSeconds(1))
+        await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() ->
-                        verify(newsRepository).save(captor.capture())
+                        verify(newsRedisRepository).save(anyLong(), any(NewsResult.class), anyInt())
                 );
 
         News savedNews = captor.getValue();

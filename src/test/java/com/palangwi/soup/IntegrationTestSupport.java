@@ -13,6 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -55,9 +56,14 @@ public abstract class IntegrationTestSupport {
 
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 
+    static final GenericContainer<?> redisContainer = new GenericContainer<>(
+            DockerImageName.parse("redis:7.2.4-alpine"))
+            .withExposedPorts(6379);
+
     static {
         postgresContainer.start();
         mongoContainer.start();
+        redisContainer.start();
     }
 
     @DynamicPropertySource
@@ -68,6 +74,8 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.datasource.driver-class-name", postgresContainer::getDriverClassName);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
+        registry.add("spring.data.redis.host", redisContainer::getHost);
+        registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
     }
 
 }
