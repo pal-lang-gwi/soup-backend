@@ -5,6 +5,7 @@ import com.palangwi.soup.schedule.MailScheduler;
 import com.palangwi.soup.service.mail.MailAsyncExecutor;
 import com.palangwi.soup.service.mail.MailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -43,7 +44,6 @@ public abstract class IntegrationTestSupport {
     @MockitoBean
     protected JavaMailSender javaMailSender;
 
-
     static final PostgreSQLContainer<?> postgresContainer =
             new PostgreSQLContainer<>(
                     DockerImageName.parse("pgvector/pgvector:pg15")
@@ -58,7 +58,7 @@ public abstract class IntegrationTestSupport {
 
     static final GenericContainer<?> redisContainer = new GenericContainer<>(
             DockerImageName.parse("redis:7.2.4-alpine"))
-            .withExposedPorts(6379);
+            .withExposedPorts(0);
 
     static {
         postgresContainer.start();
@@ -75,7 +75,7 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
         registry.add("spring.data.redis.host", redisContainer::getHost);
-        registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
+        registry.add("spring.data.redis.port", redisContainer::getFirstMappedPort);
     }
 
 }
