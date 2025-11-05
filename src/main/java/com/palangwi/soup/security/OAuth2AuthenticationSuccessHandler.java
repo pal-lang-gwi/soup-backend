@@ -42,7 +42,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         User user = userService.loginOAuth(userInfo);
 
         String accessToken = createAccessToken(user);
-        String refreshToken = createRefreshToken(user); // 🔥 RefreshToken 발급
+        String refreshToken = createRefreshToken(user);
 
         sendTokens(response, accessToken, refreshToken, user);
     }
@@ -57,10 +57,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private String createAccessToken(User user) {
+        String roleValue = user.getRole().value();
         return jwt.create(
                 Claims.of(
                         user.getId(),
-                        new String[]{Role.USER.value()}
+                        new String[]{roleValue}
                 )
         );
     }

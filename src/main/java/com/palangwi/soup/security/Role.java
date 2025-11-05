@@ -2,10 +2,10 @@ package com.palangwi.soup.security;
 
 public enum Role {
 
-    USER("ROLE_USER"),
-    ADMIN("ROLE_ADMIN"),
-    GUEST("ROLE_GUEST"),
-    PREMIUM("ROLE_PREMIUM");
+    USER("USER"),
+    ADMIN("ADMIN"),
+    GUEST("GUEST"),
+    PREMIUM("PREMIUM");
 
     private final String value;
 
