@@ -58,7 +58,7 @@ public abstract class IntegrationTestSupport {
 
     static final GenericContainer<?> redisContainer = new GenericContainer<>(
             DockerImageName.parse("redis:7.2.4-alpine"))
-            .withExposedPorts(0);
+            .withExposedPorts(6379);
 
     static {
         postgresContainer.start();
@@ -75,7 +75,7 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
         registry.add("spring.data.redis.host", redisContainer::getHost);
-        registry.add("spring.data.redis.port", redisContainer::getFirstMappedPort);
+        registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
     }
 
 }
