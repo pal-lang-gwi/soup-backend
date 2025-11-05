@@ -8,6 +8,7 @@ import com.palangwi.soup.dto.news.NewsDto;
 import com.palangwi.soup.exception.keyword.KeywordNotFoundException;
 import com.palangwi.soup.exception.news.NewsNotFoundException;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
+import com.palangwi.soup.repository.news.NewsRedisRepository;
 import com.palangwi.soup.repository.news.NewsRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private final NewsAIService newsAIService;
     private final KeywordRepository keywordRepository;
+    private final NewsRedisRepository newsRedisRepository;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
         Page<News> resultPage = getNews(request.keywordId(), request.startDate(), request.endDate(), pageable);
@@ -72,7 +74,7 @@ public class NewsService {
         return resultPage;
     }
 
-    public void collectAndSaveNews(Long keywordId) {
+    public void collectAndSendNews(Long keywordId) {
         Optional<Keyword> keyword = keywordRepository.findById(keywordId);
 
         if (keyword.isEmpty()) {
@@ -83,11 +85,10 @@ public class NewsService {
         newsAIService.searchAndSummarizeAsync(keywordId, keywordName)
                 .thenAccept(result -> {
                     try {
-                        News news = result.toNews();
-                        log.info(news.toString());
-                        newsRepository.save(news);
+                        log.info("✅ 뉴스 요약 완료: {}", result);
+                        newsRedisRepository.save(keywordId, result, 6 * 3600);
                     } catch (Exception e) {
-                        log.error("❌ 뉴스 파싱 실패 - {}", keywordName, e);
+                        log.error("❌ Redis 저장 실패 - {}", keywordName, e);
                     }
                 })
                 .exceptionally(ex -> {

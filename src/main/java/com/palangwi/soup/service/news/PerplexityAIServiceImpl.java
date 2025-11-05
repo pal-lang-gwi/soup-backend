@@ -59,7 +59,6 @@ public class PerplexityAIServiceImpl implements NewsAIService{
                 .toFuture();
     }
 
-
     private NewsResult parseToNewsResult(String content, Long keywordId, String keywordName) {
         try {
             log.debug("🔎 Perplexity 원시 응답:\n{}", content);

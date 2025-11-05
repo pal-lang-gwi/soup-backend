@@ -27,7 +27,7 @@ public class CollectNewsScheduler {
 
         for (Keyword keyword : keywords) {
             try {
-                newsService.collectAndSaveNews(keyword.getId());
+                newsService.collectAndSendNews(keyword.getId());
                 log.info("{} 키워드 뉴스 저장 성공", keyword.getName());
             } catch (Exception e) {
                 log.info("{} 키워드 뉴스 저장 실패", keyword.getName(), e);

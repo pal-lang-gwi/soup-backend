@@ -1,7 +1,10 @@
 package com.palangwi.soup.service.news;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -14,23 +17,21 @@ import com.palangwi.soup.domain.user.User;
 import com.palangwi.soup.dto.news.NewsResult;
 import com.palangwi.soup.dto.news.NewsSummary;
 import com.palangwi.soup.repository.keyword.KeywordRepository;
+import com.palangwi.soup.repository.news.NewsRedisRepository;
 import com.palangwi.soup.repository.news.NewsRepository;
+import com.palangwi.soup.repository.user.UserRepository;
+import com.palangwi.soup.security.Role;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import com.palangwi.soup.repository.user.UserRepository;
-import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
-import com.palangwi.soup.security.Role;
-import com.palangwi.soup.service.keyword.KeywordService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -61,14 +62,16 @@ class NewsServiceTest extends IntegrationTestSupport {
     private NewsRepository newsRepository;
 
     @MockitoBean
+    private NewsRedisRepository newsRedisRepository;
+
+    @MockitoBean
     private NewsAIService newsAIService;
 
     @Test
-    @DisplayName("AI 뉴스 요약 결과를 저장한다.")
+    @DisplayName("AI 뉴스 요약 결과를 Redis에 저장한다.")
     void collectAndSaveNews() {
         // given
         User user = createUser("TestNickname");
-
         Keyword savedKeyword = keywordRepository.save(
                 Keyword.of("AI", "AI", Source.USER_REQUEST, user)
         );
@@ -84,29 +87,31 @@ class NewsServiceTest extends IntegrationTestSupport {
                 123
         );
 
-        given(newsAIService.searchAndSummarizeAsync(savedKeyword.getId(), savedKeyword.getName()))
+        given(newsAIService.searchAndSummarizeAsync(keywordId, keywordName))
                 .willReturn(CompletableFuture.completedFuture(mockResult));
 
         // when
-        newsService.collectAndSaveNews(savedKeyword.getId());
+        newsService.collectAndSendNews(keywordId);
 
         // then
-        ArgumentCaptor<News> captor = ArgumentCaptor.forClass(News.class);
+        ArgumentCaptor<NewsResult> captor = ArgumentCaptor.forClass(NewsResult.class);
 
-        await().atMost(Duration.ofSeconds(1))
+        await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() ->
-                        verify(newsRepository).save(captor.capture())
+                        verify(newsRedisRepository)
+                                .save(anyLong(), captor.capture(), anyLong())
                 );
 
-        News savedNews = captor.getValue();
-        assertThat(savedNews.getKeywordId()).isEqualTo(keywordId);
-        assertThat(savedNews.getKeywordName()).isEqualTo(keywordName);
-        assertThat(savedNews.getTokens()).isEqualTo(123);
-        assertThat(savedNews.getSummary().getShortSummary()).isEqualTo("짧은 요약");
-        assertThat(savedNews.getSummary().getLongSummary()).isEqualTo("긴 요약");
-        assertThat(savedNews.getArticles()).hasSize(1);
-        assertThat(savedNews.getArticles().getFirst().getTitle()).isEqualTo("제목");
+        NewsResult captured = captor.getValue();
+        assertThat(captured.keywordId()).isEqualTo(keywordId);
+        assertThat(captured.keywordName()).isEqualTo(keywordName);
+        assertThat(captured.tokens()).isEqualTo(123);
+        assertThat(captured.summary().short_summary()).isEqualTo("짧은 요약");
+        assertThat(captured.summary().long_summary()).isEqualTo("긴 요약");
+        assertThat(captured.articles()).hasSize(1);
+        assertThat(captured.articles().getFirst().title()).isEqualTo("제목");
     }
+
 
     private User createUser(String nickname) {
         User user = User.builder()
