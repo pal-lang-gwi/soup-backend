@@ -1,0 +1,100 @@
+package com.palangwi.soup.common.security;
+
+import com.palangwi.soup.common.security.Jwt.Claims;
+import com.palangwi.soup.user.domain.User;
+import com.palangwi.soup.user.dto.UserInfo;
+import com.palangwi.soup.user.service.RefreshTokenService;
+import com.palangwi.soup.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.time.Duration;
+
+@Component
+@RequiredArgsConstructor
+public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    @Value("${front.domain}")
+    private String frontDomain;
+
+    @Value("${security.jwt.access-token.ttl}")
+    private long accessTokenTtl;
+
+    @Value("${security.jwt.refresh-token.ttl}")
+    private long refreshTokenTtl;
+
+    private final Jwt jwt;
+    private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
+        UserInfo userInfo = createUserInfo(authentication);
+        User user = userService.loginOAuth(userInfo);
+
+        String accessToken = createAccessToken(user);
+        String refreshToken = createRefreshToken(user);
+
+        sendTokens(response, accessToken, refreshToken, user);
+    }
+
+    private UserInfo createUserInfo(Authentication authentication) {
+        CustomOAuth2User principal = (CustomOAuth2User) authentication.getPrincipal();
+        return new UserInfo(
+                principal.getEmail(),
+                principal.getName(),
+                principal.getProviderId()
+        );
+    }
+
+    private String createAccessToken(User user) {
+        String roleValue = user.getRole().value();
+        return jwt.create(
+                Claims.of(
+                        user.getId(),
+                        new String[]{roleValue}
+                )
+        );
+    }
+
+    private String createRefreshToken(User user) {
+        String refreshToken = java.util.UUID.randomUUID().toString();
+        refreshTokenService.saveRefreshToken(refreshToken, user.getId());
+        return refreshToken;
+    }
+
+    private void sendTokens(HttpServletResponse response, String accessToken, String refreshToken, User user) throws IOException {
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofSeconds(accessTokenTtl))
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofSeconds(refreshTokenTtl))
+                .build();
+
+        response.addHeader("Set-Cookie", accessCookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
+
+        String encodedEmail = URLEncoder.encode(user.getEmail(), "UTF-8");
+        String redirectUrl = String.format("%s/signup?email=%s&userId=%d", frontDomain, encodedEmail, user.getId());
+
+        response.sendRedirect(redirectUrl);
+    }
+}
