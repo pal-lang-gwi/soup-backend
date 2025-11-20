@@ -1,21 +1,13 @@
-package com.palangwi.soup.controller.keyword;
+package com.palangwi.soup.keyword.contoller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
-import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
-import com.palangwi.soup.service.keyword.KeywordService;
-import java.util.Arrays;
-import java.util.List;
-
+import com.palangwi.soup.keyword.dto.SubscribeKeywordRequestDto;
+import com.palangwi.soup.keyword.dto.response.SearchKeywordDto;
+import com.palangwi.soup.keyword.dto.response.SearchKeywordsResponseDto;
+import com.palangwi.soup.keyword.dto.response.SubscribeKeywordResponseDto;
+import com.palangwi.soup.keyword.exception.AlreadySubscribedKeywordException;
+import com.palangwi.soup.keyword.service.KeywordService;
+import com.palangwi.soup.common.security.WithMockJwtAuthentication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +16,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.palangwi.soup.exception.keyword.AlreadySubscribedKeywordException;
-import com.palangwi.soup.security.WithMockJwtAuthentication;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class KeywordControllerTest extends IntegrationTestSupport {
 

@@ -1,25 +1,25 @@
-package com.palangwi.soup.service.user;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+package com.palangwi.soup.user;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.user.Gender;
-import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.dto.user.UserDeleteRequestDto;
-import com.palangwi.soup.dto.user.UserResponseDto;
-import com.palangwi.soup.dto.user.UserUpdateRequestDto;
-import com.palangwi.soup.exception.user.DuplicateNicknameException;
-import com.palangwi.soup.repository.user.UserRepository;
-import com.palangwi.soup.security.Role;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.palangwi.soup.common.security.Role;
+import com.palangwi.soup.user.domain.Gender;
+import com.palangwi.soup.user.domain.User;
+import com.palangwi.soup.user.dto.UserResponseDto;
+import com.palangwi.soup.user.dto.UserUpdateRequestDto;
+import com.palangwi.soup.user.exception.DuplicateNicknameException;
+import com.palangwi.soup.user.repository.UserRepository;
+import com.palangwi.soup.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 
 class UserServiceTest extends IntegrationTestSupport {
 

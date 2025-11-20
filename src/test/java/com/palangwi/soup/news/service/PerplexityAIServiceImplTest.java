@@ -1,11 +1,8 @@
-package com.palangwi.soup.service.news;
-
-import static org.assertj.core.api.Assertions.assertThat;
+package com.palangwi.soup.news.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.dto.news.NewsResult;
-import java.util.concurrent.CompletableFuture;
+import com.palangwi.soup.news.dto.NewsResult;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.concurrent.CompletableFuture;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PerplexityAIServiceImplTest extends IntegrationTestSupport {
 

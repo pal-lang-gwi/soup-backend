@@ -1,14 +1,9 @@
-package com.palangwi.soup.repository.news;
-
-import static org.assertj.core.api.Assertions.*;
+package com.palangwi.soup.news.repository;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.news.Article;
-import com.palangwi.soup.domain.news.News;
-import com.palangwi.soup.domain.news.Summary;
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.palangwi.soup.news.domain.Article;
+import com.palangwi.soup.news.domain.News;
+import com.palangwi.soup.news.domain.Summary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class NewsRepositoryTest extends IntegrationTestSupport {
 

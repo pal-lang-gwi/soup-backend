@@ -1,9 +1,10 @@
-package com.palangwi.soup.repository.user;
+package com.palangwi.soup.user;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.user.Gender;
-import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.security.Role;
+import com.palangwi.soup.common.security.Role;
+import com.palangwi.soup.user.domain.Gender;
+import com.palangwi.soup.user.domain.User;
+import com.palangwi.soup.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

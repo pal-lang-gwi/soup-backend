@@ -1,4 +1,4 @@
-package com.palangwi.soup.security;
+package com.palangwi.soup.common.security;
 
 import org.springframework.security.test.context.support.WithSecurityContext;
 

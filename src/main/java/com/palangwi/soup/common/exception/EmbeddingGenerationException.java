@@ -1,4 +1,4 @@
-package com.palangwi.soup.embedding.exception.embedding;
+package com.palangwi.soup.common.exception;
 
 /**
  * 임베딩 생성 실패 시 발생하는 예외

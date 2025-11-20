@@ -1,39 +1,36 @@
-package com.palangwi.soup.service.news;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+package com.palangwi.soup.news.service;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.domain.keyword.Source;
-import com.palangwi.soup.domain.news.News;
-import com.palangwi.soup.domain.user.Gender;
-import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.dto.news.NewsResult;
-import com.palangwi.soup.dto.news.NewsSummary;
-import com.palangwi.soup.repository.keyword.KeywordRepository;
-import com.palangwi.soup.repository.news.NewsRedisRepository;
-import com.palangwi.soup.repository.news.NewsRepository;
-import com.palangwi.soup.repository.user.UserRepository;
-import com.palangwi.soup.security.Role;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import com.palangwi.soup.common.security.Role;
+import com.palangwi.soup.keyword.domain.Keyword;
+import com.palangwi.soup.keyword.domain.Source;
+import com.palangwi.soup.keyword.repository.KeywordRepository;
+import com.palangwi.soup.news.dto.NewsResult;
+import com.palangwi.soup.news.dto.NewsSummary;
+import com.palangwi.soup.news.repository.NewsRedisRepository;
+import com.palangwi.soup.news.repository.NewsRepository;
+import com.palangwi.soup.user.domain.Gender;
+import com.palangwi.soup.user.domain.User;
+import com.palangwi.soup.user.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 class NewsServiceTest extends IntegrationTestSupport {
 

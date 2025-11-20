@@ -1,11 +1,10 @@
 package com.palangwi.soup;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.palangwi.soup.schedule.MailScheduler;
-import com.palangwi.soup.service.mail.MailAsyncExecutor;
-import com.palangwi.soup.service.mail.MailSenderService;
+import com.palangwi.soup.mail.service.MailAsyncExecutor;
+import com.palangwi.soup.mail.service.MailSenderService;
+import com.palangwi.soup.common.schedule.MailScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;

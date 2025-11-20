@@ -1,24 +1,13 @@
-package com.palangwi.soup.repository.keyword;
-
-import static com.palangwi.soup.domain.keyword.Status.PENDING;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.palangwi.soup.domain.user.Gender;
-import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
-import com.palangwi.soup.repository.user.UserRepository;
-import com.palangwi.soup.security.Role;
-import java.time.LocalDate;
+package com.palangwi.soup.keyword.repository;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.domain.keyword.Source;
+import com.palangwi.soup.common.security.Role;
+import com.palangwi.soup.keyword.domain.Keyword;
+import com.palangwi.soup.keyword.domain.Source;
+import com.palangwi.soup.user.domain.Gender;
+import com.palangwi.soup.user.domain.User;
+import com.palangwi.soup.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static com.palangwi.soup.keyword.domain.Status.PENDING;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @Testcontainers

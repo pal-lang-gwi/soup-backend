@@ -1,32 +1,22 @@
-package com.palangwi.soup.service.keyword;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+package com.palangwi.soup.keyword.service;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.domain.keyword.Keyword;
-import com.palangwi.soup.domain.keyword.PendingKeywordRequest;
-import com.palangwi.soup.domain.keyword.Source;
-import com.palangwi.soup.domain.user.Gender;
-import com.palangwi.soup.domain.user.User;
-import com.palangwi.soup.domain.userkeyword.UserKeyword;
-import com.palangwi.soup.dto.keyword.SubscribeKeywordRequestDto;
-import com.palangwi.soup.dto.keyword.response.SearchKeywordDto;
-import com.palangwi.soup.dto.keyword.response.SearchKeywordsResponseDto;
-import com.palangwi.soup.dto.keyword.response.SubscribeKeywordResponseDto;
-import com.palangwi.soup.repository.admin.keyword.AdminKeywordRepository;
-import com.palangwi.soup.repository.keyword.KeywordRepository;
-import com.palangwi.soup.repository.user.UserRepository;
-import com.palangwi.soup.repository.userkeyword.UserKeywordRepository;
-import com.palangwi.soup.security.Role;
-import com.palangwi.soup.service.admin.keyword.AdminKeywordRequestService;
-import com.palangwi.soup.service.admin.keyword.AdminKeywordService;
+import com.palangwi.soup.admin.keyword.repository.AdminKeywordRepository;
+import com.palangwi.soup.admin.keyword.service.AdminKeywordRequestService;
+import com.palangwi.soup.common.security.Role;
+import com.palangwi.soup.keyword.domain.Keyword;
+import com.palangwi.soup.keyword.domain.PendingKeywordRequest;
+import com.palangwi.soup.keyword.domain.Source;
+import com.palangwi.soup.keyword.dto.SubscribeKeywordRequestDto;
+import com.palangwi.soup.keyword.dto.response.SearchKeywordDto;
+import com.palangwi.soup.keyword.dto.response.SearchKeywordsResponseDto;
+import com.palangwi.soup.keyword.dto.response.SubscribeKeywordResponseDto;
+import com.palangwi.soup.keyword.repository.KeywordRepository;
+import com.palangwi.soup.user.domain.Gender;
+import com.palangwi.soup.user.domain.User;
+import com.palangwi.soup.user.keyword.repository.UserKeywordRepository;
+import com.palangwi.soup.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +26,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional

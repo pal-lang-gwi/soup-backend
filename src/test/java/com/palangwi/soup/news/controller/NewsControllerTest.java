@@ -1,20 +1,12 @@
-package com.palangwi.soup.controller.news;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+package com.palangwi.soup.news.controller;
 
 import com.palangwi.soup.IntegrationTestSupport;
-import com.palangwi.soup.dto.news.ArticleDto;
-import com.palangwi.soup.dto.news.DailyNewsRequestDto;
-import com.palangwi.soup.dto.news.DailyNewsResponseDto;
-import com.palangwi.soup.dto.news.NewsDto;
-import com.palangwi.soup.security.WithMockJwtAuthentication;
-import com.palangwi.soup.service.news.NewsService;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.palangwi.soup.common.security.WithMockJwtAuthentication;
+import com.palangwi.soup.news.dto.ArticleDto;
+import com.palangwi.soup.news.dto.DailyNewsRequestDto;
+import com.palangwi.soup.news.dto.DailyNewsResponseDto;
+import com.palangwi.soup.news.dto.NewsDto;
+import com.palangwi.soup.news.service.NewsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +16,15 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class NewsControllerTest extends IntegrationTestSupport {
 

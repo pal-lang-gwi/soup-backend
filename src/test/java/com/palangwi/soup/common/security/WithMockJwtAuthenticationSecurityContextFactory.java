@@ -1,4 +1,4 @@
-package com.palangwi.soup.security;
+package com.palangwi.soup.common.security;
 
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
