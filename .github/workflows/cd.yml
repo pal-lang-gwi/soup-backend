@@ -27,6 +27,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > ./src/main/resources/application.yml
+          echo "${{ secrets.PROMETHEUS_YML }}" | base64 -d > ./src/main/resources/prometheus.yml
         env:
           APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
 

@@ -74,8 +74,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     private List<GrantedAuthority> obtainAuthorities(Jwt.Claims claims) {
         String[] roles = claims.roles;
-        return roles == null || roles.length == 0 ? Collections.emptyList()
-                : Arrays.stream(roles).map(SimpleGrantedAuthority::new).collect(toList());
+        return roles == null || roles.length == 0
+                ? Collections.emptyList()
+                : Arrays.stream(roles)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(toList());
     }
 
     private String obtainAuthorizationToken(HttpServletRequest request) {
