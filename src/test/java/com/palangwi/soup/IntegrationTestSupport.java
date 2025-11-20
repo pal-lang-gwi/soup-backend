@@ -76,6 +76,7 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
         registry.add("spring.data.redis.host", redisContainer::getHost);
         registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
+        registry.add("spring.data.redis.password", () -> "");
     }
 
 }
