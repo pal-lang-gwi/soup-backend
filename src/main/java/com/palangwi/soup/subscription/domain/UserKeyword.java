@@ -1,4 +1,4 @@
-package com.palangwi.soup.user.keyword.domain;
+package com.palangwi.soup.subscription.domain;
 
 import com.palangwi.soup.common.domain.BaseEntity;
 import com.palangwi.soup.keyword.domain.Keyword;

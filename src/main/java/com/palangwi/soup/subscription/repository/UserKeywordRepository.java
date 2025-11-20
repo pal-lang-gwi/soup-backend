@@ -1,6 +1,6 @@
-package com.palangwi.soup.user.keyword.repository;
+package com.palangwi.soup.subscription.repository;
 
-import com.palangwi.soup.user.keyword.domain.UserKeyword;
+import com.palangwi.soup.subscription.domain.UserKeyword;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
