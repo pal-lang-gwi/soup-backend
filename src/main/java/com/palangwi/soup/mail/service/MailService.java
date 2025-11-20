@@ -3,7 +3,6 @@ package com.palangwi.soup.mail.service;
 import com.palangwi.soup.admin.dto.email.EmailScheduleResponseDto;
 import com.palangwi.soup.admin.dto.email.EmailTestResponseDto;
 import com.palangwi.soup.mail.domain.MailEvent;
-import com.palangwi.soup.mail.domain.policy.NewsSelectionPolicy;
 import com.palangwi.soup.mail.dto.MailMessage;
 import com.palangwi.soup.mail.exception.MailNotFoundException;
 import com.palangwi.soup.mail.infrastructure.MailViewRenderer;
@@ -36,7 +35,7 @@ public class MailService {
     private final MailEventRepository mailEventRepository;
     private final MailAsyncExecutor mailAsyncExecutor;
     private final MailViewRenderer mailViewRenderer;
-    private final NewsSelectionPolicy newsSelectionPolicy;
+    private final NewsAggregator newsAggregator;
     private final UserRepository userRepository;
 
     private static final long TEST_MAIL_EVENT_ID = -1L;
@@ -54,7 +53,7 @@ public class MailService {
 
         log.info("메일 전송 처리 시작: userId={}, keywords={}", user.getId(), keywords);
 
-        List<NewsForMailDto> summaryMap = newsSelectionPolicy.select(request.keywordIds());
+        List<NewsForMailDto> summaryMap = newsAggregator.select(request.keywordIds());
         if (summaryMap.isEmpty()) return;
 
         MailEvent mailEvent = createMailEvent(user, now);
@@ -105,7 +104,7 @@ public class MailService {
 
         List<Long> fixedKeywordIds = List.of(1L);
 
-        List<NewsForMailDto> newsDtos = newsSelectionPolicy.select(fixedKeywordIds);
+        List<NewsForMailDto> newsDtos = newsAggregator.select(fixedKeywordIds);
 
         if (newsDtos.isEmpty()) {
             throw new MailNotFoundException();

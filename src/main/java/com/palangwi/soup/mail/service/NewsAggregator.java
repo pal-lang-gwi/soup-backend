@@ -1,4 +1,4 @@
-package com.palangwi.soup.mail.domain.policy;
+package com.palangwi.soup.mail.service;
 
 import com.palangwi.soup.news.domain.News;
 import com.palangwi.soup.news.dto.NewsForMailDto;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class NewsSelectionPolicy {
+public class NewsAggregator {
 
     /**
      * Todo : NoSQL에서 전송할 뉴스의 정보를 가져오는 로직
