@@ -3,7 +3,7 @@ package com.palangwi.soup.user.dto;
 import com.palangwi.soup.common.security.Role;
 import com.palangwi.soup.user.domain.Gender;
 import com.palangwi.soup.user.domain.User;
-import com.palangwi.soup.user.keyword.domain.UserKeyword;
+import com.palangwi.soup.subscription.domain.UserKeyword;
 
 import java.time.LocalDate;
 import java.util.List;

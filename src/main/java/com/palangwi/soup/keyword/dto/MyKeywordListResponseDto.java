@@ -1,6 +1,6 @@
 package com.palangwi.soup.keyword.dto;
 
-import com.palangwi.soup.user.keyword.domain.UserKeyword;
+import com.palangwi.soup.subscription.domain.UserKeyword;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

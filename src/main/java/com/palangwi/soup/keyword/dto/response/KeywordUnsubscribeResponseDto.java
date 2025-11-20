@@ -1,6 +1,6 @@
 package com.palangwi.soup.keyword.dto.response;
 
-import com.palangwi.soup.user.keyword.domain.UserKeyword;
+import com.palangwi.soup.subscription.domain.UserKeyword;
 
 public record KeywordUnsubscribeResponseDto(Long userId, String keywordName) {
     public static KeywordUnsubscribeResponseDto of(UserKeyword userKeyword) {

@@ -5,7 +5,7 @@ import com.palangwi.soup.common.domain.BaseEntity;
 import com.palangwi.soup.common.security.Role;
 import com.palangwi.soup.keyword.domain.Keyword;
 import com.palangwi.soup.keyword.domain.PendingKeywordRequest;
-import com.palangwi.soup.user.keyword.domain.UserKeywords;
+import com.palangwi.soup.subscription.domain.UserKeywords;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

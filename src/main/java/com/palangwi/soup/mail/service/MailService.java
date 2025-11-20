@@ -13,7 +13,7 @@ import com.palangwi.soup.news.dto.NewsForMailDto;
 import com.palangwi.soup.news.dto.SummaryForMailTemplateDto;
 import com.palangwi.soup.user.domain.User;
 import com.palangwi.soup.user.exception.UserNotFoundException;
-import com.palangwi.soup.user.keyword.repository.UserKeywordRepository;
+import com.palangwi.soup.subscription.repository.UserKeywordRepository;
 import com.palangwi.soup.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

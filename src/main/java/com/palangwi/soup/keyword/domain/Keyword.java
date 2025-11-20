@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.palangwi.soup.common.domain.BaseEntity;
 import com.palangwi.soup.keyword.exception.KeywordInvalidStatusException;
 import com.palangwi.soup.user.domain.User;
-import com.palangwi.soup.user.keyword.domain.UserKeyword;
+import com.palangwi.soup.subscription.domain.UserKeyword;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

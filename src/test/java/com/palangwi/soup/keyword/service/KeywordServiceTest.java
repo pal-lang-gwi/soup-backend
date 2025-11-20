@@ -14,7 +14,7 @@ import com.palangwi.soup.keyword.dto.response.SubscribeKeywordResponseDto;
 import com.palangwi.soup.keyword.repository.KeywordRepository;
 import com.palangwi.soup.user.domain.Gender;
 import com.palangwi.soup.user.domain.User;
-import com.palangwi.soup.user.keyword.repository.UserKeywordRepository;
+import com.palangwi.soup.subscription.repository.UserKeywordRepository;
 import com.palangwi.soup.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
