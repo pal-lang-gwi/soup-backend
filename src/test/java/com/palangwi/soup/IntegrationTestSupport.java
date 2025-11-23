@@ -1,9 +1,9 @@
 package com.palangwi.soup;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.palangwi.soup.schedule.MailScheduler;
-import com.palangwi.soup.service.mail.MailAsyncExecutor;
-import com.palangwi.soup.service.mail.MailSenderService;
+import com.palangwi.soup.mail.service.MailAsyncExecutor;
+import com.palangwi.soup.mail.service.MailSenderService;
+import com.palangwi.soup.common.schedule.MailScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -42,7 +43,6 @@ public abstract class IntegrationTestSupport {
     @MockitoBean
     protected JavaMailSender javaMailSender;
 
-
     static final PostgreSQLContainer<?> postgresContainer =
             new PostgreSQLContainer<>(
                     DockerImageName.parse("pgvector/pgvector:pg15")
@@ -55,9 +55,14 @@ public abstract class IntegrationTestSupport {
 
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 
+    static final GenericContainer<?> redisContainer = new GenericContainer<>(
+            DockerImageName.parse("redis:7.2.4-alpine"))
+            .withExposedPorts(6379);
+
     static {
         postgresContainer.start();
         mongoContainer.start();
+        redisContainer.start();
     }
 
     @DynamicPropertySource
@@ -68,6 +73,9 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.datasource.driver-class-name", postgresContainer::getDriverClassName);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
+        registry.add("spring.data.redis.host", redisContainer::getHost);
+        registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
+        registry.add("spring.data.redis.password", () -> "");
     }
 
 }

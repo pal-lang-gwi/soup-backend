@@ -1,0 +1,22 @@
+package com.palangwi.soup.news.repository;
+
+import com.palangwi.soup.news.domain.News;
+import org.bson.types.ObjectId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Repository
+public interface NewsRepository extends MongoRepository<News, ObjectId> {
+    List<News> findByCreatedDateBetweenAndKeywordIdIn(LocalDateTime from, LocalDateTime to, List<Long> keywordIds);
+
+    Page<News> findByCreatedDateBetweenAndKeywordId(LocalDateTime from, LocalDateTime to, Long keywordId, Pageable pageable);
+
+    Page<News> findByCreatedDateBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
+
+    Page<News> findByKeywordId(Long keywordId, Pageable pageable);
+}
