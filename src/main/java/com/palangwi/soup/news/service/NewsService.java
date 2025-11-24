@@ -30,6 +30,7 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private final NewsAIService newsAIService;
     private final KeywordRepository keywordRepository;
+    private final SQSSendService sqsSendService;
     private final NewsRedisRepository newsRedisRepository;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
@@ -85,8 +86,10 @@ public class NewsService {
         newsAIService.searchAndSummarizeAsync(keywordId, keywordName)
                 .thenAccept(result -> {
                     try {
-                        log.info("✅ 뉴스 요약 완료: {}", result);
+                        News news = result.toNews();
                         newsRedisRepository.save(keywordId, result, 6 * 3600);
+                        sqsSendService.sendMessage(news.getKeywordId(), news.getKeywordName());
+                        log.info("✅ 뉴스 요약 완료: {}", result);
                     } catch (Exception e) {
                         log.error("❌ Redis 저장 실패 - {}", keywordName, e);
                     }
