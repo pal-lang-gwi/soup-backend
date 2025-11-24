@@ -34,6 +34,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         log.info("[JwtFilter] 요청 URI: {}", requestURI);
 
+        // OAuth2 콜백 URL은 JWT 필터를 건너뛰기
+        if (requestURI.startsWith("/login/oauth2/code/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (requestURI.equals("/api/v1/health") || requestURI.startsWith("/api/v1/health/")) {
             SecurityContextHolder.clearContext();
             filterChain.doFilter(request, response);
