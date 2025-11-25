@@ -5,6 +5,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### macOS ###
+.DS_Store
+**/.DS_Store
+
 ### STS ###
 .apt_generated
 .classpath
@@ -36,10 +40,12 @@ out/
 ### VS Code ###
 .vscode/
 
-### properties ###
+### Spring Properties / YAML ###
+# 개발자별 로컬 환경 파일은 추적 금지
 /src/main/resources/application.properties
 /src/main/resources/application.yml
 /src/test/resources/application-test.yml
 
-### docker ###
-docker-compose.yml
+# 공통 환경 템플릿은 허용 (옵션)
+/src/main/resources/application-example.yml
+/src/main/resources/application-example.properties
