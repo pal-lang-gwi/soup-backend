@@ -24,7 +24,7 @@ public record NewsDto(Long keywordId,
                                 article.getSummary()
                         ))
                         .toList(),
-                news.getRelated_keyword(),
+                news.getRelatedKeywords(),
                 news.getCreatedDate());
     }
 }

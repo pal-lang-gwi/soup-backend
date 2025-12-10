@@ -28,7 +28,7 @@ public class News extends BaseEntity {
 
     private List<Article> articles;
 
-    private List<String> related_keyword;
+    private List<String> relatedKeywords;
 
     private int tokens;
 
