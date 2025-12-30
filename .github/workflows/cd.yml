@@ -38,10 +38,23 @@ jobs:
         env:
           NEWS_SUMMARY_PROMPT: ${{ secrets.NEWS_SUMMARY_PROMPT }}
 
-      - name: Build with Gradle
+      - name: Create application-test.yml for docs generation
+        run: |
+          mkdir -p ./src/test/resources
+          echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 -d > ./src/test/resources/application-test.yml || echo "# Test config placeholder" > ./src/test/resources/application-test.yml
+
+      - name: Generate REST Docs
         run: |
           chmod +x ./gradlew
-          ./gradlew build -x test --info  # 더 자세한 로그 출력
+          ./gradlew test asciidoctor copyDocument --info || true  # 테스트 실패해도 문서는 생성
+        env:
+          GRADLE_OPTS: -Dorg.gradle.daemon=false
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Build with Gradle (without test)
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build -x test --info  # 문서는 이미 생성됨
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false
 

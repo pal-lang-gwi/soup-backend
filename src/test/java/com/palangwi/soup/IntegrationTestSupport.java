@@ -5,6 +5,7 @@ import com.palangwi.soup.mail.service.MailAsyncExecutor;
 import com.palangwi.soup.mail.service.MailSenderService;
 import com.palangwi.soup.common.schedule.MailScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -21,6 +22,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "api.soup.com", uriPort = 443)
 @Testcontainers
 @ActiveProfiles("test")
 public abstract class IntegrationTestSupport {
@@ -43,15 +45,13 @@ public abstract class IntegrationTestSupport {
     @MockitoBean
     protected JavaMailSender javaMailSender;
 
-    static final PostgreSQLContainer<?> postgresContainer =
-            new PostgreSQLContainer<>(
-                    DockerImageName.parse("pgvector/pgvector:pg15")
-                            .asCompatibleSubstituteFor("postgres")
-            )
-                    .withDatabaseName("testdb")
-                    .withUsername("testuser")
-                    .withPassword("testpass")
-                    .withInitScript("init_pgvector.sql");
+    static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(
+            DockerImageName.parse("pgvector/pgvector:pg15")
+                    .asCompatibleSubstituteFor("postgres"))
+            .withDatabaseName("testdb")
+            .withUsername("testuser")
+            .withPassword("testpass")
+            .withInitScript("init_pgvector.sql");
 
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 

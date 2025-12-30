@@ -1,0 +1,60 @@
+[[admin-keyword-requests]]
+== Admin Keyword Requests
+
+=== 키워드 요청 목록 조회
+
+==== HTTP Request
+include::{snippets}/admin-keyword-requests-list/http-request.adoc[]
+
+==== Query Parameters
+include::{snippets}/admin-keyword-requests-list/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-keyword-requests-list/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/admin-keyword-requests-list/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/admin-keyword-requests-list/curl-request.adoc[]
+
+'''
+
+=== 키워드 승인
+
+==== HTTP Request
+include::{snippets}/admin-keyword-requests-approve/http-request.adoc[]
+
+==== Path Parameters
+include::{snippets}/admin-keyword-requests-approve/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-keyword-requests-approve/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/admin-keyword-requests-approve/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/admin-keyword-requests-approve/curl-request.adoc[]
+
+'''
+
+=== 키워드 거절
+
+==== HTTP Request
+include::{snippets}/admin-keyword-requests-reject/http-request.adoc[]
+
+==== Path Parameters
+include::{snippets}/admin-keyword-requests-reject/path-parameters.adoc[]
+
+==== Request Fields
+include::{snippets}/admin-keyword-requests-reject/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-keyword-requests-reject/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/admin-keyword-requests-reject/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/admin-keyword-requests-reject/curl-request.adoc[]

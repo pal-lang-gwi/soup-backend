@@ -1,0 +1,32 @@
+[[auth]]
+== Auth
+
+=== 토큰 재발급
+
+==== HTTP Request
+include::{snippets}/auth-refresh/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-refresh/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/auth-refresh/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/auth-refresh/curl-request.adoc[]
+
+'''
+
+=== 로그아웃
+
+==== HTTP Request
+include::{snippets}/auth-logout/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-logout/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/auth-logout/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/auth-logout/curl-request.adoc[]
