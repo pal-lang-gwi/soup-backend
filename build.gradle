@@ -84,17 +84,12 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
 
-
 ext {
     snippetsDir = file('build/generated-snippets')
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-    outputs.dir snippetsDir // (6)
-}
-
 test {
+    useJUnitPlatform()
     outputs.dir snippetsDir
 }
 
@@ -104,31 +99,12 @@ asciidoctor {
     dependsOn test
     attributes 'snippets': snippetsDir
 }
-asciidoctor.doFirst {
-    delete file('src/main/resources/static/docs')  // (11)
-}
 
-tasks.register('copyDocument', Copy) { // (12)
-    dependsOn asciidoctor
-    from file("build/docs/asciidoc")
-    into file("src/main/resources/static/docs")
-}
-
-// processResources가 copyDocument에 의존하도록 설정
-processResources {
-    dependsOn copyDocument
-}
-
-// 문서 생성만 하는 태스크 (테스트 실패해도 실행)
-tasks.register('generateDocs', Copy) {
-    dependsOn 'test', 'asciidoctor'
-    from file("build/docs/asciidoc")
-    into file("src/main/resources/static/docs")
-    doFirst {
-        delete file('src/main/resources/static/docs')
+// ⚠️ 중요: copyDocument 태스크 삭제하고 아래 방식으로 변경하세요.
+// bootJar 태스크가 실행될 때, asciidoctor로 만든 문서를 static/docs로 가져옵니다.
+tasks.named('bootJar') {
+    dependsOn asciidoctor // 문서를 먼저 만듦
+    from ("${asciidoctor.outputDir}") { // 문서 생성 경로에서
+        into 'static/docs'          // JAR 내부의 static/docs 폴더로 복사
     }
-}
-
-build {
-    dependsOn copyDocument
 }
