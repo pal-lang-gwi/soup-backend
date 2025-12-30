@@ -40,6 +40,7 @@ class NewsControllerTest extends IntegrationTestSupport {
     private String keywordName;
     private String startDate;
     private String endDate;
+    private List<String> relatedKeywords;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +48,7 @@ class NewsControllerTest extends IntegrationTestSupport {
         keywordName = "인공지능";
         startDate = "2025-06-01";
         endDate = "2025-06-02";
-
+        relatedKeywords = List.of("AI", "LLM", "OpenAI");
         articles = List.of(
                 new ArticleDto("인공지능 뉴스 1", "https://news.com/1", "AI 요약 1"),
                 new ArticleDto("인공지능 뉴스 2", "https://news.com/2", "AI 요약 2")
@@ -58,6 +59,7 @@ class NewsControllerTest extends IntegrationTestSupport {
                 keywordName,
                 "긴 요약",
                 articles,
+                relatedKeywords,
                 LocalDateTime.of(2025, 6, 1, 6, 0)
         );
 
@@ -75,13 +77,13 @@ class NewsControllerTest extends IntegrationTestSupport {
 
         //when && then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/news")
-                .param("keywordId", String.valueOf(keywordId))
-                .param("startDate", startDate)
-                .param("endDate", endDate)
-                .param("page", "0")
-                .param("size", "20")
-                .param("sort", "createdDate,DESC")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("keywordId", String.valueOf(keywordId))
+                        .param("startDate", startDate)
+                        .param("endDate", endDate)
+                        .param("page", "0")
+                        .param("size", "20")
+                        .param("sort", "createdDate,DESC")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -108,7 +110,7 @@ class NewsControllerTest extends IntegrationTestSupport {
 
         //when && then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/news/{newsId}", newsId)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -116,7 +118,11 @@ class NewsControllerTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.longSummary").value("긴 요약"))
                 .andExpect(jsonPath("$.data.articles[0].title").value("인공지능 뉴스 1"))
                 .andExpect(jsonPath("$.data.articles[0].url").value("https://news.com/1"))
-                .andExpect(jsonPath("$.data.articles[0].summary").value("AI 요약 1"));
+                .andExpect(jsonPath("$.data.articles[0].summary").value("AI 요약 1"))
+                .andExpect(jsonPath("$.data.relatedKeywords[0]").value("AI"))
+                .andExpect(jsonPath("$.data.relatedKeywords[1]").value("LLM"))
+                .andExpect(jsonPath("$.data.relatedKeywords[2]").value("OpenAI"));
+
 
         verify(newsService).getNewsDetailInfo(newsId);
     }
