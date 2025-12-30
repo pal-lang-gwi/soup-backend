@@ -114,6 +114,11 @@ tasks.register('copyDocument', Copy) { // (12)
     into file("src/main/resources/static/docs")
 }
 
+// processResources가 copyDocument에 의존하도록 설정
+processResources {
+    dependsOn copyDocument
+}
+
 // 문서 생성만 하는 태스크 (테스트 실패해도 실행)
 tasks.register('generateDocs', Copy) {
     dependsOn 'test', 'asciidoctor'
