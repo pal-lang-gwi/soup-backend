@@ -43,6 +43,7 @@ public class NewsControllerDocsTest extends RestDocsSupport {
                 "테스트 키워드",
                 "테스트 뉴스의 긴 요약 내용입니다.",
                 List.of(articleDto),
+                List.of("AI", "LLM", "OpenAI"),
                 LocalDateTime.now()
         );
         DailyNewsResponseDto response = new DailyNewsResponseDto(
@@ -82,6 +83,7 @@ public class NewsControllerDocsTest extends RestDocsSupport {
                                 fieldWithPath("data.newsDtos[].articles[].title").type(JsonFieldType.STRING).description("기사 제목"),
                                 fieldWithPath("data.newsDtos[].articles[].url").type(JsonFieldType.STRING).description("기사 URL"),
                                 fieldWithPath("data.newsDtos[].articles[].summary").type(JsonFieldType.STRING).description("기사 요약"),
+                                fieldWithPath("data.newsDtos[].relatedKeywords").type(JsonFieldType.ARRAY).description("관련 키워드 목록 (문자열 배열)"),
                                 fieldWithPath("data.newsDtos[].createdDate").type(JsonFieldType.ARRAY).description("생성 일시 (배열 형식: [년, 월, 일, 시, 분, 초, 나노초])"),
                                 fieldWithPath("data.totalElements").type(JsonFieldType.NUMBER).description("전체 요소 수"),
                                 fieldWithPath("data.totalPages").type(JsonFieldType.NUMBER).description("전체 페이지 수"),
@@ -101,6 +103,7 @@ public class NewsControllerDocsTest extends RestDocsSupport {
                 "테스트 키워드",
                 "테스트 뉴스의 긴 요약 내용입니다.",
                 List.of(articleDto),
+                List.of("AI", "LLM", "OpenAI"),
                 LocalDateTime.now()
         );
         given(newsService.getNewsDetailInfo(anyString())).willReturn(newsDto);
@@ -123,6 +126,7 @@ public class NewsControllerDocsTest extends RestDocsSupport {
                                 fieldWithPath("data.articles[].title").type(JsonFieldType.STRING).description("기사 제목"),
                                 fieldWithPath("data.articles[].url").type(JsonFieldType.STRING).description("기사 URL"),
                                 fieldWithPath("data.articles[].summary").type(JsonFieldType.STRING).description("기사 요약"),
+                                fieldWithPath("data.relatedKeywords").type(JsonFieldType.ARRAY).description("관련 키워드 목록 (문자열 배열)"),
                                 fieldWithPath("data.createdDate").type(JsonFieldType.ARRAY).description("생성 일시 (배열 형식: [년, 월, 일, 시, 분, 초, 나노초])"),
                                 fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공시 null)")
                         )
