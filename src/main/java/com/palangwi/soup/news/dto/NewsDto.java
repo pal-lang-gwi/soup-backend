@@ -3,9 +3,16 @@ package com.palangwi.soup.news.dto;
 import com.palangwi.soup.news.domain.News;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
-public record NewsDto(Long keywordId, String keywordName, String longSummary, List<ArticleDto> articles, LocalDateTime createdDate) {
+public record NewsDto(Long keywordId,
+                      String keywordName,
+                      String longSummary,
+                      List<ArticleDto> articles,
+                      List<String> relatedKeywords,
+                      LocalDateTime createdDate) {
+
     public static NewsDto from(News news) {
         return new NewsDto(news.getKeywordId(),
                 news.getKeywordName(),
@@ -17,6 +24,7 @@ public record NewsDto(Long keywordId, String keywordName, String longSummary, Li
                                 article.getSummary()
                         ))
                         .toList(),
+                news.getRelatedKeywords(),
                 news.getCreatedDate());
     }
 }

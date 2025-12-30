@@ -28,6 +28,8 @@ public class News extends BaseEntity {
 
     private List<Article> articles;
 
+    private List<String> relatedKeywords;
+
     private int tokens;
 
     public News(Long keywordId, String keywordName, Summary summary, List<Article> articles, int tokens) {
