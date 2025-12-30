@@ -1,0 +1,37 @@
+= Soup API Documentation
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+[[health-check]]
+== health-check
+
+include::health-check.adoc[]
+
+[[admin-email]]
+== Admin Email
+
+include::admin-email.adoc[]
+
+[[admin-keyword-requests]]
+== Admin Keyword Requests
+
+include::admin-keyword-requests.adoc[]
+
+[[admin-keyword]]
+== Admin Keyword
+
+include::admin-keyword.adoc[]
+
+[[user]]
+== User
+
+include::user.adoc[]
+
+[[auth]]
+== Auth
+
+include::auth.adoc[]

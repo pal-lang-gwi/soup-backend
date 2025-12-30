@@ -1,0 +1,32 @@
+[[admin-email]]
+== Admin Email
+
+=== 이메일 테스트 전송
+
+==== HTTP Request
+include::{snippets}/admin-email-test/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-email-test/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/admin-email-test/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/admin-email-test/curl-request.adoc[]
+
+'''
+
+=== 이메일 스케줄 조회
+
+==== HTTP Request
+include::{snippets}/admin-email-schedule/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-email-schedule/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/admin-email-schedule/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/admin-email-schedule/curl-request.adoc[]

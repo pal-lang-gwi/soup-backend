@@ -1,0 +1,111 @@
+[[user]]
+== User
+
+=== 사용자 초기 설정
+
+==== HTTP Request
+include::{snippets}/user-init/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-init/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-init/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-init/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/user-init/curl-request.adoc[]
+
+'''
+
+=== 사용자 정보 수정
+
+==== HTTP Request
+include::{snippets}/user-update/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-update/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-update/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-update/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/user-update/curl-request.adoc[]
+
+'''
+
+=== 사용자 정보 조회
+
+==== HTTP Request
+include::{snippets}/user-info/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-info/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-info/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/user-info/curl-request.adoc[]
+
+'''
+
+=== 닉네임 중복 확인
+
+==== HTTP Request
+include::{snippets}/user-check-nickname/http-request.adoc[]
+
+==== Query Parameters
+include::{snippets}/user-check-nickname/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-check-nickname/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-check-nickname/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/user-check-nickname/curl-request.adoc[]
+
+'''
+
+=== 회원 탈퇴
+
+==== HTTP Request
+include::{snippets}/user-delete/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-delete/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-delete/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-delete/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/user-delete/curl-request.adoc[]
+
+'''
+
+=== 내 키워드 목록 조회
+
+==== HTTP Request
+include::{snippets}/user-my-keywords/http-request.adoc[]
+
+==== Query Parameters
+include::{snippets}/user-my-keywords/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-my-keywords/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-my-keywords/response-fields.adoc[]
+
+==== Curl Request
+include::{snippets}/user-my-keywords/curl-request.adoc[]
