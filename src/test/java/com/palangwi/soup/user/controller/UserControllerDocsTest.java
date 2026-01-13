@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
+import jakarta.servlet.http.Cookie;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -24,6 +26,8 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
+import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,11 +65,15 @@ public class UserControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(post("/api/v1/users/init")
+                        .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-init",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         requestFields(
                                 fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임"),
                                 fieldWithPath("gender").type(JsonFieldType.STRING).description("성별 (MALE, FEMALE)"),
@@ -110,11 +118,15 @@ public class UserControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(patch("/api/v1/users")
+                        .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-update",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         requestFields(
                                 fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임 (선택, 2-20자)").optional(),
                                 fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("프로필 이미지 URL (선택)").optional()
@@ -155,10 +167,14 @@ public class UserControllerDocsTest extends RestDocsSupport {
         given(userService.getUserInfo(anyLong())).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/v1/users"))
+        mockMvc.perform(get("/api/v1/users")
+                        .cookie(new Cookie("access_token", "sample-jwt-access-token")))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-info",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         responseFields(
                                 fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
@@ -208,11 +224,15 @@ public class UserControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(post("/api/v1/users/delete")
+                        .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-delete",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         requestFields(
                                 fieldWithPath("reason").type(JsonFieldType.STRING).description("탈퇴 사유")
                         ),
@@ -238,11 +258,15 @@ public class UserControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(get("/api/v1/users/me/keywords")
+                        .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                         .param("page", "0")
                         .param("size", "20"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-my-keywords",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         queryParameters(
                                 parameterWithName("page").description("페이지 번호 (0부터 시작)"),
                                 parameterWithName("size").description("페이지 크기")

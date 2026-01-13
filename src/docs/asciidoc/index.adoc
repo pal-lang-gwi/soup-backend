@@ -90,6 +90,11 @@ include::admin-keyword.adoc[]
 
 include::user.adoc[]
 
+[[keywords]]
+== Keywords
+
+include::keywords.adoc[]
+
 [[auth]]
 == 🔐 Auth
 

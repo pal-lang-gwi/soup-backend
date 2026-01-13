@@ -1,5 +1,100 @@
 [[auth]]
-== Auth
+== 🔐 Auth
+
+=== 인증 개요
+
+이 API는 **JWT 기반 인증**을 사용하며, HTTP-only 쿠키를 통해 토큰을 전달합니다.
+
+==== 토큰 종류
+
+* **Access Token**: API 요청 인증에 사용 (유효기간: 7일)
+* **Refresh Token**: 새로운 Access Token 발급에 사용 (유효기간: 14일)
+
+==== 인증 플로우
+
+1. 사용자가 OAuth2(Google/Kakao)를 통해 로그인
+2. 서버가 `access_token`과 `refresh_token`을 쿠키로 발급
+3. 클라이언트는 이후 요청에 쿠키를 자동으로 포함 (브라우저가 자동 처리)
+4. Access Token 만료 시, `/auth/refresh` 엔드포인트로 새 토큰 발급
+
+==== 쿠키 형식
+
+[cols="2,2,2,4"]
+|===
+|쿠키 이름|타입|유효기간|용도
+
+|`access_token`
+|JWT Token
+|7일
+|API 요청 인증
+
+|`refresh_token`
+|UUID 문자열
+|14일
+|Access Token 갱신
+|===
+
+TIP: 쿠키는 `HttpOnly`, `Secure`, `SameSite=None` 속성으로 설정되어 안전하게 관리됩니다.
+
+==== JWT Claims 구조
+
+Access Token에 포함된 정보:
+
+[source,json]
+----
+{
+  "userKey": 1,
+  "roles": ["USER"],
+  "iat": 1234567890,
+  "iss": "soup-api"
+}
+----
+
+* `userKey`: 사용자 ID (Long)
+* `roles`: 사용자 권한 배열
+* `iat`: 토큰 발급 시간 (Unix timestamp)
+* `iss`: 토큰 발급자
+
+==== 보호된 엔드포인트
+
+`/api/v1/*` 하위 모든 엔드포인트는 인증이 필요합니다. (예외: `/health`, `/users/check-nickname`)
+
+**요청**: `access_token` 쿠키 포함 필수 +
+**실패 응답**: 401 Unauthorized
+
+==== 에러 응답
+
+===== 401 Unauthorized (토큰 없음/유효하지 않음)
+
+[source,json]
+----
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "message": "Unauthorized",
+    "status": 401
+  }
+}
+----
+
+===== 403 Forbidden (권한 부족)
+
+[source,json]
+----
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "message": "Forbidden",
+    "status": 403
+  }
+}
+----
+
+WARNING: 만료된 토큰으로 요청 시 401 에러가 발생합니다. `/auth/refresh`로 토큰을 갱신하세요.
+
+'''
 
 인증 관련 API는 JWT 토큰 기반 인증을 관리합니다.
 
@@ -25,8 +120,24 @@ Access Token 만료 시 Refresh Token을 사용하여 새로운 토큰 쌍을 �
 ==== HTTP Request
 include::{snippets}/auth-refresh/http-request.adoc[]
 
+==== Request Cookies
+include::{snippets}/auth-refresh/request-cookies.adoc[]
+
 ==== HTTP Response
 include::{snippets}/auth-refresh/http-response.adoc[]
+
+==== Response Cookies
+
+[cols="2,3"]
+|===
+|쿠키 이름|설명
+
+|`access_token`
+|새로 발급된 JWT Access Token (유효기간: 7일)
+
+|`refresh_token`
+|새로 발급된 Refresh Token (유효기간: 14일)
+|===
 
 ==== Response Fields
 include::{snippets}/auth-refresh/response-fields.adoc[]
@@ -49,8 +160,26 @@ WARNING: 로그아웃 후 해당 토큰은 더 이상 사용할 수 없습니다
 ==== HTTP Request
 include::{snippets}/auth-logout/http-request.adoc[]
 
+==== Request Cookies
+include::{snippets}/auth-logout/request-cookies.adoc[]
+
 ==== HTTP Response
 include::{snippets}/auth-logout/http-response.adoc[]
+
+==== Response Cookies
+
+[cols="2,3"]
+|===
+|쿠키 이름|설명
+
+|`access_token`
+|삭제된 Access Token (MaxAge=0)
+
+|`refresh_token`
+|삭제된 Refresh Token (MaxAge=0)
+|===
+
+NOTE: 로그아웃 시 모든 토큰 쿠키가 삭제되며, Refresh Token은 Redis에서도 무효화됩니다.
 
 ==== Response Fields
 include::{snippets}/auth-logout/response-fields.adoc[]
