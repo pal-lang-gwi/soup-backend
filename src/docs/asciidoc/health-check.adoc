@@ -1,6 +1,14 @@
 [[health-check]]
 == Health Check
 
+서버 상태를 확인하는 헬스체크 API입니다.
+
+* *Endpoint:* `GET /actuator/health`
+* *Method:* GET
+* *Authentication:* Not Required
+
+TIP: 로드 밸런서나 모니터링 시스템에서 서버 정상 동작 여부를 확인할 때 사용합니다.
+
 === HTTP Request
 include::{snippets}/health-check/http-request.adoc[]
 

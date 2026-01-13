@@ -1,4 +1,4 @@
-package com.palangwi.soup.keyword.contoller;
+package com.palangwi.soup.keyword.controller;
 
 import com.palangwi.soup.IntegrationTestSupport;
 import com.palangwi.soup.keyword.dto.SubscribeKeywordRequestDto;
