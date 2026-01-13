@@ -1,10 +1,17 @@
 [[user]]
-== User
+== 👤 User
+
+NOTE: 모든 User API는 인증이 필요합니다. 요청 시 `access_token` 쿠키를 포함해야 합니다.
 
 === 사용자 초기 설정
 
+🔐 **인증 필요**: `access_token` 쿠키
+
 ==== HTTP Request
 include::{snippets}/user-init/http-request.adoc[]
+
+==== Request Cookies
+include::{snippets}/user-init/request-cookies.adoc[]
 
 ==== Request Fields
 include::{snippets}/user-init/request-fields.adoc[]
@@ -22,8 +29,13 @@ include::{snippets}/user-init/curl-request.adoc[]
 
 === 사용자 정보 수정
 
+🔐 **인증 필요**: `access_token` 쿠키
+
 ==== HTTP Request
 include::{snippets}/user-update/http-request.adoc[]
+
+==== Request Cookies
+include::{snippets}/user-update/request-cookies.adoc[]
 
 ==== Request Fields
 include::{snippets}/user-update/request-fields.adoc[]
@@ -41,8 +53,13 @@ include::{snippets}/user-update/curl-request.adoc[]
 
 === 사용자 정보 조회
 
+🔐 **인증 필요**: `access_token` 쿠키
+
 ==== HTTP Request
 include::{snippets}/user-info/http-request.adoc[]
+
+==== Request Cookies
+include::{snippets}/user-info/request-cookies.adoc[]
 
 ==== HTTP Response
 include::{snippets}/user-info/http-response.adoc[]
@@ -76,8 +93,15 @@ include::{snippets}/user-check-nickname/curl-request.adoc[]
 
 === 회원 탈퇴
 
+🔐 **인증 필요**: `access_token` 쿠키
+
+WARNING: 회원 탈퇴 시 모든 사용자 데이터가 삭제되며 복구할 수 없습니다.
+
 ==== HTTP Request
 include::{snippets}/user-delete/http-request.adoc[]
+
+==== Request Cookies
+include::{snippets}/user-delete/request-cookies.adoc[]
 
 ==== Request Fields
 include::{snippets}/user-delete/request-fields.adoc[]
@@ -95,8 +119,13 @@ include::{snippets}/user-delete/curl-request.adoc[]
 
 === 내 키워드 목록 조회
 
+🔐 **인증 필요**: `access_token` 쿠키
+
 ==== HTTP Request
 include::{snippets}/user-my-keywords/http-request.adoc[]
+
+==== Request Cookies
+include::{snippets}/user-my-keywords/request-cookies.adoc[]
 
 ==== Query Parameters
 include::{snippets}/user-my-keywords/query-parameters.adoc[]

@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
+import jakarta.servlet.http.Cookie;
+
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -25,6 +27,8 @@ import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
+import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,11 +56,15 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(get("/api/v1/keywords")
+                .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                 .param("page", "0")
                 .param("size", "20"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("keyword-list",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         queryParameters(
                                 parameterWithName("page").description("페이지 번호 (0부터 시작)").optional(),
                                 parameterWithName("size").description("페이지 크기").optional(),
@@ -92,12 +100,16 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(get("/api/v1/keywords/search")
+                .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                 .param("keyword", "테스트")
                 .param("page", "0")
                 .param("size", "20"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("keyword-search",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         queryParameters(
                                 parameterWithName("keyword").description("검색할 키워드 (1-100자)"),
                                 parameterWithName("page").description("페이지 번호 (0부터 시작)").optional(),
@@ -129,11 +141,15 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(post("/api/v1/keywords/subscriptions")
+                .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("keyword-subscribe",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         requestFields(
                                 fieldWithPath("keywordId").type(JsonFieldType.NUMBER).description("구독할 키워드 ID")),
                         responseFields(
@@ -152,10 +168,14 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
         given(keywordService.unsubscribeKeyword(anyLong())).willReturn(response);
 
         // when & then
-        mockMvc.perform(post("/api/v1/keywords/subscriptions/{subscriptionId}", 1L))
+        mockMvc.perform(post("/api/v1/keywords/subscriptions/{subscriptionId}", 1L)
+                        .cookie(new Cookie("access_token", "sample-jwt-access-token")))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("keyword-unsubscribe",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         pathParameters(
                                 parameterWithName("subscriptionId").description("구독 ID")),
                         responseFields(
@@ -178,11 +198,15 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(post("/api/v1/keywords/request")
+                .cookie(new Cookie("access_token", "sample-jwt-access-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("keyword-request",
+                        requestCookies(
+                                cookieWithName("access_token").description("인증을 위한 JWT Access Token")
+                        ),
                         requestFields(
                                 fieldWithPath("keyword").type(JsonFieldType.STRING)
                                         .description("요청할 키워드 (필수, 비어있지 않아야 함)")),
