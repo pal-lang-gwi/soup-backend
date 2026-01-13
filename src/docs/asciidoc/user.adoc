@@ -3,6 +3,10 @@
 
 NOTE: 모든 User API는 인증이 필요합니다. 요청 시 `access_token` 쿠키를 포함해야 합니다.
 
+사용자 계정 관리 API입니다.
+
+NOTE: 대부분의 사용자 API는 인증이 필요하며, 본인의 정보만 조회/수정할 수 있습니다.
+
 === 사용자 초기 설정
 
 🔐 **인증 필요**: `access_token` 쿠키
@@ -73,6 +77,12 @@ include::{snippets}/user-info/curl-request.adoc[]
 '''
 
 === 닉네임 중복 확인
+
+닉네임 중복 여부를 확인합니다. 사용자 등록 또는 수정 전에 호출합니다.
+
+* *Endpoint:* `GET /api/users/check-nickname`
+* *Method:* GET
+* *Authentication:* Optional
 
 ==== HTTP Request
 include::{snippets}/user-check-nickname/http-request.adoc[]

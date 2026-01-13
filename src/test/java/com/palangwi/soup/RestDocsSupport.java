@@ -19,6 +19,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 
 @ExtendWith(RestDocumentationExtension.class)
 public abstract class RestDocsSupport {
@@ -50,7 +52,10 @@ public abstract class RestDocsSupport {
         
         this.mockMvc = MockMvcBuilders.standaloneSetup(initController())
                 .setCustomArgumentResolvers(jwtResolver, pageableResolver)
-                .apply(documentationConfiguration(provider))
+                .apply(documentationConfiguration(provider)
+                        .operationPreprocessors()
+                        .withRequestDefaults(prettyPrint(), modifyUris().host("api.soup.palangwi.com").removePort())
+                        .withResponseDefaults(prettyPrint()))
                 .build();
     }
 
