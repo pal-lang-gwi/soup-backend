@@ -48,8 +48,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/health", "/api/v1/health/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/docs/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/users/check-nickname").permitAll()
                         .requestMatchers("/login/oauth2/code/**").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
