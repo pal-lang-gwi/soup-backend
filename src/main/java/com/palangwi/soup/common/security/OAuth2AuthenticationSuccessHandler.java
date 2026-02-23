@@ -8,6 +8,8 @@ import com.palangwi.soup.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -15,9 +17,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.time.Duration;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -93,7 +95,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
         String redirectUrl = String.format("%s/home", frontDomain);
-
+        log.info("[OAuth2Success] redirectUrl={}, userId={}", redirectUrl, user.getId());
+        log.info("[OAuth2Success] setCookieHeadersAdded=true");
         response.sendRedirect(redirectUrl);
     }
 }

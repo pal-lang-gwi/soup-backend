@@ -32,7 +32,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
         String requestURI = request.getRequestURI();
-        log.info("[JwtFilter] 요청 URI: {}", requestURI);
+        log.debug("[JwtFilter] 요청 URI: {}", requestURI);
 
         // OAuth2 콜백 URL은 JWT 필터를 건너뛰기
         if (requestURI.startsWith("/login/oauth2/code/")) {
