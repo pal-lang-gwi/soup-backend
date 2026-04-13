@@ -41,11 +41,17 @@ out/
 .vscode/
 
 ### Spring Properties / YAML ###
-# 개발자별 로컬 환경 파일은 추적 금지
-/src/main/resources/application.properties
-/src/main/resources/application.yml
-/src/test/resources/application-test.yml
+# 공통 설정과 프로필 설정은 추적
+!/src/main/resources/application.yml
+!/src/main/resources/application-*.yml
+!/src/main/resources/application.properties
+!/src/main/resources/application-*.properties
 
-# 공통 환경 템플릿은 허용 (옵션)
-/src/main/resources/application-example.yml
-/src/main/resources/application-example.properties
+# 개발자별 시크릿/환경 파일은 추적 금지
+.env
+.env.*
+!.env.example
+!.env.local.example
+!.env.prod.example
+
+/src/test/resources/application-test.yml

@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: soup
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+
+security:
+  jwt:
+    access-token:
+      ttl: ${JWT_ACCESS_TOKEN_TTL:604800}
+    refresh-token:
+      ttl: ${JWT_REFRESH_TOKEN_TTL:1209600}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+perplexity:
+  base-url: ${PERPLEXITY_BASE_URL:https://api.perplexity.ai}
+  completions-path: ${PERPLEXITY_COMPLETIONS_PATH:/chat/completions}
+
+openai:
+  base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+  embeddings-path: ${OPENAI_EMBEDDINGS_PATH:/v1/embeddings}
+
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
