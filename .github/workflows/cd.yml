@@ -28,38 +28,26 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > ./src/main/resources/application.yml
           echo "${{ secrets.PROMETHEUS_YML }}" | base64 -d > ./src/main/resources/prometheus.yml
-        env:
-          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
 
       - name: Create news-summary.txt from secret
         run: |
           mkdir -p ./src/main/resources/prompts
           echo "${{ secrets.NEWS_SUMMARY_PROMPT }}" | base64 -d > ./src/main/resources/prompts/news-prompt.txt
-        env:
-          NEWS_SUMMARY_PROMPT: ${{ secrets.NEWS_SUMMARY_PROMPT }}
 
       - name: Create application-test.yml for docs generation
         run: |
           mkdir -p ./src/test/resources
           echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 -d > ./src/test/resources/application-test.yml || echo "# Test config placeholder" > ./src/test/resources/application-test.yml
 
-      # -------------------------------------------------------------
-      # [변경됨] 기존의 'Generate REST Docs'와 'Build -x test'를 하나로 통합
-      # 이제 build 태스크가 실행되면:
-      # test 실행 -> snippets 생성 -> asciidoctor 실행 -> bootJar 실행(문서 포함)
-      # 순서로 자동으로 진행됩니다.
-      # -------------------------------------------------------------
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
           ./gradlew clean build --info
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false
-          # SPRING_PROFILES_ACTIVE: test  <-- 필요시 주석 해제 (보통 테스트 코드 내부에서 @ActiveProfiles로 처리하거나 여기서 주입)
 
       - name: Build Docker image
-        run: |
-          docker build -t soup-backend . --no-cache
+        run: docker build -t soup-backend . --no-cache
         env:
           DOCKER_BUILDKIT: 1
 
@@ -77,17 +65,17 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:${{ github.sha }}
 
-      - name: Deploy to EC2
-        id: deploy-ec2
+      - name: Deploy to Home Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.HOME_HOST }}
+          username: ${{ secrets.HOME_USERNAME }}
+          key: ${{ secrets.HOME_SSH_KEY }}
           timeout: 60s
           script: |
             set -e
-            cd /home/ubuntu
+            mkdir -p /home/deploy/app
+            cd /home/deploy/app
 
             if [ -f docker-compose.yml ]; then
               cp docker-compose.yml docker-compose.yml.backup.$(date +%Y%m%d_%H%M%S)
@@ -95,58 +83,23 @@ jobs:
 
             echo "${{ secrets.DOCKER_COMPOSE_YML }}" | base64 -d > docker-compose.yml
 
-            sudo docker-compose down --remove-orphans || true
-            sudo docker system prune -f
-            sudo docker image prune -f
-
-            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | sudo docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-
-            echo "🔄 Pulling latest Docker image..."
-            sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
-
-            echo "🚀 Starting containers..."
-            sudo docker-compose up -d
-
-            sleep 10
-            echo "📊 Container status:"
-            sudo docker-compose ps
+            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+            docker compose down --remove-orphans || true
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:latest
+            docker compose up -d
+            docker compose ps
 
       - name: Health Check
-        id: health-check
         run: |
-          echo "Waiting for application to start..."
           for i in {1..30}; do
-            echo "Attempt $i/30: Checking application health..."
-            if curl -s -f -m 30 "https://soupspoon.kr/api/v1/health" > /dev/null; then
+            if curl -s -f -m 30 "https://api.soupspoon.kr/api/v1/health" > /dev/null; then
               echo "✅ Application is healthy!"
               exit 0
             fi
-            echo "⏳ Application not ready yet... waiting 10 seconds"
             sleep 10
           done
           echo "❌ Health check failed after 30 attempts"
           exit 1
-
-      - name: Rollback on Health Check Failure
-        if: failure() && steps.health-check.conclusion == 'failure'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "🔄 Rolling back to previous version..."
-            cd /home/ubuntu
-
-            if ls docker-compose.yml.backup.* 1> /dev/null 2>&1; then
-              LATEST_BACKUP=$(ls docker-compose.yml.backup.* | tail -1)
-              cp "$LATEST_BACKUP" docker-compose.yml
-              sudo docker-compose down
-              sudo docker-compose up -d
-              echo "✅ Rollback completed"
-            else
-              echo "⚠️ No backup found for rollback"
-            fi
 
       - name: Notify Discord on Success
         if: success()
@@ -160,23 +113,11 @@ jobs:
             {
               "embeds": [{
                 "title": "🚀 배포 성공",
-                "description": "애플리케이션이 성공적으로 배포되었습니다.",
+                "description": "홈서버 배포 성공",
                 "fields": [
-                  {
-                    "name": "Repository",
-                    "value": "`${{ github.repository }}`",
-                    "inline": true
-                  },
-                  {
-                    "name": "Branch",
-                    "value": "`${{ github.ref_name }}`",
-                    "inline": true
-                  },
-                  {
-                    "name": "Commit",
-                    "value": "`${{ github.sha }}`",
-                    "inline": true
-                  }
+                  { "name": "Repository", "value": "`${{ github.repository }}`", "inline": true },
+                  { "name": "Branch", "value": "`${{ github.ref_name }}`", "inline": true },
+                  { "name": "Commit", "value": "`${{ github.sha }}`", "inline": true }
                 ],
                 "color": 3066993,
                 "timestamp": "${{ github.event.head_commit.timestamp }}"
@@ -195,23 +136,11 @@ jobs:
             {
               "embeds": [{
                 "title": "🔥 배포 실패",
-                "description": "배포 중 오류가 발생했습니다.",
+                "description": "홈서버 배포 실패",
                 "fields": [
-                  {
-                    "name": "Repository",
-                    "value": "`${{ github.repository }}`",
-                    "inline": true
-                  },
-                  {
-                    "name": "Branch",
-                    "value": "`${{ github.ref_name }}`",
-                    "inline": true
-                  },
-                  {
-                    "name": "Commit",
-                    "value": "`${{ github.sha }}`",
-                    "inline": true
-                  }
+                  { "name": "Repository", "value": "`${{ github.repository }}`", "inline": true },
+                  { "name": "Branch", "value": "`${{ github.ref_name }}`", "inline": true },
+                  { "name": "Commit", "value": "`${{ github.sha }}`", "inline": true }
                 ],
                 "color": 15158332,
                 "timestamp": "${{ github.event.head_commit.timestamp }}"
