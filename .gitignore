@@ -50,8 +50,5 @@ out/
 # 개발자별 시크릿/환경 파일은 추적 금지
 .env
 .env.*
-!.env.example
-!.env.local.example
-!.env.prod.example
 
 /src/test/resources/application-test.yml
