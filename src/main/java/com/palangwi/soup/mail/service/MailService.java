@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
@@ -132,11 +135,14 @@ public class MailService {
     }
 
     private List<SummaryForMailTemplateDto> convertToMailTemplateDtos(List<NewsForMailDto> newsDtos) {
+        Parser parser = Parser.builder().build();
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+
         return newsDtos.stream()
                 .map(dto -> new SummaryForMailTemplateDto(
                         dto.keywordId(),
                         dto.keywordName(),
-                        dto.shortSummary(),
+                        renderer.render(parser.parse(dto.shortSummary() != null ? dto.shortSummary() : "")),
                         dto.createdDate()
                 ))
                 .toList();
