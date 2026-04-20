@@ -1,0 +1,104 @@
+spring:
+  application:
+    name: soup
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            scope:
+              - email
+              - profile
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            authorization-grant-type: authorization_code
+            client-name: kakao
+            scope:
+              - profile_nickname
+              - profile_image
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+security:
+  jwt:
+    access-token:
+      ttl: ${JWT_ACCESS_TOKEN_TTL}
+    refresh-token:
+      ttl: ${JWT_REFRESH_TOKEN_TTL}
+
+jwt:
+  issuer: ${JWT_ISSUER}
+  client-secret: ${JWT_SECRET}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+
+front:
+  domain: ${FRONT_DOMAIN}
+
+server:
+  domain: ${API_DOMAIN}
+
+perplexity:
+  base-url: ${PERPLEXITY_BASE_URL}
+  api-key: ${PERPLEXITY_API_KEY}
+  model: ${PERPLEXITY_MODEL}
+  completions-path: ${PERPLEXITY_COMPLETIONS_PATH}
+
+openai:
+  base-url: ${OPENAI_BASE_URL}
+  api-key: ${OPENAI_API_KEY}
+  model: ${OPENAI_MODEL}
+  embeddings-path: ${OPENAI_EMBEDDINGS_PATH}
+
+news:
+  prompt-path: ${NEWS_PROMPT_PATH:}

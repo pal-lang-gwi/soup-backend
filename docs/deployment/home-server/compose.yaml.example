@@ -1,0 +1,105 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: soup-nginx
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: soup-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongodb:
+    image: mongo:7
+    container_name: soup-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    command: ["--auth"]
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet mongodb://$$MONGO_INITDB_ROOT_USERNAME:$$MONGO_INITDB_ROOT_PASSWORD@localhost:27017/admin --eval 'db.adminCommand(\"ping\").ok' | grep 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: soup-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${DOCKER_HUB_USERNAME}/soup-backend:${BACKEND_IMAGE_TAG:-latest}
+    container_name: soup-backend
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: optional:file:/app/config/
+      NEWS_PROMPT_PATH: /app/config/prompts/news-prompt.txt
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/application.yml:/app/config/application.yml:ro
+      - ./backend/prompts/news-prompt.txt:/app/config/prompts/news-prompt.txt:ro
+    expose:
+      - "8080"
+
+  worker:
+    image: ${DOCKER_HUB_USERNAME}/soup-worker:${WORKER_IMAGE_TAG:-latest}
+    container_name: soup-worker
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WORKER_PORT:-8000}:8000"
+
+volumes:
+  postgres-data:
+  mongodb-data:
+  redis-data:

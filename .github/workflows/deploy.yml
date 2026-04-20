@@ -1,0 +1,135 @@
+name: Deploy Backend
+
+on:
+  workflow_run:
+    workflows: ["Publish Backend Image"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to deploy"
+        required: true
+        default: "latest"
+      service_name:
+        description: "Docker Compose service name"
+        required: true
+        default: "backend"
+      compose_dir:
+        description: "Directory on the server containing compose.yaml"
+        required: true
+        default: "/opt/soup"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Home Server
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag || github.event.workflow_run.head_sha }}
+      SERVICE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.service_name || 'backend' }}
+      COMPOSE_DIR: ${{ github.event_name == 'workflow_dispatch' && inputs.compose_dir || '/opt/soup' }}
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          timeout: 60s
+          script: |
+            set -eu
+            cd "${{ env.COMPOSE_DIR }}"
+            SERVICE_NAME="${{ env.SERVICE_NAME }}"
+
+            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+            export BACKEND_IMAGE_TAG="${{ env.IMAGE_TAG }}"
+
+            docker compose config --quiet
+            docker compose pull "$SERVICE_NAME"
+            docker compose up -d "$SERVICE_NAME"
+            docker compose ps
+            docker image prune -f
+
+      - name: Health check
+        env:
+          BACKEND_HEALTHCHECK_URL: ${{ secrets.BACKEND_HEALTHCHECK_URL }}
+        run: |
+          if [ -z "$BACKEND_HEALTHCHECK_URL" ]; then
+            echo "BACKEND_HEALTHCHECK_URL is empty. Skipping health check."
+            exit 0
+          fi
+
+          curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "$BACKEND_HEALTHCHECK_URL"
+
+      - name: Notify Discord on Deploy Success
+        if: success() && secrets.DISCORD_WEBHOOK_URL != ''
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "embeds": [{
+                "title": "🚀 배포 성공",
+                "description": "홈서버에 백엔드가 배포되었습니다.",
+                "fields": [
+                  {
+                    "name": "Service",
+                    "value": "`${{ env.SERVICE_NAME }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Image Tag",
+                    "value": "`${{ env.IMAGE_TAG }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Compose Dir",
+                    "value": "`${{ env.COMPOSE_DIR }}`",
+                    "inline": false
+                  }
+                ],
+                "color": 3066993
+              }]
+            }
+
+      - name: Notify Discord on Deploy Failure
+        if: failure() && secrets.DISCORD_WEBHOOK_URL != ''
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          method: "POST"
+          customHeaders: |
+            Content-Type: application/json
+          data: |
+            {
+              "embeds": [{
+                "title": "🔥 배포 실패",
+                "description": "홈서버 백엔드 배포 중 오류가 발생했습니다.",
+                "fields": [
+                  {
+                    "name": "Service",
+                    "value": "`${{ env.SERVICE_NAME }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Image Tag",
+                    "value": "`${{ env.IMAGE_TAG }}`",
+                    "inline": true
+                  }
+                ],
+                "color": 15158332
+              }]
+            }
