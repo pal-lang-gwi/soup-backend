@@ -3,7 +3,7 @@
 
 서버 상태를 확인하는 헬스체크 API입니다.
 
-* *Endpoint:* `GET /actuator/health`
+* *Endpoint:* `GET /api/v1/health`
 * *Method:* GET
 * *Authentication:* Not Required
 
