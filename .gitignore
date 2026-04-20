@@ -44,6 +44,8 @@ out/
 # 개발자별 로컬 환경 파일은 추적 금지
 /src/main/resources/application.properties
 /src/main/resources/application.yml
+/src/main/resources/.env
+/src/main/resources/.env.*
 /src/test/resources/application-test.yml
 
 # 공통 환경 템플릿은 허용 (옵션)

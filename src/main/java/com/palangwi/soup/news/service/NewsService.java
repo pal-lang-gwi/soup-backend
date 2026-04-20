@@ -30,8 +30,8 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private final NewsAIService newsAIService;
     private final KeywordRepository keywordRepository;
-    private final SQSSendService sqsSendService;
     private final NewsRedisRepository newsRedisRepository;
+    private final NewsProcessingStreamPublisher newsProcessingStreamPublisher;
 
     public DailyNewsResponseDto getDailyNews(DailyNewsRequestDto request, Pageable pageable) {
         Page<News> resultPage = getNews(request.keywordId(), request.startDate(), request.endDate(), pageable);
@@ -75,7 +75,7 @@ public class NewsService {
         return resultPage;
     }
 
-    public void collectAndSendNews(Long keywordId) {
+    public void collectNews(Long keywordId) {
         Optional<Keyword> keyword = keywordRepository.findById(keywordId);
 
         if (keyword.isEmpty()) {
@@ -86,12 +86,11 @@ public class NewsService {
         newsAIService.searchAndSummarizeAsync(keywordId, keywordName)
                 .thenAccept(result -> {
                     try {
-                        News news = result.toNews();
                         newsRedisRepository.save(keywordId, result, 6 * 3600);
-                        sqsSendService.sendMessage(news.getKeywordId(), news.getKeywordName());
-                        log.info("✅ 뉴스 요약 완료: {}", result);
+                        newsProcessingStreamPublisher.publish(keywordId, keywordName);
+                        log.info("✅ 뉴스 요약, Redis 저장 및 Stream 발행 완료: {}", result);
                     } catch (Exception e) {
-                        log.error("❌ Redis 저장 실패 - {}", keywordName, e);
+                        log.error("❌ 뉴스 후처리 저장/발행 실패 - {}", keywordName, e);
                     }
                 })
                 .exceptionally(ex -> {

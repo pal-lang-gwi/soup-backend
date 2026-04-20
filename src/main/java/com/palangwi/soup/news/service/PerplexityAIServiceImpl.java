@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -32,6 +34,9 @@ public class PerplexityAIServiceImpl implements NewsAIService {
 
     @Value("${perplexity.completions-path}")
     private String completionsPath;
+
+    @Value("${news.prompt-path:}")
+    private String promptPath;
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
@@ -103,6 +108,14 @@ public class PerplexityAIServiceImpl implements NewsAIService {
     }
 
     private String loadPrompt() {
+        if (promptPath != null && !promptPath.isBlank()) {
+            try {
+                return Files.readString(Path.of(promptPath), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                throw new RuntimeException("프롬프트 파일 로딩 실패: " + promptPath, e);
+            }
+        }
+
         try (InputStream is = new ClassPathResource(PROMPT_PATH).getInputStream()) {
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (Exception e) {

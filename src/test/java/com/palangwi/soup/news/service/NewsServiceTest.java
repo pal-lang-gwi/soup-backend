@@ -64,6 +64,9 @@ class NewsServiceTest extends IntegrationTestSupport {
     @MockitoBean
     private NewsAIService newsAIService;
 
+    @MockitoBean
+    private NewsProcessingStreamPublisher newsProcessingStreamPublisher;
+
     @Test
     @DisplayName("AI 뉴스 요약 결과를 Redis에 저장한다.")
     void collectAndSaveNews() {
@@ -88,15 +91,19 @@ class NewsServiceTest extends IntegrationTestSupport {
                 .willReturn(CompletableFuture.completedFuture(mockResult));
 
         // when
-        newsService.collectAndSendNews(keywordId);
+        newsService.collectNews(keywordId);
 
         // then
         ArgumentCaptor<NewsResult> captor = ArgumentCaptor.forClass(NewsResult.class);
 
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() ->
-                        verify(newsRedisRepository)
-                                .save(anyLong(), captor.capture(), anyLong())
+                        {
+                            verify(newsRedisRepository)
+                                    .save(anyLong(), captor.capture(), anyLong());
+                            verify(newsProcessingStreamPublisher)
+                                    .publish(keywordId, keywordName);
+                        }
                 );
 
         NewsResult captured = captor.getValue();
