@@ -92,7 +92,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         response.addHeader("Set-Cookie", accessCookie.toString());
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        String redirectUrl = String.format("%s/home", frontDomain);
+        String redirectUrl = String.format("%s", frontDomain);
 
         response.sendRedirect(redirectUrl);
     }
