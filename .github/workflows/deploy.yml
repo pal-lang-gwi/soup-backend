@@ -1,6 +1,10 @@
 name: Deploy Backend
 
 on:
+  workflow_run:
+    workflows: ["Publish Backend Image"]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       image_tag:
@@ -26,7 +30,12 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to Home Server
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag || github.event.workflow_run.head_sha }}
+      SERVICE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.service_name || 'backend' }}
+      COMPOSE_DIR: ${{ github.event_name == 'workflow_dispatch' && inputs.compose_dir || '/opt/soup' }}
 
     steps:
       - name: Deploy via SSH
@@ -38,15 +47,16 @@ jobs:
           timeout: 60s
           script: |
             set -eu
-            cd "${{ inputs.compose_dir }}"
+            cd "${{ env.COMPOSE_DIR }}"
+            SERVICE_NAME="${{ env.SERVICE_NAME }}"
 
             echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
-            export BACKEND_IMAGE_TAG="${{ inputs.image_tag }}"
+            export BACKEND_IMAGE_TAG="${{ env.IMAGE_TAG }}"
 
             docker compose config --quiet
-            docker compose pull "${{ inputs.service_name }}"
-            docker compose up -d "${{ inputs.service_name }}"
+            docker compose pull "$SERVICE_NAME"
+            docker compose up -d "$SERVICE_NAME"
             docker compose ps
             docker image prune -f
 
@@ -62,7 +72,7 @@ jobs:
           curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "$BACKEND_HEALTHCHECK_URL"
 
       - name: Notify Discord on Deploy Success
-        if: success()
+        if: success() && secrets.DISCORD_WEBHOOK_URL != ''
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -77,17 +87,17 @@ jobs:
                 "fields": [
                   {
                     "name": "Service",
-                    "value": "`${{ inputs.service_name }}`",
+                    "value": "`${{ env.SERVICE_NAME }}`",
                     "inline": true
                   },
                   {
                     "name": "Image Tag",
-                    "value": "`${{ inputs.image_tag }}`",
+                    "value": "`${{ env.IMAGE_TAG }}`",
                     "inline": true
                   },
                   {
                     "name": "Compose Dir",
-                    "value": "`${{ inputs.compose_dir }}`",
+                    "value": "`${{ env.COMPOSE_DIR }}`",
                     "inline": false
                   }
                 ],
@@ -96,7 +106,7 @@ jobs:
             }
 
       - name: Notify Discord on Deploy Failure
-        if: failure()
+        if: failure() && secrets.DISCORD_WEBHOOK_URL != ''
         uses: fjogeleit/http-request-action@v1.14.0
         with:
           url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -111,12 +121,12 @@ jobs:
                 "fields": [
                   {
                     "name": "Service",
-                    "value": "`${{ inputs.service_name }}`",
+                    "value": "`${{ env.SERVICE_NAME }}`",
                     "inline": true
                   },
                   {
                     "name": "Image Tag",
-                    "value": "`${{ inputs.image_tag }}`",
+                    "value": "`${{ env.IMAGE_TAG }}`",
                     "inline": true
                   }
                 ],
