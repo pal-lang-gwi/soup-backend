@@ -19,7 +19,7 @@ public class AdminNewsController {
     public ApiResult<Void> collectNews(
             @RequestParam(name = "keyword", required = false) Long keywordId
     ) {
-        newsService.collectAndSendNews(keywordId);
+        newsService.collectNews(keywordId);
         return null;
     }
 }

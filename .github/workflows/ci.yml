@@ -4,6 +4,13 @@ on:
   pull_request:
     branches: ["develop"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-backend-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build and Test
@@ -13,18 +20,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "21"
           distribution: "temurin"
+          cache: "gradle"
 
       - name: Create application-test.yml from secret
         run: |
           mkdir -p ./src/test/resources
           echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 -d > ./src/test/resources/application-test.yml
 
-      - name: Build with Gradle
-        run: chmod +x ./gradlew && ./gradlew build --stacktrace --info -Dspring.profiles.active=test
+      - name: Run tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean test --stacktrace --info -Dspring.profiles.active=test
 
       - name: Upload build reports
         uses: actions/upload-artifact@v4

@@ -1,0 +1,3 @@
+Summarize the most important recent news about "{keyword}" as of {today}.
+
+Return valid JSON only.
