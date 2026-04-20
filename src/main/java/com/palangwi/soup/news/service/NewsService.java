@@ -87,11 +87,12 @@ public class NewsService {
                 .thenAccept(result -> {
                     try {
                         News news = result.toNews();
+                        newsRepository.save(news);
                         newsRedisRepository.save(keywordId, result, 6 * 3600);
-                        sqsSendService.sendMessage(news.getKeywordId(), news.getKeywordName());
-                        log.info("✅ 뉴스 요약 완료: {}", result);
+                        // sqsSendService.sendMessage(news.getKeywordId(), news.getKeywordName());
+                        log.info("✅ 뉴스 요약 및 DB 저장 완료: {}", result);
                     } catch (Exception e) {
-                        log.error("❌ Redis 저장 실패 - {}", keywordName, e);
+                        log.error("❌ DB/Redis 저장 실패 - {}", keywordName, e);
                     }
                 })
                 .exceptionally(ex -> {

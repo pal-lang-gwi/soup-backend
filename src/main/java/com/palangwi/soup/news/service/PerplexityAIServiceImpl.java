@@ -1,8 +1,11 @@
 package com.palangwi.soup.news.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palangwi.soup.news.dto.NewsResult;
 import com.palangwi.soup.news.dto.NewsSummary;
+
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +39,11 @@ public class PerplexityAIServiceImpl implements NewsAIService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
+    @PostConstruct
+    public void init() {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
     public CompletableFuture<NewsResult> searchAndSummarizeAsync(Long keywordId, String keywordName) {
         String today = getTodayString();
         String prompt = loadPrompt()
@@ -58,6 +66,7 @@ public class PerplexityAIServiceImpl implements NewsAIService {
     }
 
     private NewsResult parseToNewsResult(String content, Long keywordId, String keywordName) {
+        String cleanedJson = "";
         try {
             log.debug("🔎 Perplexity 원시 응답:\n{}", content);
 
@@ -74,7 +83,7 @@ public class PerplexityAIServiceImpl implements NewsAIService {
                     .asText()
                     .trim();
 
-            String cleanedJson = rawJson
+            cleanedJson = rawJson
                     .replaceAll("^```json\\s*", "")
                     .replaceAll("^```\\s*", "")
                     .replaceAll("```\\s*$", "")
@@ -93,8 +102,9 @@ public class PerplexityAIServiceImpl implements NewsAIService {
             );
 
         } catch (Exception e) {
-            log.error("❌ JSON 파싱 실패", e);
-            throw new RuntimeException("❌ Perplexity 응답 처리 중 오류 발생", e);
+            log.error("❌ JSON 파싱 실패");
+            log.error("📝 실패한 클린 JSON 내용:\n{}", cleanedJson);
+            throw new RuntimeException("❌ Perplexity 응답 처리 중 오류 발생: " + e.getMessage(), e);
         }
     }
 
