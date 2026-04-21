@@ -31,6 +31,7 @@ class PerplexityAIServiceImplTest extends IntegrationTestSupport {
                 .build();
 
         perplexityAIService = new PerplexityAIServiceImpl(webClient, new ObjectMapper());
+        perplexityAIService.init();
 
         ReflectionTestUtils.setField(perplexityAIService, "model", "sonar");
         ReflectionTestUtils.setField(perplexityAIService, "completionsPath", "/v1/completions");
