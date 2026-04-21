@@ -49,8 +49,7 @@ jobs:
         with:
           url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "content": ":green_heart: CI 빌드 성공 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
@@ -62,8 +61,7 @@ jobs:
         with:
           url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           method: "POST"
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "content": ":broken_heart: CI 빌드 실패 - `${{ github.repository }}` PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
