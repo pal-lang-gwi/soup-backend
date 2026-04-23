@@ -51,7 +51,7 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
                 List.of(keywordDto),
                 1,
                 1,
-                0);
+                1);
         given(keywordService.getKeywordList(any(Pageable.class))).willReturn(response);
 
         // when & then
@@ -95,7 +95,7 @@ public class KeywordControllerDocsTest extends RestDocsSupport {
                 List.of(searchKeywordDto),
                 1,
                 1,
-                0);
+                1);
         given(keywordService.searchKeywords(anyLong(), anyString(), any(Pageable.class))).willReturn(response);
 
         // when & then
