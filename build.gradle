@@ -97,7 +97,15 @@ asciidoctor {
     configurations 'asciidoctorExt'
     dependsOn test
 
+    sources {
+        include 'index.adoc'
+    }
+
     baseDirFollowsSourceFile()
+
+    doFirst {
+        delete outputDir
+    }
 
     attributes 'snippets': snippetsDir
 }

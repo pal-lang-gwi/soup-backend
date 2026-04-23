@@ -1,6 +1,3 @@
-[[admin-email]]
-== Admin Email
-
 관리자용 이메일 관리 API입니다.
 
 WARNING: 모든 Admin API는 관리자 권한이 필요합니다. 일반 사용자는 403 Forbidden 오류가 발생합니다.

@@ -1,6 +1,3 @@
-[[health-check]]
-== Health Check
-
 서버 상태를 확인하는 헬스체크 API입니다.
 
 * *Endpoint:* `GET /api/v1/health`
