@@ -2,10 +2,14 @@ package com.palangwi.soup.user.controller;
 
 import com.palangwi.soup.RestDocsSupport;
 import com.palangwi.soup.common.security.Role;
+import com.palangwi.soup.keyword.domain.Keyword;
+import com.palangwi.soup.keyword.domain.Source;
 import com.palangwi.soup.keyword.dto.MyKeywordDto;
 import com.palangwi.soup.keyword.dto.MyKeywordListResponseDto;
 import com.palangwi.soup.keyword.service.KeywordService;
+import com.palangwi.soup.subscription.domain.UserKeyword;
 import com.palangwi.soup.user.domain.Gender;
+import com.palangwi.soup.user.domain.User;
 import com.palangwi.soup.user.dto.*;
 import com.palangwi.soup.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -13,10 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import jakarta.servlet.http.Cookie;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -248,10 +254,18 @@ public class UserControllerDocsTest extends RestDocsSupport {
     @Test
     void getMyKeywords() throws Exception {
         // given
+        User user = User.createFirstLoginUser("user@example.com", "홍길동", "google_123");
+        Keyword keyword = Keyword.of("키워드1", "키워드1", Source.USER_REQUEST, user);
+        UserKeyword userKeyword = UserKeyword.create(user, keyword);
+        userKeyword.subscribe();
+        ReflectionTestUtils.setField(userKeyword, "id", 1L);
+        ReflectionTestUtils.setField(keyword, "id", 101L);
+        ReflectionTestUtils.setField(userKeyword, "lastModifiedDate", LocalDateTime.of(2026, 4, 23, 12, 0));
+
         MyKeywordListResponseDto response = new MyKeywordListResponseDto(
-                List.of(),
-                0,
-                0,
+                List.of(MyKeywordDto.of(userKeyword)),
+                1,
+                1,
                 1
         );
         given(keywordService.getMyKeywords(anyLong(), any(Pageable.class))).willReturn(response);
@@ -275,6 +289,16 @@ public class UserControllerDocsTest extends RestDocsSupport {
                                 fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 여부"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.myKeywordDtos").type(JsonFieldType.ARRAY).description("내 키워드 목록"),
+                                fieldWithPath("data.myKeywordDtos[].subscriptionId").type(JsonFieldType.NUMBER)
+                                        .description("구독 ID"),
+                                fieldWithPath("data.myKeywordDtos[].keywordInfo").type(JsonFieldType.OBJECT)
+                                        .description("키워드 정보"),
+                                fieldWithPath("data.myKeywordDtos[].keywordInfo.keywordId").type(JsonFieldType.NUMBER)
+                                        .description("키워드 ID"),
+                                fieldWithPath("data.myKeywordDtos[].keywordInfo.keyword").type(JsonFieldType.STRING)
+                                        .description("키워드 이름"),
+                                fieldWithPath("data.myKeywordDtos[].keywordInfo.registeredAt").type(JsonFieldType.ARRAY)
+                                        .description("구독 등록 시각 (배열 형식: [년, 월, 일, 시, 분])"),
                                 fieldWithPath("data.totalElements").type(JsonFieldType.NUMBER).description("전체 요소 수"),
                                 fieldWithPath("data.totalPages").type(JsonFieldType.NUMBER).description("전체 페이지 수"),
                                 fieldWithPath("data.currentPage").type(JsonFieldType.NUMBER).description("현재 페이지"),
