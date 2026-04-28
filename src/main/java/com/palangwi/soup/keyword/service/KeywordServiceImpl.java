@@ -157,7 +157,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     private UserKeyword findOrCreateUserKeyword(User user, Long keywordId) {
-        return userKeywordRepository.findSubscribedByUserIdAndKeywordId(user.getId(), keywordId)
+        return userKeywordRepository.findByUserIdAndKeywordId(user.getId(), keywordId)
                 .orElseGet(() -> {
                     Keyword keyword = keywordRepository.findById(keywordId)
                             .orElseThrow(KeywordNotFoundException::new);

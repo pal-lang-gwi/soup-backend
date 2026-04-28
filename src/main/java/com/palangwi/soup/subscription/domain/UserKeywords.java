@@ -19,7 +19,11 @@ public class UserKeywords {
     private List<UserKeyword> userKeywordList = new ArrayList<>();
 
     public void subscribe(User user, Keyword keyword) {
-        userKeywordList.add(UserKeyword.create(user, keyword));
+        findByKeyword(keyword)
+                .ifPresentOrElse(
+                        UserKeyword::subscribe,
+                        () -> userKeywordList.add(UserKeyword.create(user, keyword))
+                );
     }
 
     public void unSubscribe(Keyword keyword) {
