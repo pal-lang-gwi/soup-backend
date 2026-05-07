@@ -12,12 +12,15 @@ on:
 jobs:
   notify-discord:
     runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
       - name: Send PR opened/reopened notification
-        if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
+        if: env.DISCORD_WEBHOOK_URL != '' && github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
@@ -26,10 +29,11 @@ jobs:
             }
 
       - name: Send PR review notification
-        if: github.event_name == 'pull_request_review' && github.event.review.state != 'commented'
+        if: env.DISCORD_WEBHOOK_URL != '' && github.event_name == 'pull_request_review' && github.event.review.state != 'commented'
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
@@ -38,10 +42,11 @@ jobs:
             }
 
       - name: Send PR merged notification
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        if: env.DISCORD_WEBHOOK_URL != '' && github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
@@ -50,10 +55,11 @@ jobs:
             }
 
       - name: Send PR comment notification (issue comment)
-        if: github.event_name == 'issue_comment' && github.event.issue.pull_request != null
+        if: env.DISCORD_WEBHOOK_URL != '' && github.event_name == 'issue_comment' && github.event.issue.pull_request != null
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: |
@@ -62,10 +68,11 @@ jobs:
             }
 
       - name: Send PR comment notification (review comment)
-        if: github.event_name == 'pull_request_review_comment'
+        if: env.DISCORD_WEBHOOK_URL != '' && github.event_name == 'pull_request_review_comment'
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: |

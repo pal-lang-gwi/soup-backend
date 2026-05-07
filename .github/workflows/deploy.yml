@@ -75,6 +75,7 @@ jobs:
       - name: Notify Discord on Deploy Success
         if: success() && env.DISCORD_WEBHOOK_URL != ''
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
           url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
@@ -109,6 +110,7 @@ jobs:
       - name: Notify Discord on Deploy Failure
         if: failure() && env.DISCORD_WEBHOOK_URL != ''
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
           url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
