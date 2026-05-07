@@ -16,6 +16,8 @@ jobs:
   publish:
     name: Test and Publish
     runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -57,10 +59,11 @@ jobs:
             ${{ secrets.DOCKER_HUB_USERNAME }}/soup-backend:${{ github.sha }}
 
       - name: Notify Discord on Publish Success
-        if: success()
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
@@ -86,10 +89,11 @@ jobs:
             }
 
       - name: Notify Discord on Publish Failure
-        if: failure()
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
         uses: fjogeleit/http-request-action@v1.14.0
+        continue-on-error: true
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
           customHeaders: |
             Content-Type: application/json
