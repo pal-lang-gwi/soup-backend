@@ -28,7 +28,7 @@ public class AdminKeywordController {
     @GetMapping
     public ApiResult<KeywordListResponseDto> getAllKeywords(
             @AuthenticationPrincipal JwtAuthentication userInfo,
-            @Valid @RequestParam(name = "status") String status,
+            @Valid @RequestParam(name = "status", required = false) String status,
             @PageableDefault(size = 10, sort = "createdDate", direction = Direction.DESC) Pageable pageable) {
         return success(adminKeywordService.getAllKeywordList(status, pageable));
     }
