@@ -53,18 +53,17 @@ public class AdminRequestedKeywordControllerDocsTest extends RestDocsSupport {
                 1,
                 0
         );
-        given(adminKeywordService.getRequestedKeywords(anyString(), any(Pageable.class))).willReturn(response);
+        given(adminKeywordService.getRequestedKeywords(nullable(String.class), any(Pageable.class))).willReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/v1/admin/keyword-requests")
-                        .param("status", "PENDING")
                         .param("page", "0")
                         .param("size", "10"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("admin-keyword-requests-list",
                         queryParameters(
-                                parameterWithName("status").description("키워드 상태 (PENDING, APPROVED, REJECTED)"),
+                                parameterWithName("status").optional().description("키워드 상태 (PENDING, ACTIVE, REJECTED 등). 생략 시 전체 조회"),
                                 parameterWithName("page").description("페이지 번호 (0부터 시작)"),
                                 parameterWithName("size").description("페이지 크기")
                         ),
