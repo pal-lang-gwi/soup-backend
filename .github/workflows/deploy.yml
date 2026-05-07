@@ -79,8 +79,7 @@ jobs:
         with:
           url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "embeds": [{
@@ -114,8 +113,7 @@ jobs:
         with:
           url: ${{ env.DISCORD_WEBHOOK_URL }}
           method: "POST"
-          customHeaders: |
-            Content-Type: application/json
+          customHeaders: '{"Content-Type": "application/json"}'
           data: |
             {
               "embeds": [{
