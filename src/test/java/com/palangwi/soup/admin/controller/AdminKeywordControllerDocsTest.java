@@ -2,11 +2,12 @@ package com.palangwi.soup.admin.controller;
 
 import com.palangwi.soup.RestDocsSupport;
 import com.palangwi.soup.admin.dto.keyword.AddKeywordResponseDto;
+import com.palangwi.soup.admin.dto.keyword.AdminKeywordListItemDto;
+import com.palangwi.soup.admin.dto.keyword.AdminKeywordListResponseDto;
 import com.palangwi.soup.admin.dto.keyword.RemoveKeywordRequestDto;
 import com.palangwi.soup.admin.dto.keyword.RemoveKeywordResponseDto;
 import com.palangwi.soup.admin.keyword.service.AdminKeywordService;
-import com.palangwi.soup.keyword.dto.KeywordListResponseDto;
-import com.palangwi.soup.keyword.dto.KeywordResponseDto;
+import com.palangwi.soup.keyword.domain.Status;
 import com.palangwi.soup.keyword.dto.RequestKeywordRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,8 +42,8 @@ public class AdminKeywordControllerDocsTest extends RestDocsSupport {
     @Test
     void getAllKeywords() throws Exception {
         // given
-        KeywordResponseDto keywordDto = new KeywordResponseDto(1L, "테스트 키워드", "테스트키워드");
-        KeywordListResponseDto response = new KeywordListResponseDto(
+        AdminKeywordListItemDto keywordDto = new AdminKeywordListItemDto(1L, "테스트 키워드", "테스트키워드", Status.ACTIVE);
+        AdminKeywordListResponseDto response = new AdminKeywordListResponseDto(
                 List.of(keywordDto),
                 1,
                 1,
@@ -69,6 +70,7 @@ public class AdminKeywordControllerDocsTest extends RestDocsSupport {
                                 fieldWithPath("data.keywordResponseDtos[].id").type(JsonFieldType.NUMBER).description("키워드 ID"),
                                 fieldWithPath("data.keywordResponseDtos[].name").type(JsonFieldType.STRING).description("키워드 이름"),
                                 fieldWithPath("data.keywordResponseDtos[].normalizedName").type(JsonFieldType.STRING).description("정규화된 키워드 이름"),
+                                fieldWithPath("data.keywordResponseDtos[].status").type(JsonFieldType.STRING).description("키워드 상태"),
                                 fieldWithPath("data.totalElements").type(JsonFieldType.NUMBER).description("전체 요소 수"),
                                 fieldWithPath("data.totalPages").type(JsonFieldType.NUMBER).description("전체 페이지 수"),
                                 fieldWithPath("data.currentPage").type(JsonFieldType.NUMBER).description("현재 페이지"),

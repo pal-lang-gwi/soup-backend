@@ -1,12 +1,12 @@
 package com.palangwi.soup.admin.keyword.service;
 
 import com.palangwi.soup.admin.dto.keyword.AddKeywordResponseDto;
+import com.palangwi.soup.admin.dto.keyword.AdminKeywordListItemDto;
+import com.palangwi.soup.admin.dto.keyword.AdminKeywordListResponseDto;
 import com.palangwi.soup.admin.dto.keyword.RemoveKeywordResponseDto;
 import com.palangwi.soup.admin.keyword.repository.AdminKeywordRepository;
 import com.palangwi.soup.keyword.domain.Keyword;
 import com.palangwi.soup.keyword.domain.Status;
-import com.palangwi.soup.keyword.dto.KeywordListResponseDto;
-import com.palangwi.soup.keyword.dto.KeywordResponseDto;
 import com.palangwi.soup.keyword.exception.KeywordAlreadyExistException;
 import com.palangwi.soup.keyword.exception.KeywordInvalidStatusException;
 import com.palangwi.soup.keyword.exception.KeywordNotFoundException;
@@ -36,18 +36,18 @@ public class AdminKeywordServiceImpl implements AdminKeywordService {
     private final UserKeywordRepository userKeywordRepository;
 
     @Transactional(readOnly = true)
-    public KeywordListResponseDto getAllKeywordList(String stringStatus, Pageable pageable) {
+    public AdminKeywordListResponseDto getAllKeywordList(String stringStatus, Pageable pageable) {
         Optional<Status> statusOpt = getStatus(stringStatus);
 
         Page<Keyword> keywordsPage = statusOpt
                 .map(status -> keywordRepository.findByStatus(status, pageable))
                 .orElseGet(() -> keywordRepository.findAll(pageable));
 
-        List<KeywordResponseDto> result = keywordsPage.getContent().stream()
-                .map(KeywordResponseDto::from)
+        List<AdminKeywordListItemDto> result = keywordsPage.getContent().stream()
+                .map(AdminKeywordListItemDto::from)
                 .toList();
 
-        return new KeywordListResponseDto(
+        return new AdminKeywordListResponseDto(
                 result,
                 keywordsPage.getTotalElements(),
                 keywordsPage.getTotalPages(),
