@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/check-nickname").permitAll()
                         .requestMatchers("/login/oauth2/code/**").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated())
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(configurer -> configurer
